@@ -490,35 +490,64 @@ export function scoreGradient(ticks: GradientTick[]): GradientScore {
 export function suggestGradient(ticks: GradientTick[]): GradientTick[] {
   if (ticks.length < 2) return ticks;
 
-  const lchs = ticks.map((t) => oklabToLch(rgbToOklab(hexToRgb(t.color))));
+  // Work in position order so we respect the user's spatial layout.
+  const byPos = [...ticks].sort((a, b) => a.position - b.position);
+  let lchs = byPos.map((t) => oklabToLch(rgbToOklab(hexToRgb(t.color))));
 
-  // Step 1: Sort by hue to find the natural arc
-  const sorted = [...lchs].sort((a, b) => a.h - b.h);
-
-  // Step 2: Smooth lightness monotonically (light → dark or dark → light)
-  const firstL = sorted[0].L,
-    lastL = sorted[sorted.length - 1].L;
-  const goingDark = firstL > lastL;
-  const smoothed = sorted.map((c, i) => {
-    const t = i / (sorted.length - 1);
-    const targetL = goingDark
-      ? firstL - t * (firstL - lastL)
-      : firstL + t * (lastL - firstL);
+  // Step 1: Smooth lightness monotonically along the existing direction.
+  const firstL = lchs[0].L;
+  const lastL = lchs[lchs.length - 1].L;
+  lchs = lchs.map((c, i) => {
+    const t = i / (lchs.length - 1);
+    const targetL = firstL + t * (lastL - firstL);
     return { ...c, L: c.L * 0.3 + targetL * 0.7 };
   });
 
-  // Step 3: Smooth chroma — gentle arc peaking in middle
-  const avgC = smoothed.reduce((a, c) => a + c.C, 0) / smoothed.length;
-  const refined = smoothed.map((c, i) => {
-    const t = i / (smoothed.length - 1);
-    const envelope = 1 + 0.3 * Math.sin(Math.PI * t); // slight peak in middle
+  // Step 2: Compress hue arc to ≤80° so the gradient scores well and avoids muddy midpoints.
+  //   Find the circular mean hue of chromatic stops, then scale each stop's angular
+  //   deviation from that mean down until the enclosing arc fits inside 80°.
+  const chromatic = lchs.filter((c) => c.C > 0.02);
+  if (chromatic.length >= 2) {
+    // Circular mean
+    const toRad = (deg: number) => (deg * Math.PI) / 180;
+    const toDeg = (rad: number) => (rad * 180) / Math.PI;
+    const meanX = chromatic.reduce((a, c) => a + Math.cos(toRad(c.h)), 0) / chromatic.length;
+    const meanY = chromatic.reduce((a, c) => a + Math.sin(toRad(c.h)), 0) / chromatic.length;
+    const meanHue = (toDeg(Math.atan2(meanY, meanX)) + 360) % 360;
+
+    // Measure enclosing arc
+    const hues = chromatic.map((c) => c.h);
+    const sortedH = [...hues].sort((a, b) => a - b);
+    let maxGap = sortedH[0] + 360 - sortedH[sortedH.length - 1];
+    for (let i = 1; i < sortedH.length; i++) {
+      maxGap = Math.max(maxGap, sortedH[i] - sortedH[i - 1]);
+    }
+    const arc = 360 - maxGap;
+
+    if (arc > 80) {
+      const scale = 80 / arc;
+      lchs = lchs.map((c) => {
+        if (c.C <= 0.02) return c;
+        // Signed shortest-path delta from the circular mean
+        let delta = c.h - meanHue;
+        delta = ((delta + 180) % 360 + 360) % 360 - 180;
+        return { ...c, h: ((meanHue + delta * scale) + 360) % 360 };
+      });
+    }
+  }
+
+  // Step 3: Smooth chroma — gentle envelope peaking in the middle.
+  const avgC = lchs.reduce((a, c) => a + c.C, 0) / lchs.length;
+  lchs = lchs.map((c, i) => {
+    const t = i / (lchs.length - 1);
+    const envelope = 1 + 0.3 * Math.sin(Math.PI * t);
     return { ...c, C: Math.min(0.4, avgC * envelope) };
   });
 
-  // Step 4: Redistribute stops evenly
-  return refined.map((lch, i) => ({
-    id: ticks[i]?.id ?? i,
-    position: Math.round((i / (refined.length - 1)) * 100),
+  // Step 4: Redistribute stops evenly.
+  return lchs.map((lch, i) => ({
+    id: byPos[i]?.id ?? i,
+    position: Math.round((i / (lchs.length - 1)) * 100),
     color: rgbToHex(oklabToRgb(lchToOklab(lch))),
   }));
 }
