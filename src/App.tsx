@@ -38,9 +38,9 @@ function mkTick(color: string, position: number): GradientTick {
 
 export default function App() {
   const [ticks, setTicks] = useState<GradientTick[]>([
-    mkTick("#e63946", 0),
-    mkTick("#2a9d8f", 50),
-    mkTick("#264653", 100),
+    mkTick("#4f46e5", 0),
+    mkTick("#a855f7", 50),
+    mkTick("#e879f9", 100),
   ]);
   const [angle, setAngle] = useState(135);
   const [dragging, setDragging] = useState<number | null>(null);
@@ -121,15 +121,21 @@ export default function App() {
       <div className="studio-inner">
         {/* Header */}
         <header className="studio-header">
-          <h1 className="studio-title">Gradient Studio</h1>
-          <p className="studio-subtitle">Perceptual quality analysis & one-click refinement</p>
+          <h1
+            className="studio-title"
+          >
+            Gradient Studio
+          </h1>
+          <p className="studio-subtitle">Perceptual quality analysis &amp; one-click refinement</p>
         </header>
 
         {/* Preview */}
         <div className="gradient-preview" style={{ background: gradientCSS }} />
 
-        {/* Tick bar */}
-        <section className="tick-bar-section">
+        {/* Controls surface — connects directly to preview */}
+        <div className="controls-surface">
+          {/* Tick bar */}
+          <section className="tick-bar-section">
           <div className="section-label">Color Stops — drag to reposition</div>
           <div ref={barRef} className="tick-bar" style={{ background: gradientCSS }}>
             {[...ticks]
@@ -174,6 +180,7 @@ export default function App() {
           <input type="range" min={0} max={360} value={angle} onChange={(e) => setAngle(+e.target.value)} />
           <span className="angle-value">{angle}°</span>
         </div>
+        </div>{/* end controls-surface */}
 
         {/* Score + Suggestion panels */}
         <div className="panels">
