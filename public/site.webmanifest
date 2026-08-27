@@ -1,0 +1,14 @@
+{
+  "name": "Gradient Studio",
+  "short_name": "Gradient Studio",
+  "description": "Perceptual gradient editor with OKLAB quality scoring, every color format, complements, and multi-angle CSS export.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#060a12",
+  "theme_color": "#060a12",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
