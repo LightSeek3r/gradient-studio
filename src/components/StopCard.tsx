@@ -129,6 +129,7 @@ export function StopCard({
               placeholder="#4F46E5"
               ariaLabel={`Stop ${index + 1} hex value`}
             />
+            <CopyButton value={formatHex(tick.color)} />
             <PasteButton onColor={onColor} />
           </div>
 
@@ -143,6 +144,7 @@ export function StopCard({
               values={[rgb.r, rgb.g, rgb.b]}
               onCommit={([r, g, b]) => onColor(rgbToHex({ r, g, b }))}
             />
+            <CopyButton value={formatRgb(tick.color)} />
             <PasteButton onColor={onColor} />
           </div>
 
@@ -157,6 +159,7 @@ export function StopCard({
               values={[hsl.h, hsl.s, hsl.l]}
               onCommit={commitHsl}
             />
+            <CopyButton value={formatHsl(tick.color)} />
             <PasteButton onColor={onColor} />
           </div>
 
@@ -170,21 +173,22 @@ export function StopCard({
               placeholder="indigo"
               ariaLabel={`Stop ${index + 1} color name`}
             />
+            <CopyButton value={formatName(tick.color)} />
             <PasteButton onColor={onColor} />
           </div>
         </div>
 
         {/* ── Complement, copy-only ── */}
-        <div className="field-group">
-          <div className="field-group-label">
+        <details className="field-group" open>
+          <summary className="field-group-label disclosure-summary">
+            <span className="complement-swatch" style={{ background: complement }} />
             Complement <span className="field-group-note">OKLCH +180°</span>
-          </div>
+          </summary>
 
           <div className="field-row">
             <span className="field-label">Swap</span>
-            <span className="complement-swatch" style={{ background: complement }} />
             <FlashButton
-              glyph="↔"
+              glyph="↔ Use this instead"
               title="Replace this stop with its complement"
               className="btn-swap"
               onRun={() => {
@@ -198,7 +202,7 @@ export function StopCard({
           <ComplementRow label="RGB" value={formatRgb(complement)} />
           <ComplementRow label="HSL" value={formatHsl(complement)} />
           <ComplementRow label="Name" value={formatName(complement)} />
-        </div>
+        </details>
       </div>
     </div>
   );

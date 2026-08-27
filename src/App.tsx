@@ -12,7 +12,24 @@ import {
 import { CSS_COLOR_NAMES, CSS_NAMED_COLORS } from "./color-formats";
 import { COLOR_NAME_LIST_ID, StopCard } from "./components/StopCard";
 import { DirectionsPanel } from "./components/DirectionsPanel";
+import { CopyButton } from "./components/fields";
 import "./App.css";
+
+// ── CSS export ────────────────────────────────────────────────────────────────
+
+/** Blend-mode lists that are all "normal" are the CSS default — skip the line. */
+function isDefaultBlend(mode: string): boolean {
+  return mode.split(", ").every((m) => m === "normal");
+}
+
+/** Copy-paste-ready CSS declarations for the current gradient. */
+function buildExportLines(style: { background: string; backgroundBlendMode: string }): string[] {
+  const lines = [`background: ${style.background};`];
+  if (!isDefaultBlend(style.backgroundBlendMode)) {
+    lines.push(`background-blend-mode: ${style.backgroundBlendMode};`);
+  }
+  return lines;
+}
 
 // ── Score bar ─────────────────────────────────────────────────────────────────
 
@@ -50,9 +67,9 @@ function mkDirection(angle: number, weight = 100): GradientDirection {
 
 export default function App() {
   const [ticks, setTicks] = useState<GradientTick[]>([
-    mkTick("#4f46e5", 0),
-    mkTick("#a855f7", 50),
-    mkTick("#e879f9", 100),
+    mkTick("#101b45", 0), // space navy
+    mkTick("#3f1d63", 50), // royal purple
+    mkTick("#9333ea", 100), // nebula violet
   ]);
   const [directions, setDirections] = useState<GradientDirection[]>([mkDirection(135)]);
   const [blend, setBlend] = useState<GradientBlendMode>("normal");
@@ -152,12 +169,18 @@ export default function App() {
       <div className="studio-inner">
         {/* Header */}
         <header className="studio-header">
-          <h1
-            className="studio-title"
-          >
-            Gradient Studio
-          </h1>
-          <p className="studio-subtitle">Perceptual quality analysis &amp; one-click refinement</p>
+          <div className="studio-heading">
+            <h1 className="studio-title">Gradient Studio</h1>
+            <p className="studio-subtitle">Perceptual quality analysis &amp; one-click refinement</p>
+          </div>
+          <div className="studio-score-chip" style={{ borderColor: scoreColor }} title="Live quality score">
+            <span className="studio-score-chip-value" style={{ color: scoreColor }}>
+              {score}
+            </span>
+            <span className="studio-score-chip-label" style={{ color: scoreColor }}>
+              {scoreLabel}
+            </span>
+          </div>
         </header>
 
         {/* Preview */}
@@ -209,6 +232,21 @@ export default function App() {
           onBlend={setBlend}
         />
         </div>{/* end controls-surface */}
+
+        {/* Export */}
+        <div className="panel export-panel">
+          <div className="export-head">
+            <div className="section-label" style={{ marginBottom: 0 }}>
+              Export CSS
+            </div>
+            <CopyButton value={buildExportLines(gradientStyle).join("\n")} />
+          </div>
+          <pre className="export-code">
+            {buildExportLines(gradientStyle).map((line) => (
+              <div key={line}>{line}</div>
+            ))}
+          </pre>
+        </div>
 
         {/* Score + Suggestion panels */}
         <div className="panels">
@@ -293,20 +331,31 @@ export default function App() {
         </div>
 
         {/* Theory note */}
-        <footer className="theory-note">
-          <span className="accent-strong">How scoring works: </span>
-          Lightness flow (30pts) penalizes reversals, H-K brightness wobble &amp; uneven perceptual speed. Hue arc
-          (30pts) rewards arcs &lt;120° and consistent hue direction. Chroma balance (20pts) penalizes saturation
-          spikes, midpoint desaturation &amp; banding risk. Stop rhythm (20pts) penalizes uneven clustering. Suggestion
-          nudges colors toward perceptual harmony via <span className="accent">OKLAB→LCH</span> smoothing.
-          <br />
-          <span className="accent-strong">Multi-angle: </span>
-          up to {MAX_DIRECTIONS} directions project the same stops as stacked layers. In{" "}
-          <span className="accent">average</span> mode each layer&rsquo;s alpha is set to{" "}
-          <span className="accent">wₖ / (w₁+…+wₖ)</span>, so the result is the exact weighted mean of every
-          direction; other modes hand the layers to <span className="accent">background-blend-mode</span> with alpha
-          scaled against the heaviest direction. Complements are the opposite <span className="accent">OKLCH</span>{" "}
-          hue at matched lightness and chroma, gamut-mapped by reducing chroma so the hue never drifts.
+        <footer>
+          <details className="theory-note">
+            <summary className="disclosure-summary theory-summary">How does this work?</summary>
+            <p>
+              <span className="accent-strong">Scoring: </span>
+              Lightness flow (30pts) penalizes reversals, H-K brightness wobble &amp; uneven perceptual speed. Hue arc
+              (30pts) rewards arcs &lt;120° and consistent hue direction. Chroma balance (20pts) penalizes saturation
+              spikes, midpoint desaturation &amp; banding risk. Stop rhythm (20pts) penalizes uneven clustering.
+              Suggestion nudges colors toward perceptual harmony via <span className="accent">OKLAB→LCH</span>{" "}
+              smoothing.
+            </p>
+            <p>
+              <span className="accent-strong">Multi-angle: </span>
+              up to {MAX_DIRECTIONS} directions project the same stops as stacked layers. In{" "}
+              <span className="accent">average</span> mode each layer&rsquo;s alpha is set to{" "}
+              <span className="accent">wₖ / (w₁+…+wₖ)</span>, so the result is the exact weighted mean of every
+              direction; other modes hand the layers to <span className="accent">background-blend-mode</span> with
+              alpha scaled against the heaviest direction.
+            </p>
+            <p>
+              <span className="accent-strong">Complements: </span>
+              the opposite <span className="accent">OKLCH</span> hue at matched lightness and chroma, gamut-mapped by
+              reducing chroma so the hue never drifts.
+            </p>
+          </details>
         </footer>
       </div>
     </div>
