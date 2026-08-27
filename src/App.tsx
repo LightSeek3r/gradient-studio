@@ -3,8 +3,15 @@ import {
   scoreGradient,
   suggestGradient,
   buildGradientCSS,
+  buildMultiGradientStyle,
+  MAX_DIRECTIONS,
+  type GradientBlendMode,
+  type GradientDirection,
   type GradientTick,
 } from "./gradient-engine";
+import { CSS_COLOR_NAMES, CSS_NAMED_COLORS } from "./color-formats";
+import { COLOR_NAME_LIST_ID, StopCard } from "./components/StopCard";
+import { DirectionsPanel } from "./components/DirectionsPanel";
 import "./App.css";
 
 // ── Score bar ─────────────────────────────────────────────────────────────────
@@ -27,11 +34,16 @@ function ScoreBar({ label, value, max }: { label: string; value: number; max: nu
   );
 }
 
-// ── Tick factory ──────────────────────────────────────────────────────────────
+// ── Factories ─────────────────────────────────────────────────────────────────
 
 let idCounter = 0;
 function mkTick(color: string, position: number): GradientTick {
   return { id: ++idCounter, color, position };
+}
+
+let dirCounter = 0;
+function mkDirection(angle: number, weight = 100): GradientDirection {
+  return { id: ++dirCounter, angle, weight, enabled: true };
 }
 
 // ── Main component ────────────────────────────────────────────────────────────
@@ -42,7 +54,8 @@ export default function App() {
     mkTick("#a855f7", 50),
     mkTick("#e879f9", 100),
   ]);
-  const [angle, setAngle] = useState(135);
+  const [directions, setDirections] = useState<GradientDirection[]>([mkDirection(135)]);
+  const [blend, setBlend] = useState<GradientBlendMode>("normal");
   const [dragging, setDragging] = useState<number | null>(null);
   const [suggested, setSuggested] = useState<GradientTick[] | null>(null);
   const [showSuggested, setShowSuggested] = useState(false);
@@ -50,7 +63,11 @@ export default function App() {
 
   const activeTicks = showSuggested && suggested ? suggested : ticks;
   const { score, issues, details } = scoreGradient(activeTicks);
-  const gradientCSS = buildGradientCSS(activeTicks, angle);
+  const gradientStyle = buildMultiGradientStyle(activeTicks, directions, blend);
+  // The stop bar is a stop editor, not a preview — always read left-to-right.
+  const barCSS = buildGradientCSS(ticks, 90);
+
+  const sortedTicks = [...ticks].sort((a, b) => a.position - b.position);
 
   const generate = () => {
     const s = suggestGradient(ticks);
@@ -83,6 +100,11 @@ export default function App() {
     setTicks((prev) => prev.map((t) => (t.id === id ? { ...t, color } : t)));
     setShowSuggested(false);
     setSuggested(null);
+  };
+
+  const updatePosition = (id: number, position: number) => {
+    setTicks((prev) => prev.map((t) => (t.id === id ? { ...t, position } : t)));
+    setShowSuggested(false);
   };
 
   const handleBarMouseDown = (e: React.MouseEvent, id: number) => {
@@ -118,6 +140,15 @@ export default function App() {
 
   return (
     <div className="studio">
+      {/* Shared CSS color-name autocomplete for every stop's Name field */}
+      <datalist id={COLOR_NAME_LIST_ID}>
+        {CSS_COLOR_NAMES.map((name) => (
+          <option key={name} value={name}>
+            {CSS_NAMED_COLORS[name]}
+          </option>
+        ))}
+      </datalist>
+
       <div className="studio-inner">
         {/* Header */}
         <header className="studio-header">
@@ -130,56 +161,53 @@ export default function App() {
         </header>
 
         {/* Preview */}
-        <div className="gradient-preview" style={{ background: gradientCSS }} />
+        <div className="gradient-preview" style={gradientStyle} />
 
         {/* Controls surface — connects directly to preview */}
         <div className="controls-surface">
           {/* Tick bar */}
           <section className="tick-bar-section">
           <div className="section-label">Color Stops — drag to reposition</div>
-          <div ref={barRef} className="tick-bar" style={{ background: gradientCSS }}>
-            {[...ticks]
-              .sort((a, b) => a.position - b.position)
-              .map((tick) => (
-                <div
-                  key={tick.id}
-                  className="tick-handle"
-                  onMouseDown={(e) => handleBarMouseDown(e, tick.id)}
-                  style={{
-                    left: `${tick.position}%`,
-                    background: tick.color,
-                  }}
-                />
-              ))}
+          <div ref={barRef} className="tick-bar" style={{ background: barCSS }}>
+            {sortedTicks.map((tick) => (
+              <div
+                key={tick.id}
+                className="tick-handle"
+                onMouseDown={(e) => handleBarMouseDown(e, tick.id)}
+                style={{
+                  left: `${tick.position}%`,
+                  background: tick.color,
+                }}
+              />
+            ))}
           </div>
         </section>
 
-        {/* Tick list */}
-        <div className="tick-list">
-          {[...ticks]
-            .sort((a, b) => a.position - b.position)
-            .map((tick) => (
-              <div key={tick.id} className="pill">
-                <input type="color" value={tick.color} onChange={(e) => updateColor(tick.id, e.target.value)} />
-                <span className="pill-position">{tick.position}%</span>
-                {ticks.length > 2 && (
-                  <button className="btn btn-remove" onClick={() => removeTick(tick.id)}>
-                    ×
-                  </button>
-                )}
-              </div>
-            ))}
-          <button className="btn btn-add" onClick={addTick}>
+        {/* Stop editors — every notation, always visible */}
+        <div className="stop-list">
+          {sortedTicks.map((tick, i) => (
+            <StopCard
+              key={tick.id}
+              tick={tick}
+              index={i}
+              canRemove={ticks.length > 2}
+              onColor={(hex) => updateColor(tick.id, hex)}
+              onPosition={(pos) => updatePosition(tick.id, pos)}
+              onRemove={() => removeTick(tick.id)}
+            />
+          ))}
+          <button className="btn btn-add btn-add-stop" onClick={addTick}>
             + Add stop
           </button>
         </div>
 
-        {/* Angle */}
-        <div className="angle-row">
-          <span className="section-label">Angle</span>
-          <input type="range" min={0} max={360} value={angle} onChange={(e) => setAngle(+e.target.value)} />
-          <span className="angle-value">{angle}°</span>
-        </div>
+        {/* Directions */}
+        <DirectionsPanel
+          directions={directions}
+          blend={blend}
+          onDirections={setDirections}
+          onBlend={setBlend}
+        />
         </div>{/* end controls-surface */}
 
         {/* Score + Suggestion panels */}
@@ -223,7 +251,7 @@ export default function App() {
             {suggested && (
               <div
                 className="suggestion-preview"
-                style={{ background: buildGradientCSS(suggested, angle) }}
+                style={buildMultiGradientStyle(suggested, directions, blend)}
               />
             )}
 
@@ -271,6 +299,14 @@ export default function App() {
           (30pts) rewards arcs &lt;120° and consistent hue direction. Chroma balance (20pts) penalizes saturation
           spikes, midpoint desaturation &amp; banding risk. Stop rhythm (20pts) penalizes uneven clustering. Suggestion
           nudges colors toward perceptual harmony via <span className="accent">OKLAB→LCH</span> smoothing.
+          <br />
+          <span className="accent-strong">Multi-angle: </span>
+          up to {MAX_DIRECTIONS} directions project the same stops as stacked layers. In{" "}
+          <span className="accent">average</span> mode each layer&rsquo;s alpha is set to{" "}
+          <span className="accent">wₖ / (w₁+…+wₖ)</span>, so the result is the exact weighted mean of every
+          direction; other modes hand the layers to <span className="accent">background-blend-mode</span> with alpha
+          scaled against the heaviest direction. Complements are the opposite <span className="accent">OKLCH</span>{" "}
+          hue at matched lightness and chroma, gamut-mapped by reducing chroma so the hue never drifts.
         </footer>
       </div>
     </div>

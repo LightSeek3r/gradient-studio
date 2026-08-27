@@ -106,7 +106,12 @@ export function rgbToOklab({ r, g, b }: RGB): OklabColor {
   };
 }
 
-export function oklabToRgb({ L, a, b }: OklabColor): RGB {
+/**
+ * OKLAB → *linear* sRGB, without clamping or gamma encoding.
+ * Values outside 0..1 mean the color falls outside the sRGB gamut, so this is
+ * the primitive gamut-mapping code needs (see `gamutFitOklch`).
+ */
+export function oklabToLinearRgb({ L, a, b }: OklabColor): RGB {
   const l_ = L + 0.3963377774 * a + 0.2158037573 * b;
   const m_ = L - 0.1055613458 * a - 0.0638541728 * b;
   const s_ = L - 0.0894841775 * a - 1.2914855480 * b;
@@ -115,11 +120,16 @@ export function oklabToRgb({ L, a, b }: OklabColor): RGB {
     m = m_ * m_ * m_,
     s = s_ * s_ * s_;
 
-  const lr = +4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s;
-  const lg = -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s;
-  const lb = -0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s;
+  return {
+    r: +4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s,
+    g: -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s,
+    b: -0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s,
+  };
+}
 
-  return { r: linearToSrgb(lr), g: linearToSrgb(lg), b: linearToSrgb(lb) };
+export function oklabToRgb(lab: OklabColor): RGB {
+  const { r, g, b } = oklabToLinearRgb(lab);
+  return { r: linearToSrgb(r), g: linearToSrgb(g), b: linearToSrgb(b) };
 }
 
 // ── Convenience conversions ───────────────────────────────────────────────────
@@ -559,6 +569,100 @@ export function buildGradientCSS(ticks: GradientTick[], angle: number): string {
   const sorted = [...ticks].sort((a, b) => a.position - b.position);
   const stops = sorted.map((t) => `${t.color} ${t.position}%`).join(", ");
   return `linear-gradient(${angle}deg, ${stops})`;
+}
+
+// ── Multi-angle gradients ─────────────────────────────────────────────────────
+
+/** Hard ceiling on simultaneous gradient directions. */
+export const MAX_DIRECTIONS = 7;
+
+export interface GradientDirection {
+  id: number;
+  /** CSS angle in degrees: 0 = to top, increasing clockwise. */
+  angle: number;
+  /** Relative influence of this direction, 1-100. */
+  weight: number;
+  enabled: boolean;
+}
+
+export type GradientBlendMode =
+  | "normal"
+  | "screen"
+  | "multiply"
+  | "overlay"
+  | "soft-light"
+  | "hard-light"
+  | "difference"
+  | "lighten"
+  | "darken";
+
+export interface GradientStyle {
+  background: string;
+  backgroundBlendMode: string;
+}
+
+/** `#rrggbb` + alpha → `rgba(r, g, b, a)`. */
+function rgbaString(hex: string, alpha: number): string {
+  const { r, g, b } = hexToRgb(hex);
+  return `rgba(${r}, ${g}, ${b}, ${Math.round(clamp(alpha, 0, 1) * 1000) / 1000})`;
+}
+
+/**
+ * Compose the same stop list into up to `MAX_DIRECTIONS` stacked linear-gradient
+ * layers, one per direction, producing a single multi-angle field.
+ *
+ * With `blend: "normal"` the layers are alpha-composited so the result is the
+ * exact weighted average of every direction. Painting bottom-to-top with
+ * `alpha_k = w_k / (w_1 + … + w_k)` makes layer k contribute exactly
+ * `w_k / Σw` — the standard progressive-average trick. Other blend modes hand
+ * the layers to `background-blend-mode` instead, with alpha scaled against the
+ * heaviest direction so weights still read as intensity.
+ *
+ * Note that CSS lists background layers top-first, so the emitted lists are
+ * reversed relative to the paint order reasoned about above.
+ */
+export function buildMultiGradientStyle(
+  ticks: GradientTick[],
+  directions: GradientDirection[],
+  blend: GradientBlendMode = "normal",
+): GradientStyle {
+  if (ticks.length === 0) return { background: "#ccc", backgroundBlendMode: "normal" };
+
+  const active = directions.filter((d) => d.enabled && d.weight > 0);
+  if (active.length === 0) {
+    // Nothing to project — fall back to a flat wash of the first stop.
+    const sorted = [...ticks].sort((a, b) => a.position - b.position);
+    return { background: sorted[0].color, backgroundBlendMode: "normal" };
+  }
+
+  const sorted = [...ticks].sort((a, b) => a.position - b.position);
+  const maxWeight = Math.max(...active.map((d) => d.weight));
+
+  let cumulative = 0;
+  const layers = active.map((d) => {
+    cumulative += d.weight;
+    const alpha = blend === "normal" ? d.weight / cumulative : d.weight / maxWeight;
+    const stops = sorted
+      .map((t) => `${rgbaString(t.color, alpha)} ${t.position}%`)
+      .join(", ");
+    return `linear-gradient(${d.angle}deg, ${stops})`;
+  });
+
+  // The bottom layer has nothing beneath it to blend with, so it stays normal.
+  const modes = active.map((_, i) => (i === 0 ? "normal" : blend));
+
+  return {
+    background: layers.reverse().join(", "),
+    backgroundBlendMode: modes.reverse().join(", "),
+  };
+}
+
+/** `n` directions spread evenly around the circle, starting at `start`. */
+export function spreadDirectionAngles(n: number, start = 135): number[] {
+  const count = Math.max(1, Math.min(MAX_DIRECTIONS, n));
+  return Array.from({ length: count }, (_, i) =>
+    Math.round((start + (i * 360) / count) % 360),
+  );
 }
 
 // ── Gradient interpolation ────────────────────────────────────────────────────
