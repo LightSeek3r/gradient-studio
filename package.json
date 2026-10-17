@@ -1,7 +1,28 @@
 {
   "name": "gradient-studio",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
+  "description": "A CSS gradient editor that scores gradients with perceptual colour science (OKLAB/OKLCH) and suggests a one-click refinement.",
+  "license": "MIT",
+  "author": "LightSeek3r (https://github.com/LightSeek3r)",
+  "homepage": "https://gradient-studio-al4.pages.dev/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LightSeek3r/gradient-studio.git"
+  },
+  "bugs": {
+    "url": "https://github.com/LightSeek3r/gradient-studio/issues"
+  },
+  "keywords": [
+    "gradient",
+    "css-gradient",
+    "oklab",
+    "oklch",
+    "color",
+    "design-tools",
+    "react",
+    "vite"
+  ],
   "type": "module",
   "scripts": {
     "dev": "vite",
