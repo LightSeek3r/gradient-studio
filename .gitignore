@@ -22,3 +22,14 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Local notes and assistant files, never published
+.claude/
+CLAUDE.md
+tasks/
+instructions.md
+
+# Local environment and secrets
+.env
+.env.*
+.dev.vars
