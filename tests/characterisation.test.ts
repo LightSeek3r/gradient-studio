@@ -1,20 +1,22 @@
 // Replays every characterisation vector in spec/vectors/ against the current
-// engine with exact equality. The vectors were generated from the UNMODIFIED
-// v1 engine (scripts/gen-vectors.ts), so any behavioural drift - including a
-// deliberate defect fix - shows up here. Regenerate with `npm run vectors`
-// only as a reviewed, intentional act.
+// engine with exact equality. The vectors freeze v1 (after the pre-freeze
+// defect fixes, spec/vectors/CHANGES-v1.md), so any behavioural drift shows up
+// here. Regenerate with `npm run vectors` only as a reviewed, intentional act,
+// and account for every changed case with `npm run vectors:diff`.
 
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
   evalColor,
   evalCss,
+  evalFindings,
   evalInterpolate,
   evalScore,
   evalSuggest,
   spreadDirectionAngles,
   type ColorCase,
   type CssCase,
+  type FindingsCase,
   type InterpolateCase,
   type ScoreCase,
   type SuggestCase,
@@ -43,14 +45,22 @@ describe("characterisation vectors v1", () => {
   const css = load<CssCase>("v1-css.json");
   const interp = load<InterpolateCase>("v1-interpolate.json");
   const color = load<ColorCase>("v1-color.json");
+  const findings = load<FindingsCase>("v1-findings.json");
 
   it("has the expected corpus sizes", () => {
     expect(score.cases.length).toBeGreaterThanOrEqual(300);
     expect(suggest.cases.length).toBe(score.cases.length);
     expect(interp.cases.length).toBe(score.cases.length);
+    expect(findings.cases.length).toBe(score.cases.length);
     expect(css.cases.length).toBeGreaterThanOrEqual(300);
     expect(color.cases.length).toBeGreaterThanOrEqual(100);
-    for (const f of [score, suggest, css, interp, color]) expect(f.vectorVersion).toBe(1);
+    for (const f of [score, suggest, css, interp, color, findings]) expect(f.vectorVersion).toBe(1);
+  });
+
+  describe("scoreGradient findings and measurements", () => {
+    it.each(findings.cases.map((c) => [c.name, c] as const))("%s", (_name, c) => {
+      expect(viaJson(evalFindings(c.name, c.stops))).toEqual(c);
+    });
   });
 
   describe("scoreGradient", () => {

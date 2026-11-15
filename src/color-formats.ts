@@ -181,14 +181,18 @@ export const CSS_NAMED_COLORS: Record<string, string> = {
 /** Alphabetical name list — feeds the `<datalist>` autocomplete. */
 export const CSS_COLOR_NAMES = Object.keys(CSS_NAMED_COLORS);
 
-const HEX_TO_NAME: Record<string, string> = {};
+// Lookups go through Maps (own entries only), never through `obj[key]` on a
+// plain object: user text such as "constructor" or "__proto__" must not reach
+// Object.prototype members.
+const NAME_TO_HEX = new Map<string, string>(Object.entries(CSS_NAMED_COLORS));
+const HEX_TO_NAME = new Map<string, string>();
 for (const [name, hex] of Object.entries(CSS_NAMED_COLORS)) {
-  if (!(hex in HEX_TO_NAME)) HEX_TO_NAME[hex] = name;
+  if (!HEX_TO_NAME.has(hex)) HEX_TO_NAME.set(hex, name);
 }
 
 let namedLabs: { name: string; lab: OklabColor }[] | null = null;
 function getNamedLabs() {
-  namedLabs ??= Object.entries(HEX_TO_NAME).map(([hex, name]) => ({
+  namedLabs ??= [...HEX_TO_NAME].map(([hex, name]) => ({
     name,
     lab: rgbToOklab(hexToRgb(hex)),
   }));
@@ -207,7 +211,7 @@ export interface ColorNameMatch {
  */
 export function nearestColorName(hex: string): ColorNameMatch {
   const canonical = hex.toLowerCase();
-  const exact = HEX_TO_NAME[canonical];
+  const exact = HEX_TO_NAME.get(canonical);
   if (exact) return { name: exact, exact: true };
 
   const lab = rgbToOklab(hexToRgb(canonical));
@@ -408,7 +412,7 @@ export function formatNameDisplay(hex: string): string {
 /** A CSS color keyword. Tolerates spaces, casing, and a leading `~` or `nearest:`. */
 export function parseName(raw: string): string | null {
   const key = raw.trim().toLowerCase().replace(/^(~|nearest\s*:)/, "").replace(/[\s_-]/g, "");
-  return CSS_NAMED_COLORS[key] ?? null;
+  return NAME_TO_HEX.get(key) ?? null;
 }
 
 /**

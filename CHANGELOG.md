@@ -4,6 +4,32 @@ All notable changes to Gradient Studio are listed here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the versions follow
 [Semantic Versioning](https://semver.org) loosely while the project is 0.x.
 
+## [Unreleased]
+
+### Fixed (scoring engine, before freezing scoring model v1)
+
+Every vector these change is accounted for in `spec/vectors/CHANGES-v1.md`.
+
+- Invalid colours (anything but `#rrggbb`), positions outside 0–100 and fewer than two stops are
+  now reported as unscorable instead of scoring a perfect 100; Suggest leaves them alone and the
+  CSS builders skip invalid stops, so `#NaNNaNNaN` can no longer appear.
+- Sampling a gradient whose stops do not reach 0 % or 100 % now clamps to the end colours and no
+  longer skips middle stops.
+- `parseName("constructor")` and similar no longer return JavaScript built-ins.
+- Four penalties that took points off silently now say why (narrow hue arc, stops slightly short of
+  the edges, transition under 40 % of the line, slightly uneven stop spacing).
+- The score no longer depends on the order the stops were added in; only their positions count.
+- Suggest keeps grey stops grey, keeps hard stops (stops at the same position, or ≤ 1 % apart)
+  hard, centres opposed hues deterministically, and never returns a lower-scoring gradient: if it
+  cannot improve the score it returns the gradient unchanged.
+
+### Added
+
+- Every score now carries coded, located findings (`findings`), the measurements its thresholds
+  compare (`details.measurements`) and a `status`; all thresholds and weights live in one frozen
+  table (`src/scoring-model-v1.ts`) documented rule by rule in `spec/scoring-v1.md`.
+- `SCOPE.md` and `PRIVACY.md`.
+
 ## [0.1.0] - 2026-10-17
 
 The first tagged version, published with an MIT licence. It covers everything since the project

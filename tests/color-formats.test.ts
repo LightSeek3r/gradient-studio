@@ -227,37 +227,36 @@ describe("parseName", () => {
     },
   );
 
-  it("premise: 'constructor' survives the lowercasing and resolves to an Object member", () => {
-    expect(typeof parseName("constructor")).toBe("function");
-    expect(parseName("constructor")).toBe(Object);
-    expect(typeof parseAnyColor("constructor")).toBe("function");
-  });
-
-  // DEFECT-3: the lookup `CSS_NAMED_COLORS[key] ?? null` walks the prototype chain.
-  // 'constructor' is the only Object.prototype key left intact after the
-  // normalisation, but the fix must be an own-property lookup, not more normalising.
-  it.fails("DEFECT-3: parseName('constructor') returns null", () => {
+  // DEFECT-3 (fixed): the lookup used to be `CSS_NAMED_COLORS[key] ?? null`,
+  // which walks the prototype chain, so parseName("constructor") returned the
+  // Object constructor. Lookups are now own-entry Map lookups.
+  it("DEFECT-3: parseName('constructor') returns null", () => {
     expect(parseName("constructor")).toBeNull();
   });
 
-  // DEFECT-3: same lookup, reached via the paste path.
-  it.fails("DEFECT-3: parseAnyColor('constructor') returns null", () => {
+  it("DEFECT-3: parseAnyColor('constructor') returns null", () => {
     expect(parseAnyColor("constructor")).toBeNull();
   });
 
-  // DEFECT-3: casing / prefix variants all reach the same member.
-  it.fails("DEFECT-3: variants of 'constructor' are rejected too", () => {
+  it("DEFECT-3: variants of 'constructor' are rejected too", () => {
     for (const s of ["Constructor", "CONSTRUCTOR", "~constructor", "nearest: constructor", "con-structor"]) {
       expect(parseName(s)).toBeNull();
     }
   });
 
-  // DEFECT-3 (type contract): the return type is string | null, so the result must
-  // never be anything else for ANY input string.
-  it.fails("DEFECT-3: parseName only ever returns a #rrggbb string or null", () => {
+  // Type contract: the return type is string | null, for ANY input string.
+  it("DEFECT-3: parseName only ever returns a #rrggbb string or null", () => {
     for (const key of Object.getOwnPropertyNames(Object.prototype)) {
       const r = parseName(key);
       expect(r === null || (typeof r === "string" && /^#[0-9a-f]{6}$/.test(r))).toBe(true);
+    }
+  });
+
+  it("DEFECT-3: nearestColorName never returns a prototype member (HEX_TO_NAME is own-entry)", () => {
+    for (const key of [...Object.getOwnPropertyNames(Object.prototype), "#000000"]) {
+      const r = nearestColorName(key);
+      expect(typeof r.name).toBe("string");
+      expect(CSS_COLOR_NAMES).toContain(r.name);
     }
   });
 });

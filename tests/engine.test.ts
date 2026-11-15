@@ -2,17 +2,18 @@
 //
 // Three kinds of test live here:
 //   - plain `it`: pinned v1 behaviour or invariants that must keep holding;
-//   - `it.fails` tagged `// DEFECT-n`: assert the CORRECT behaviour that the code
-//     does not have yet. They pass today because the assertion throws. When the
-//     defect is fixed the test starts failing ("expected to fail") - at that
-//     point drop the `.fails`.
-//   - "sanity" tests next to each DEFECT test prove the premise (e.g. that the
-//     silent penalty really is applied) so a `.fails` can't pass for the wrong
+//   - tests named `DEFECT-n`: regression tests for the defects fixed before the
+//     v1 freeze (Phase 0b; spec/vectors/CHANGES-v1.md). They were `it.fails`
+//     while the defect existed; the convention for a newly found defect is
+//     still to add it as `it.fails` tagged `// DEFECT-n` and flip it when fixed.
+//   - "premise" tests next to some DEFECT tests prove the setup (e.g. that a
+//     penalty really is applied) so a DEFECT test can't pass for the wrong
 //     reason.
 
 import { describe, expect, it } from "vitest";
 import {
   buildGradientCSS,
+  buildMultiGradientStyle,
   colorAtPosition,
   hexToOklch,
   hexToRgb,
@@ -24,10 +25,12 @@ import {
   oklchToHex,
   rgbToHex,
   rgbToOklab,
+  refineGradient,
   scoreGradient,
   srgbToLinear,
   suggestGradient,
   type GradientTick,
+  V1_MODEL,
 } from "../src/gradient-engine";
 import { mulberry32 } from "../scripts/vector-lib";
 
@@ -76,6 +79,21 @@ function randomGradient(rand: () => number): GradientTick[] {
     color: randomHex(rand),
     position: Math.round(rand() * 100),
   }));
+}
+
+/** True if any number anywhere in `v` is NaN (JSON would hide it as null). */
+function hasNaN(v: unknown): boolean {
+  if (typeof v === "number") return Number.isNaN(v);
+  if (typeof v === "string") return v.includes("NaN");
+  if (Array.isArray(v)) return v.some(hasNaN);
+  if (v && typeof v === "object") return Object.values(v).some(hasNaN);
+  return false;
+}
+
+/** Two position-neighbours at most 1% apart. */
+function hasHardStop(g: GradientTick[]): boolean {
+  const ps = g.map((t) => t.position).sort((a, b) => a - b);
+  return ps.some((p, i) => i > 0 && p - ps[i - 1] <= 1);
 }
 
 const RED = "#ff0000";
@@ -137,8 +155,9 @@ describe("hexToRgb / rgbToHex", () => {
     expect(hexToRgb("#000000")).toEqual({ r: 0, g: 0, b: 0 });
   });
 
-  // The next three pin today's garbage-in/garbage-out behaviour. It is the root
-  // cause of DEFECT-1; revisit these when invalid input becomes `unscorable`.
+  // The next three pin hexToRgb's garbage-in/garbage-out behaviour (it is a
+  // low-level converter). It was the root cause of DEFECT-1; the scoring and
+  // CSS entry points now validate (`unscorableReason`) before calling it.
   it("malformed hex yields NaN channels instead of throwing (v1 behaviour)", () => {
     expect(hexToRgb("#zzzzzz")).toEqual({ r: NaN, g: NaN, b: NaN });
     expect(hexToRgb("")).toEqual({ r: NaN, g: NaN, b: NaN });
@@ -268,7 +287,8 @@ describe("scoreGradient - hue arcs across the 0/360 seam", () => {
     const r = scoreGradient(stops([lch(0.5, 0.12, 359), lch(0.8, 0.12, 1)]));
     // Not the >180 deg clash a naive max-min (358 deg) would report.
     expect(r.issues.some((m) => m.includes("Hue arc spans"))).toBe(false);
-    expect(r.details.hue).toBe(25); // the silent <15 deg penalty (see DEFECT-4)
+    expect(r.details.hue).toBe(25); // the <15 deg narrow-arc penalty (formerly silent, DEFECT-4)
+    expect(r.findings.map((f) => f.code)).toContain("hue/narrow-arc");
   });
 
   it("an arc straddling the seam is measured the short way for 120/180 deg thresholds", () => {
@@ -322,10 +342,10 @@ describe("suggestGradient - hue compression", () => {
     expect(arc).toBeGreaterThan(60);
   });
 
-  // Exactly opposed hues: the circular mean vector is ~0, so atan2 returns an
-  // arbitrary angle (floating-point noise). The result is still arc-compressed
-  // and finite, but its centre is NOT meaningful. We pin: valid colours,
-  // deterministic, arc ~80 deg - not any particular mean.
+  // Exactly opposed hues: the circular mean vector is ~0, so atan2 would return
+  // an arbitrary angle (floating-point noise). Since D7 the centre falls back to
+  // the midpoint of the shorter arc from the first to the last chromatic stop
+  // (see the D7 tests below); here we pin: valid colours, deterministic, arc ~80.
   it.each([
     ["30/210", [30, 210]],
     ["0/180", [0, 180]],
@@ -345,10 +365,18 @@ describe("suggestGradient - hue compression", () => {
 // ── Already-guarded divisions (Phase 0 task 5) ────────────────────────────────
 
 describe("guarded divisions and degenerate input", () => {
-  it("scoreGradient with fewer than two stops is the all-zero score", () => {
-    const zero = { score: 0, issues: [], details: { lightness: 0, hue: 0, chroma: 0, spacing: 0 } };
-    expect(scoreGradient([])).toEqual(zero);
-    expect(scoreGradient([tick(RED, 0)])).toEqual(zero);
+  it("scoreGradient with fewer than two stops is unscorable with the all-zero score (D1)", () => {
+    for (const input of [[], [tick(RED, 0)]]) {
+      const r = scoreGradient(input);
+      expect(r).toEqual({
+        status: "unscorable",
+        reason: "needs at least 2 stops",
+        score: 0,
+        issues: [],
+        details: { lightness: 0, hue: 0, chroma: 0, spacing: 0 },
+        findings: [],
+      });
+    }
   });
 
   it("suggestGradient with fewer than two stops returns the input untouched", () => {
@@ -426,7 +454,7 @@ describe("guarded divisions and degenerate input", () => {
       ["#808080", "#808080"],
     ]) {
       const r = scoreGradient(stops(ramp));
-      expect(JSON.stringify(r)).not.toContain("null");
+      expect(hasNaN(r)).toBe(false);
       expect(Number.isFinite(r.score)).toBe(true);
     }
   });
@@ -518,7 +546,7 @@ describe("properties over seeded random gradients", () => {
       expect(d.hue).toBeLessThanOrEqual(30);
       expect(d.chroma).toBeLessThanOrEqual(20);
       expect(d.spacing).toBeLessThanOrEqual(20);
-      for (const v of Object.values(d)) expect(v).toBeGreaterThanOrEqual(0);
+      for (const v of [d.lightness, d.hue, d.chroma, d.spacing]) expect(v).toBeGreaterThanOrEqual(0);
       for (const m of r.issues) expect(m.length).toBeGreaterThan(0);
     }
   });
@@ -530,16 +558,22 @@ describe("properties over seeded random gradients", () => {
     }
   });
 
-  it("suggestGradient is deterministic and emits valid evenly-spaced #rrggbb stops", () => {
+  it("suggestGradient is deterministic and emits valid stops: refined ones spread 0-100, declined ones unchanged", () => {
     for (const g of corpus) {
       const a = suggestGradient(g);
       expect(suggestGradient(g)).toEqual(a);
       expect(a).toHaveLength(g.length);
-      expect(a[0].position).toBe(0);
-      expect(a[a.length - 1].position).toBe(100);
+      const r = refineGradient(g);
+      if (r.refined) {
+        expect(a[0].position).toBe(0);
+        expect(a[a.length - 1].position).toBe(100);
+      } else {
+        expect(a).toEqual([...g].sort((x, y) => x.position - y.position));
+      }
       for (let i = 0; i < a.length; i++) {
         expect(a[i].color).toMatch(HEX);
-        expect(Number.isInteger(a[i].position)).toBe(true);
+        // Positions are integers unless a hard-stop group keeps a fractional offset.
+        if (r.refined && !hasHardStop(g)) expect(Number.isInteger(a[i].position)).toBe(true);
         if (i > 0) expect(a[i].position).toBeGreaterThanOrEqual(a[i - 1].position);
       }
       // ids follow the position-sorted order of the input
@@ -566,36 +600,77 @@ describe("properties over seeded random gradients", () => {
   });
 });
 
-// ── DEFECT-1: invalid hex ─────────────────────────────────────────────────────
+// ── DEFECT-1: input outside the v1 domain ─────────────────────────────────────
 
-describe("DEFECT-1: invalid hex input", () => {
+describe("DEFECT-1: input outside the v1 domain is unscorable, never NaN", () => {
   const INVALID: [string, GradientTick[]][] = [
     ["#zzzzzz", stops(["#zzzzzz", "#ffffff"])],
     ["#abc (shorthand)", stops(["#abc", RED])],
     ["empty string", stops(["", "#00ff00"])],
     ["both invalid", stops(["#zzzzzz", "#abc"])],
+    ["#rrggbbaa (alpha)", stops(["#ff000080", BLUE])],
+    ["css name", stops(["red", BLUE])],
+    ["no leading #", stops(["ff0000", BLUE])],
+    ["NaN position", [tick(RED, NaN, 1), tick(BLUE, 100, 2)]],
+    ["Infinity position", [tick(RED, 0, 1), tick(BLUE, Infinity, 2)]],
+    ["position above 100", [tick(RED, 0, 1), tick(BLUE, 150, 2)]],
+    ["position below 0", [tick(RED, -1, 1), tick(BLUE, 100, 2)]],
+    ["one invalid among valid", stops([RED, "#zzzzzz", BLUE])],
+    ["a single stop", [tick(RED, 50)]],
+    ["no stops", []],
   ];
 
-  it("premise: invalid colours currently flow into NaN maths", () => {
-    expect(JSON.stringify(suggestGradient(stops(["#zzzzzz", "#abc"])))).toContain("NaN");
-    const r = scoreGradient(stops(["#zzzzzz", "#ffffff"]));
-    expect(r.score).toBe(100);
+  it.each(INVALID)("scoreGradient(%s) is unscorable with a reason, score 0 and no NaN", (_n, input) => {
+    const r = scoreGradient(input);
+    expect(r.status).toBe("unscorable");
+    expect(typeof r.reason).toBe("string");
+    expect(r.reason!.length).toBeGreaterThan(0);
+    expect(r.score).toBe(0);
     expect(r.issues).toEqual([]);
+    expect(r.findings).toEqual([]);
+    expect(r.details).toEqual({ lightness: 0, hue: 0, chroma: 0, spacing: 0 });
+    expect(hasNaN(r)).toBe(false);
   });
 
-  // DEFECT-1: invalid hex scores a perfect 100 with no issue.
-  it.fails("DEFECT-1: scoreGradient does not report a perfect clean score for invalid hex", () => {
-    for (const [, input] of INVALID) {
-      const r = scoreGradient(input);
-      expect(r.score !== 100 || r.issues.length > 0).toBe(true);
-    }
+  it("the reason names the offending stop (input index)", () => {
+    expect(scoreGradient(stops([RED, "#zzzzzz", BLUE])).reason).toBe(
+      'stop 1: colour "#zzzzzz" is not an opaque #rrggbb hex colour',
+    );
+    expect(scoreGradient([tick(RED, 0, 1), tick(BLUE, 150, 2)]).reason).toBe(
+      "stop 1: position 150 is outside 0..100",
+    );
+    expect(scoreGradient([tick(RED, NaN, 1), tick(BLUE, 100, 2)]).reason).toBe(
+      "stop 0: position is not a finite number",
+    );
   });
 
-  // DEFECT-1: suggestGradient yields '#NaNNaNNaN' colours for invalid hex.
-  it.fails("DEFECT-1: suggestGradient never emits NaN colours for invalid hex", () => {
+  it("upper-case #RRGGBB is inside the domain and scores like lower-case", () => {
+    const upper = scoreGradient(stops(["#FF512F", "#DD2476"]));
+    const lower = scoreGradient(stops(["#ff512f", "#dd2476"]));
+    expect(upper.status).toBe("ok");
+    expect(upper).toEqual(lower);
+  });
+
+  it.each(INVALID)("suggestGradient(%s) returns the input itself", (_n, input) => {
+    expect(suggestGradient(input)).toBe(input);
+    expect(hasNaN(suggestGradient(input).map((s) => s.color))).toBe(false);
+    if (input.length >= 2) expect(refineGradient(input)).toMatchObject({ refined: false, declined: "unscorable" });
+  });
+
+  it("interpolate / colorAtPosition / CSS builders skip invalid stops and never emit NaN", () => {
     for (const [, input] of INVALID) {
-      expect(JSON.stringify(suggestGradient(input))).not.toContain("NaN");
+      for (const n of [1, 2, 5]) expect(hasNaN(interpolateGradient(input, n))).toBe(false);
+      for (const p of [0, 33, 100, NaN]) expect(colorAtPosition(input, p)).toMatch(HEX);
+      expect(buildGradientCSS(input, 90)).not.toContain("NaN");
+      const multi = buildMultiGradientStyle(input, [{ id: 1, angle: 90, weight: 50, enabled: true }]);
+      expect(multi.background).not.toContain("NaN");
     }
+    // Valid stops survive, invalid ones are dropped.
+    const mixed = stops([RED, "#zzzzzz", BLUE]);
+    expect(buildGradientCSS(mixed, 90)).toBe("linear-gradient(90deg, #ff0000 0%, #0000ff 100%)");
+    expect(interpolateGradient(mixed, 2)).toEqual([RED, BLUE]);
+    expect(buildGradientCSS(stops(["#zzzzzz", "#abc"]), 90)).toBe("#ccc");
+    expect(interpolateGradient(stops(["#zzzzzz", "#abc"]), 4)).toEqual([]);
   });
 });
 
@@ -612,18 +687,11 @@ describe("DEFECT-2: interpolateGradient with stops not spanning 0-100", () => {
     return (v.L * d.L + v.a * d.a + v.b * d.b) / (d.L * d.L + d.a * d.a + d.b * d.b);
   }
 
-  it("premise: today the last sample is not the last stop's colour", () => {
-    const out = interpolateGradient([tick(RED, 20, 1), tick(BLUE, 80, 2)], 11);
-    expect(out[out.length - 1]).toBe("#2300ff");
-    expect(out[out.length - 1]).not.toBe(BLUE);
-  });
-
-  // DEFECT-2: t beyond the last stop interpolates first<->last, overshooting.
-  it.fails("DEFECT-2: 20%/80% red->blue is clamped to the end stops and monotone", () => {
+  it("DEFECT-2: 20%/80% red->blue is clamped to the end stops and monotone", () => {
     const ticks = [tick(RED, 20, 1), tick(BLUE, 80, 2)];
     const out = interpolateGradient(ticks, 11);
     expect(out[0]).toBe(RED);
-    expect(out[out.length - 1]).toBe(BLUE);
+    expect(out[out.length - 1]).toBe(BLUE); // was #2300ff
     let prev = -Infinity;
     for (const c of out) {
       const p = progress(c, RED, BLUE);
@@ -637,8 +705,7 @@ describe("DEFECT-2: interpolateGradient with stops not spanning 0-100", () => {
     expect(out.slice(8)).toEqual([BLUE, BLUE, BLUE]);
   });
 
-  // DEFECT-2: t before the first stop uses a negative interpolation fraction.
-  it.fails("DEFECT-2: before the first stop the colour is the first stop's (no negative frac)", () => {
+  it("DEFECT-2: before the first stop the colour is the first stop's (no negative frac)", () => {
     const first = "#6080c0";
     const last = "#c08060";
     const ticks = [tick(first, 20, 1), tick(last, 80, 2)];
@@ -649,8 +716,7 @@ describe("DEFECT-2: interpolateGradient with stops not spanning 0-100", () => {
     expect(out[9]).toBe(last);
   });
 
-  // DEFECT-2: with 3 stops the tail skips the middle stop entirely.
-  it.fails("DEFECT-2: three stops 20/50/80 end on the last colour and pass through the middle", () => {
+  it("DEFECT-2: three stops 20/50/80 end on the last colour and pass through the middle", () => {
     const ticks = [tick(RED, 20, 1), tick(GREEN, 50, 2), tick(BLUE, 80, 3)];
     const out = interpolateGradient(ticks, 11);
     expect(out[0]).toBe(RED);
@@ -659,8 +725,7 @@ describe("DEFECT-2: interpolateGradient with stops not spanning 0-100", () => {
     expect(out.slice(8)).toEqual([BLUE, BLUE, BLUE]);
   });
 
-  // DEFECT-2 (consistency): the correct reference already exists - colorAtPosition clamps.
-  it.fails("DEFECT-2: interpolateGradient agrees with colorAtPosition for non-spanning stops", () => {
+  it("DEFECT-2: interpolateGradient agrees with colorAtPosition for non-spanning stops", () => {
     const ticks = [tick("#102030", 10, 1), tick("#a0b0c0", 40, 2), tick("#ffeedd", 70, 3)];
     const n = 16;
     const out = interpolateGradient(ticks, n);
@@ -668,14 +733,35 @@ describe("DEFECT-2: interpolateGradient with stops not spanning 0-100", () => {
       expect(out[i]).toBe(colorAtPosition(ticks, (i / (n - 1)) * 100));
     }
   });
+
+  it("DEFECT-2: several stops at the last position end on the LAST of them (as CSS paints past 100%)", () => {
+    const ticks = [tick(RED, 0, 1), tick(GREEN, 100, 2), tick(BLUE, 100, 3)];
+    expect(interpolateGradient(ticks, 5).at(-1)).toBe(BLUE);
+    expect(colorAtPosition(ticks, 100)).toBe(BLUE);
+  });
+
+  it("interpolateGradient and colorAtPosition agree on a seeded random corpus (one shared helper)", () => {
+    const rand = mulberry32(0xd2);
+    for (let k = 0; k < 300; k++) {
+      const g = randomGradient(rand);
+      const n = 2 + Math.floor(rand() * 15);
+      const out = interpolateGradient(g, n);
+      for (let i = 0; i < n; i++) {
+        // Same bracket search; the two may differ only by 8-bit rounding of the
+        // interpolation fraction (t in 0..1 vs 0..100), never by more than 1 level.
+        const a = hexToRgb(out[i]);
+        const b = hexToRgb(colorAtPosition(g, (i / (n - 1)) * 100));
+        expect(Math.max(Math.abs(a.r - b.r), Math.abs(a.g - b.g), Math.abs(a.b - b.b))).toBeLessThanOrEqual(1);
+      }
+    }
+  });
 });
 
-// ── DEFECT-4: silent penalties ────────────────────────────────────────────────
+// ── DEFECT-4: formerly silent penalties ───────────────────────────────────────
 
-describe("DEFECT-4: four score penalties emit no issue", () => {
+describe("DEFECT-4: every penalty is explained by an issue", () => {
   // Each pair differs only by crossing one threshold. Colours are chosen so no
-  // other rule fires. The sanity tests prove the penalty is applied; the
-  // DEFECT tests assert the penalty is explained by an extra issue message.
+  // other rule fires.
   const c0 = lch(0.55, 0.12, 200);
   const c1 = lch(0.85, 0.12, 230);
   const blues = [lch(0.55, 0.12, 200), lch(0.85, 0.12, 208)]; // arc ~8 deg
@@ -687,24 +773,32 @@ describe("DEFECT-4: four score penalties emit no issue", () => {
       penalised: stops(blues, [0, 100]),
       control: stops([c0, c1], [0, 100]),
       delta: 5,
+      code: "hue/narrow-arc",
+      message: "Very narrow hue arc (<15°) — the gradient reads as a single hue",
     },
     edge: {
       label: "edge gap > 10 (-3)",
       penalised: stops([c0, c1], [6, 94]),
       control: stops([c0, c1], [4, 96]),
       delta: 3,
+      code: "rhythm/edge-gap",
+      message: "Stops fall slightly short of the edges — small solid-color zones",
     },
     span: {
       label: "span < 40 (-4)",
       penalised: stops([c0, c1], [32, 67]),
       control: stops([c0, c1], [30, 70]),
       delta: 4,
+      code: "rhythm/narrow-span",
+      message: "Transition covers less than 40% of the gradient",
     },
     rhythm: {
       label: "gap-evenness cv > 0.25 (-4)",
       penalised: stops(c3, [0, 35, 100]),
       control: stops(c3, [0, 40, 100]),
       delta: 4,
+      code: "rhythm/uneven-gaps",
+      message: "Stop spacing is slightly uneven",
     },
   } as const;
 
@@ -714,112 +808,90 @@ describe("DEFECT-4: four score penalties emit no issue", () => {
       const k = scoreGradient([...c.control]);
       expect(k.score - p.score).toBe(c.delta);
     });
+
+    it(`DEFECT-4 (${key}): the penalty comes with an info finding and issue`, () => {
+      const p = scoreGradient([...c.penalised]);
+      const k = scoreGradient([...c.control]);
+      expect(p.issues.length).toBe(k.issues.length + 1);
+      const extra = p.findings.filter((f) => !k.findings.some((g) => g.code === f.code && g.message === f.message));
+      expect(extra).toHaveLength(1);
+      expect(extra[0]).toMatchObject({ code: c.code, severity: "info", pointsLost: c.delta, message: c.message });
+      expect(p.issues).toContain(c.message);
+    });
   }
 
-  // DEFECT-4: arc < 15 deg takes 5 points off with no message.
-  it.fails("DEFECT-4: hue arc < 15 deg is explained by an issue", () => {
-    const p = scoreGradient([...cases.arc.penalised]);
-    const k = scoreGradient([...cases.arc.control]);
-    expect(p.issues.length).toBeGreaterThan(k.issues.length);
-  });
-
-  // DEFECT-4: edge gap 10-20 takes 3 points off with no message.
-  it.fails("DEFECT-4: edge gap > 10 is explained by an issue", () => {
-    const p = scoreGradient([...cases.edge.penalised]);
-    const k = scoreGradient([...cases.edge.control]);
-    expect(p.issues.length).toBeGreaterThan(k.issues.length);
-  });
-
-  // DEFECT-4: span 20-40 takes 4 points off with no message of its own
-  // (the "bunched in the middle" edge message fires either way).
-  it.fails("DEFECT-4: span < 40 is explained by an issue", () => {
-    const p = scoreGradient([...cases.span.penalised]);
-    const k = scoreGradient([...cases.span.control]);
-    expect(p.issues.length).toBeGreaterThan(k.issues.length);
-  });
-
-  // DEFECT-4: uneven gaps (cv 0.25-0.5) take 4 points off with no message.
-  it.fails("DEFECT-4: stop-gap cv > 0.25 is explained by an issue", () => {
-    const p = scoreGradient([...cases.rhythm.penalised]);
-    const k = scoreGradient([...cases.rhythm.control]);
-    expect(p.issues.length).toBeGreaterThan(k.issues.length);
-  });
-
-  // The general form of the same defect: a score below 100 with no issues.
-  it.fails("DEFECT-4: no score under 100 may come with an empty issue list", () => {
-    for (const c of Object.values(cases)) {
-      const r = scoreGradient([...c.penalised]);
+  it("DEFECT-4: no score under 100 comes with an empty issue list (seeded corpus)", () => {
+    const rand = mulberry32(0xd4);
+    for (let i = 0; i < 1000; i++) {
+      const r = scoreGradient(randomGradient(rand));
       if (r.score < 100) expect(r.issues.length).toBeGreaterThan(0);
+      else expect(r.issues).toEqual([]);
     }
   });
 });
 
-// ── DEFECT-6 (found while writing these tests): array order leaks into the score ──
+// ── DEFECT-6: array order must not leak into the score ────────────────────────
 
-describe("DEFECT-6: scoreGradient depends on the order of the stop array", () => {
-  // The lightness-reversal (1a) and Helmholtz-Kohlrausch (1a') checks walk the
-  // stops in ARRAY order, while every other check sorts by position first. The
-  // same gradient therefore scores differently depending on how the caller
-  // happens to order its array.
+describe("DEFECT-6: scoreGradient sorts by position before analysis", () => {
   const sortedStops = stops([RED, GREEN, BLUE], [0, 50, 100]);
   const shuffledStops = [tick(BLUE, 100, 3), tick(RED, 0, 1), tick(GREEN, 50, 2)];
 
-  it("premise: the two orderings of the same gradient score differently today", () => {
-    expect(scoreGradient(shuffledStops).score).not.toBe(scoreGradient(sortedStops).score);
-  });
-
-  // DEFECT-6: same gradient, different array order, different score.
-  it.fails("DEFECT-6: the same stops in a different array order score identically", () => {
+  it("DEFECT-6: the same stops in a different array order score identically", () => {
     const a = scoreGradient(sortedStops);
     const b = scoreGradient(shuffledStops);
-    expect(b.score).toBe(a.score);
-    expect(b.issues).toEqual(a.issues);
+    expect(b).toEqual(a);
   });
 
-  // DEFECT-6: ... and the same over a random corpus.
-  it.fails("DEFECT-6: reversing the array never changes the score (random corpus)", () => {
+  it("DEFECT-6: reversing an array with distinct positions never changes the result (random corpus)", () => {
     const rand = mulberry32(0xc0ffee);
-    for (let i = 0; i < 200; i++) {
-      const g = randomGradient(rand);
-      expect(scoreGradient([...g].reverse()).score).toBe(scoreGradient(g).score);
+    for (let i = 0; i < 300; i++) {
+      const g = randomGradient(rand).map((t, k) => ({ ...t, position: t.position * 0.99 + k * 1e-3 }));
+      expect(scoreGradient([...g].reverse())).toEqual(scoreGradient(g));
+      expect(suggestGradient([...g].reverse())).toEqual(suggestGradient(g));
     }
+  });
+
+  it("stops sharing a position keep their array order (it is what CSS paints)", () => {
+    // red|blue hard edge at 50 vs blue|red: different gradients, both valid.
+    const a = [tick(RED, 0, 1), tick(RED, 50, 2), tick(BLUE, 50, 3), tick(BLUE, 100, 4)];
+    const b = [tick(RED, 0, 1), tick(BLUE, 50, 3), tick(RED, 50, 2), tick(BLUE, 100, 4)];
+    expect(buildGradientCSS(a, 90)).not.toBe(buildGradientCSS(b, 90));
+    expect(scoreGradient(a).details.measurements!.segmentRgbSteps).not.toEqual(
+      scoreGradient(b).details.measurements!.segmentRgbSteps,
+    );
+  });
+
+  it("finding stop indices refer to position-sorted stops", () => {
+    const dip = scoreGradient([tick("#c7d2fe", 100, 3), tick("#e0e7ff", 0, 1), tick("#1e1b4b", 50, 2)]);
+    expect(dip.findings.find((f) => f.code === "lightness/reversal")?.stops).toEqual([1]);
   });
 });
 
-// ── DEFECT-5: suggestGradient ("refine") ──────────────────────────────────────
+// ── DEFECT-5: suggestGradient ("refine") guarantees ───────────────────────────
 
-describe("DEFECT-5: suggestGradient keeps grey stops grey and never lowers the score", () => {
+describe("DEFECT-5: refine keeps grey stops grey, keeps hard stops and never lowers the score", () => {
   const chromaOf = (hex: string) => hexToOklch(hex).C;
 
-  it("premise: a grey middle stop is currently recoloured (#808080 -> chromatic)", () => {
-    const out = suggestGradient(stops([RED, "#808080", GREEN]));
-    expect(chromaOf("#808080")).toBeLessThan(0.001);
-    expect(chromaOf(out[1].color)).toBeGreaterThan(0.05);
-  });
-
-  it("premise: refine can lower the score (sunset 3-stop 100 -> 96)", () => {
-    const input = stops(["#ff512f", "#dd2476", "#4a00e0"]);
-    expect(scoreGradient(input).score).toBe(100);
-    expect(scoreGradient(suggestGradient(input)).score).toBe(96);
-  });
-
-  // DEFECT-5: achromatic stops get a chroma envelope applied.
-  it.fails("DEFECT-5: red / #808080 / green keeps the middle stop achromatic", () => {
+  it("DEFECT-5: red / #808080 / green keeps the middle stop achromatic", () => {
     const out = suggestGradient(stops([RED, "#808080", GREEN]));
     expect(chromaOf(out[1].color)).toBeLessThan(0.02);
   });
 
-  // DEFECT-5: same for grey endpoints and for pure-grey stops among vivid ones.
-  it.fails("DEFECT-5: grey stops among vivid ones all stay achromatic", () => {
+  it("DEFECT-5: grey stops among vivid ones all stay achromatic", () => {
     const input = stops(["#666666", "#ff3366", "#999999", "#3366ff", "#cccccc"]);
     const out = suggestGradient(input);
     for (const i of [0, 2, 4]) expect(chromaOf(out[i].color)).toBeLessThan(0.02);
   });
 
-  // DEFECT-5: refine is not monotone in score.
-  it.fails("DEFECT-5: score(suggest(x)) >= score(x) for typical inputs", () => {
+  it("an all-grey ramp stays grey", () => {
+    for (const s of suggestGradient(stops(["#111111", "#777777", "#eeeeee"]))) {
+      expect(chromaOf(s.color)).toBeLessThanOrEqual(0.02);
+    }
+  });
+
+  it("DEFECT-5: score(suggest(x)) >= score(x) for typical inputs", () => {
     const inputs = [
-      stops(["#ff512f", "#dd2476", "#4a00e0"]),
+      stops(["#ff512f", "#dd2476", "#4a00e0"]), // used to drop 100 -> 96
       stops(["#ff0000", "#ff8000", "#ffff00"]),
       stops([RED, "#808080", GREEN]),
       stops(["#2193b0", "#6dd5ed"]),
@@ -831,10 +903,80 @@ describe("DEFECT-5: suggestGradient keeps grey stops grey and never lowers the s
     }
   });
 
-  // DEFECT-5 (split out so each failing input is visible on its own).
-  it.fails("DEFECT-5: refine does not lower a perfect 3-stop warm sweep", () => {
+  it("DEFECT-5: refine does not lower a perfect 3-stop warm sweep", () => {
     const input = stops(["#ff0000", "#ff8000", "#ffff00"]);
     expect(scoreGradient(input).score).toBe(100);
     expect(scoreGradient(suggestGradient(input)).score).toBe(100);
+  });
+
+  it("when refining would lower the score, the input comes back unchanged (sorted, same ids)", () => {
+    const input = [tick("#dd2476", 50, 7), tick("#ff512f", 0, 3), tick("#4a00e0", 100, 9)];
+    const r = refineGradient(input);
+    expect(r).toMatchObject({ refined: false, declined: "would-lower-score", before: 100, after: 100 });
+    expect(r.stops).toEqual([tick("#ff512f", 0, 3), tick("#dd2476", 50, 7), tick("#4a00e0", 100, 9)]);
+    expect(suggestGradient(input)).toEqual(r.stops);
+  });
+
+  it("hard stops stay hard: same-position and <= 1% neighbours move together", () => {
+    const input = [
+      tick("#1d4ed8", 0, 1),
+      tick("#1d4ed8", 30, 2),
+      tick("#f59e0b", 30, 3),
+      tick("#f59e0b", 70, 4),
+      tick("#10b981", 70.5, 5),
+      tick("#10b981", 100, 6),
+    ];
+    const r = refineGradient(input);
+    const p = r.stops.map((s) => s.position);
+    expect(p[1]).toBe(p[2]);
+    expect(p[4] - p[3]).toBeCloseTo(0.5, 12);
+    expect(p[0]).toBe(0);
+    expect(p[5]).toBe(100);
+  });
+
+  it("every stop at one position: nothing to redistribute, refine declines", () => {
+    const input = [tick(RED, 50, 1), tick(BLUE, 50, 2)];
+    expect(refineGradient(input)).toMatchObject({ refined: false, declined: "single-position" });
+    expect(suggestGradient(input)).toEqual(input);
+  });
+});
+
+// ── D7: opposed hues (degenerate circular mean) ──────────────────────────────
+
+describe("D7: refine centres opposed hues deterministically", () => {
+  const hueOf = (hex: string) => hexToOklch(hex).h;
+
+  it("premise: these inputs really have a near-zero mean resultant", () => {
+    const hs = [hueOf(lch(0.6, 0.12, 30)), hueOf(lch(0.6, 0.12, 210))];
+    const x = hs.reduce((a, h) => a + Math.cos((h * Math.PI) / 180), 0) / 2;
+    const y = hs.reduce((a, h) => a + Math.sin((h * Math.PI) / 180), 0) / 2;
+    expect(Math.hypot(x, y)).toBeLessThan(V1_MODEL.refine.degenerateResultantBelow);
+  });
+
+  it("two opposed stops are compressed around the midpoint of the shorter first->last arc", () => {
+    const input = stops([lch(0.5, 0.12, 30), lch(0.8, 0.12, 210)]);
+    const r = refineGradient(input);
+    expect(r.refined).toBe(true);
+    const h1 = hueOf(input[0].color);
+    const d = (((hueOf(input[1].color) - h1) % 360) + 360) % 360;
+    const centre = (((d <= 180 ? h1 + d / 2 : h1 - (360 - d) / 2) % 360) + 360) % 360;
+    for (const s of r.stops) expect(hueDistance(hueOf(s.color), centre)).toBeLessThan(45);
+  });
+
+  it("red / cyan / red is centred on red (first and last stop share the hue)", () => {
+    const input = stops([lch(0.5, 0.12, 30), lch(0.65, 0.12, 210), lch(0.8, 0.12, 30)]);
+    const r = refineGradient(input);
+    expect(r.refined).toBe(true);
+    const red = hueOf(input[0].color);
+    expect(hueDistance(hueOf(r.stops[0].color), red)).toBeLessThan(5);
+    expect(hueDistance(hueOf(r.stops[2].color), red)).toBeLessThan(5);
+    expect(hueDistance(hueOf(r.stops[1].color), red)).toBeLessThan(85);
+  });
+
+  it("is stable under tiny hue noise (same output for the same input, any array order)", () => {
+    const input = stops([lch(0.5, 0.12, 0), lch(0.6, 0.12, 90), lch(0.7, 0.12, 180), lch(0.8, 0.12, 270)]);
+    const a = suggestGradient(input);
+    expect(suggestGradient([...input].reverse())).toEqual(a);
+    expect(suggestGradient(structuredClone(input))).toEqual(a);
   });
 });

@@ -30,7 +30,8 @@
     "lint": "eslint .",
     "test": "vitest run",
     "vectors": "vite-node scripts/gen-vectors.ts",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "vectors:diff": "vite-node scripts/vector-diff.ts"
   },
   "dependencies": {
     "@fontsource/jetbrains-mono": "^5.3.0",

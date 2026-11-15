@@ -27,11 +27,15 @@ import {
   srgbToLinear,
   suggestGradient,
   lchToOklab,
+  refineGradient,
+  type Finding,
   type GradientBlendMode,
   type GradientDirection,
   type GradientTick,
   type LchColor,
+  type ScoreMeasurements,
 } from "../src/gradient-engine";
+import { boundaryHits, V1_MODEL } from "../src/scoring-model-v1";
 import {
   complementHex,
   formatHex,
@@ -74,8 +78,18 @@ export interface Stop {
   position: number;
 }
 
-/** Tags a case that currently encodes behaviour the plan calls a defect. */
-export type DefectTag = "D2" | "D4" | "D5";
+/**
+ * Tags a case whose input lies in the region of a v1 defect that was fixed
+ * before the freeze (see spec/vectors/CHANGES-v1.md):
+ *   D1 invalid input / unscorable, D2 interpolate bracket (stops not spanning
+ *   0-100 or several stops at the last position), D4 a formerly silent
+ *   penalty fires, D5 refine guarantees (achromatic stop, hard stop, or refine
+ *   declined).
+ * D6 (array-order dependence) and D7 (opposed-hue mean) are deliberately not
+ * tagged, so that no vector changes only because of an annotation; their
+ * regions are the predicates `isUnsorted` / `hasDegenerateHueMean` below.
+ */
+export type DefectTag = "D1" | "D2" | "D4" | "D5";
 
 export interface Measurements {
   maxDeltaE: number;
@@ -96,9 +110,13 @@ export interface ScoreCase {
   score: number;
   details: { lightness: number; hue: number; chroma: number; spacing: number };
   issues: string[];
-  measurements: Measurements;
+  /** Independent recomputation (`measure`); null when unscorable. */
+  measurements: Measurements | null;
   boundary: boolean;
   defects: DefectTag[];
+  /** Present only for unscorable input (D1). */
+  status?: "unscorable";
+  reason?: string;
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -186,45 +204,123 @@ export function measure(stops: Stop[]): Measurements {
   };
 }
 
-/** True when any thresholded measurement is within `eps` of its threshold. */
+/** The measurements recorded in v1-score.json (the legacy set). */
+export const LEGACY_MEASUREMENTS = [
+  "maxDeltaE",
+  "maxCloseJumpDeltaE",
+  "velocityCv",
+  "enclosingArc",
+  "chromaRange",
+  "worstDip",
+  "edgeGap",
+  "span",
+  "gapCv",
+] as const satisfies readonly (keyof Measurements & keyof ScoreMeasurements)[];
+
+/**
+ * True when any recorded measurement is within `eps` (relative to the
+ * threshold, absolute below 1) of one of its V1_MODEL thresholds, using the
+ * model's boundary table restricted to the measurements recorded here.
+ */
 export function isBoundary(m: Measurements, eps = 1e-6): boolean {
-  const checks: [number | null, number[]][] = [
-    [m.maxDeltaE, [0.02, 0.05]],
-    [m.maxCloseJumpDeltaE, [0.15]],
-    [m.velocityCv, [0.5, 0.8]],
-    [m.enclosingArc, [15, 120, 180]],
-    [m.chromaRange, [0.12, 0.2]],
-    [m.worstDip, [0.3, 0.5]],
-    [m.edgeGap, [10, 20, 40]],
-    [m.span, [20, 40]],
-    [m.gapCv, [0.25, 0.5]],
-  ];
-  return checks.some(([v, ts]) => v !== null && ts.some((t) => Math.abs(v - t) < eps));
+  return boundaryHits(m, eps, LEGACY_MEASUREMENTS).length > 0;
 }
 
-/** Which of the four silent penalties (D4) fire for this input. */
-function silentPenalties(m: Measurements, stops: Stop[]): boolean {
+/** Whether one of the four formerly silent penalties (D4) fires for this input. */
+export function silentPenalties(m: Measurements, stops: Stop[]): boolean {
+  const { hue, rhythm } = V1_MODEL;
   return (
-    (m.enclosingArc !== null && m.enclosingArc < 15) ||
-    (m.edgeGap > 10 && m.edgeGap <= 20) ||
-    (m.span >= 20 && m.span < 40) ||
-    (stops.length > 2 && m.gapCv !== null && m.gapCv > 0.25 && m.gapCv <= 0.5)
+    (m.enclosingArc !== null && m.enclosingArc < hue.arc.narrowBelow) ||
+    (m.edgeGap > rhythm.edge.slightAbove && m.edgeGap <= rhythm.edge.shortAbove) ||
+    (m.span >= rhythm.span.squeezedBelow && m.span < rhythm.span.narrowBelow) ||
+    (stops.length > 2 &&
+      m.gapCv !== null &&
+      m.gapCv > rhythm.gaps.unevenAbove &&
+      m.gapCv <= rhythm.gaps.clusteredAbove)
   );
+}
+
+const toTicks = (stops: Stop[]): GradientTick[] => stops.map((s) => ({ ...s }));
+
+// ── Input predicates for the defect regions (shared with vector-diff.ts) ──────
+
+const chromaOf = (hex: string) => oklabToLch(rgbToOklab(hexToRgb(hex))).C;
+
+/** D1: outside the v1 domain. */
+export function isInvalidInput(stops: Stop[]): boolean {
+  return scoreGradient(toTicks(stops)).status === "unscorable";
+}
+
+/** D6: the array is not already in (non-decreasing) position order. */
+export function isUnsorted(stops: Stop[]): boolean {
+  return stops.some((s, i) => i > 0 && s.position < stops[i - 1].position);
+}
+
+/** D5 (input part): an achromatic stop or a hard stop (neighbours <= 1% apart). */
+export function hasGreyOrHardStop(stops: Stop[]): boolean {
+  const R = V1_MODEL.refine;
+  const ps = stops.map((s) => s.position).sort((a, b) => a - b);
+  return (
+    stops.some((s) => chromaOf(s.color) <= R.achromaticAtMost) ||
+    ps.some((p, i) => i > 0 && p - ps[i - 1] <= R.hardStopGap)
+  );
+}
+
+/** D7: refine compresses the hue arc around an ill-conditioned circular mean. */
+export function hasDegenerateHueMean(stops: Stop[]): boolean {
+  const R = V1_MODEL.refine;
+  const hues = stops
+    .map((s) => oklabToLch(rgbToOklab(hexToRgb(s.color))))
+    .filter((l) => l.C > R.achromaticAtMost)
+    .map((l) => l.h);
+  if (hues.length < 2) return false;
+  const x = hues.reduce((a, h) => a + Math.cos((h * Math.PI) / 180), 0) / hues.length;
+  const y = hues.reduce((a, h) => a + Math.sin((h * Math.PI) / 180), 0) / hues.length;
+  const s = [...hues].sort((a, b) => a - b);
+  let maxGap = s[0] + 360 - s[s.length - 1];
+  for (let i = 1; i < s.length; i++) maxGap = Math.max(maxGap, s[i] - s[i - 1]);
+  return Math.sqrt(x * x + y * y) < R.degenerateResultantBelow && 360 - maxGap > R.maxHueArc;
+}
+
+/** D2: stops do not span 0-100, or several stops share the last position. */
+export function isD2Region(stops: Stop[]): boolean {
+  const ps = stops.map((s) => s.position);
+  const max = Math.max(...ps);
+  return Math.min(...ps) > 0 || max < 100 || ps.filter((p) => p === max).length > 1;
 }
 
 // ── Evaluators (used by the generator AND the replaying test) ─────────────────
 
-const toTicks = (stops: Stop[]): GradientTick[] => stops.map((s) => ({ ...s }));
-
 export function evalScore(name: string, stops: Stop[]): ScoreCase {
   const r = scoreGradient(toTicks(stops));
+  const details = {
+    lightness: r.details.lightness,
+    hue: r.details.hue,
+    chroma: r.details.chroma,
+    spacing: r.details.spacing,
+  };
+  if (r.status === "unscorable") {
+    return {
+      name,
+      stops,
+      score: r.score,
+      details,
+      issues: [...r.issues],
+      measurements: null,
+      boundary: false,
+      defects: ["D1"],
+      status: "unscorable",
+      reason: r.reason,
+    };
+  }
   const m = measure(stops);
-  const defects: DefectTag[] = silentPenalties(m, stops) ? ["D4"] : [];
+  const defects: DefectTag[] = [];
+  if (silentPenalties(m, stops)) defects.push("D4");
   return {
     name,
     stops,
     score: r.score,
-    details: { ...r.details },
+    details,
     issues: [...r.issues],
     measurements: m,
     boundary: isBoundary(m),
@@ -249,9 +345,53 @@ export function evalSuggest(name: string, stops: Stop[]): SuggestCase {
     position: s.position,
   }));
   const after = scoreGradient(toTicks(suggested)).score;
-  const hasGrey = stops.some((s) => oklabToLch(rgbToOklab(hexToRgb(s.color))).C <= 0.02);
-  const defects: DefectTag[] = hasGrey || after < before ? ["D5"] : [];
+  const defects: DefectTag[] = [];
+  if (isInvalidInput(stops)) {
+    defects.push("D1");
+  } else {
+    const declined = stops.length >= 2 && !refineGradient(toTicks(stops)).refined;
+    if (hasGreyOrHardStop(stops) || declined) defects.push("D5");
+  }
   return { name, stops, scoreBefore: before, suggested, scoreAfter: after, defects };
+}
+
+// ── Findings vectors (explained score, full measurements) ─────────────────────
+
+export interface FindingsCase {
+  name: string;
+  stops: Stop[];
+  status: "ok" | "unscorable";
+  reason?: string;
+  score: number;
+  details: { lightness: number; hue: number; chroma: number; spacing: number };
+  findings: Finding[];
+  measurements: ScoreMeasurements | null;
+  boundary: boolean;
+  /** "measurement@threshold" for every measurement within epsilon of a threshold. */
+  boundaryHits: string[];
+}
+
+export function evalFindings(name: string, stops: Stop[]): FindingsCase {
+  const r = scoreGradient(toTicks(stops));
+  const m = r.details.measurements ?? null;
+  const hits = m ? boundaryHits(m) : [];
+  return {
+    name,
+    stops,
+    status: r.status,
+    ...(r.reason !== undefined ? { reason: r.reason } : {}),
+    score: r.score,
+    details: {
+      lightness: r.details.lightness,
+      hue: r.details.hue,
+      chroma: r.details.chroma,
+      spacing: r.details.spacing,
+    },
+    findings: r.findings.map((f) => ({ ...f })),
+    measurements: m,
+    boundary: hits.length > 0,
+    boundaryHits: hits,
+  };
 }
 
 export interface CssCase {
@@ -299,9 +439,9 @@ export function evalInterpolate(name: string, stops: Stop[]): InterpolateCase {
   const ticks = toTicks(stops);
   const samples: Record<string, string[]> = {};
   for (const n of INTERPOLATE_COUNTS) samples[String(n)] = interpolateGradient(ticks, n);
-  const ps = stops.map((s) => s.position);
-  const defects: DefectTag[] =
-    Math.min(...ps) > 0 || Math.max(...ps) < 100 ? ["D2"] : [];
+  const defects: DefectTag[] = [];
+  if (stops.length > 0 && isD2Region(stops)) defects.push("D2");
+  if (stops.some((s) => !/^#[0-9a-fA-F]{6}$/.test(s.color))) defects.push("D1");
   return {
     name,
     stops,
