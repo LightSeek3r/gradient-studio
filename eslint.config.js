@@ -20,4 +20,11 @@ export default defineConfig([
       globals: globals.browser,
     },
   },
+  {
+    // Tests, vector generator and tool configs run in Node, not the browser.
+    files: ['tests/**/*.ts', 'scripts/**/*.ts', 'vitest.config.ts'],
+    languageOptions: {
+      globals: globals.node,
+    },
+  },
 ])
