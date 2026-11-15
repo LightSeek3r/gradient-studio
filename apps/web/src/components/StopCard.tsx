@@ -22,6 +22,7 @@ import {
   NumericTriple,
   PasteButton,
 } from "./fields";
+import { stopHexFieldId } from "./dom-ids";
 
 /** `id` of the shared `<datalist>` of CSS color names, rendered once by App. */
 export const COLOR_NAME_LIST_ID = "css-color-names";
@@ -54,16 +55,30 @@ export function StopCard({
   tick,
   index,
   canRemove,
+  selected = false,
   onColor,
   onPosition,
   onRemove,
+  onComplement,
+  onSelect,
+  onGradientText,
+  onDone,
 }: {
   tick: GradientTick;
   index: number;
   canRemove: boolean;
+  /** The stop selected on the bar (UI state, highlights the card). */
+  selected?: boolean;
   onColor: (hex: string) => void;
   onPosition: (position: number) => void;
   onRemove: () => void;
+  /** Replace the colour with its complement (a destructive, toasted edit). */
+  onComplement: (hex: string) => void;
+  onSelect?: () => void;
+  /** A whole gradient was pasted into one of this stop's colour fields. */
+  onGradientText?: (text: string) => void;
+  /** A continuous edit ended (field blur). */
+  onDone?: () => void;
 }) {
   const rgb = hexToRgb(tick.color);
   const hsl = hexToHsl(tick.color);
@@ -100,7 +115,11 @@ export function StopCard({
   };
 
   return (
-    <div className="stop-card">
+    <div
+      className={`stop-card${selected ? " is-selected" : ""}`}
+      data-stop-id={tick.id}
+      onFocus={onSelect}
+    >
       {/* Card header */}
       <div className="stop-head">
         <span className="stop-swatch" style={{ background: tick.color }} />
@@ -154,6 +173,7 @@ export function StopCard({
               value={tick.color}
               aria-label={`Stop ${n} color picker`}
               onChange={(e) => onColor(e.target.value)}
+              onBlur={onDone}
             />
           </div>
 
@@ -165,9 +185,12 @@ export function StopCard({
               onCommit={onColor}
               placeholder="#4F46E5"
               ariaLabel={`Stop ${n} hex value`}
+              id={stopHexFieldId(tick.id)}
+              onGradientPaste={onGradientText}
+              onDone={onDone}
             />
             <CopyButton value={formatHex(tick.color)} />
-            <PasteButton onColor={onColor} label={`stop ${n} hex`} />
+            <PasteButton onColor={onColor} onGradient={onGradientText} label={`stop ${n} hex`} />
           </div>
 
           <div className="field-row">
@@ -181,9 +204,10 @@ export function StopCard({
               ]}
               values={[rgb.r, rgb.g, rgb.b]}
               onCommit={([r, g, b]) => onColor(rgbToHex({ r, g, b }))}
+              onDone={onDone}
             />
             <CopyButton value={formatRgb(tick.color)} />
-            <PasteButton onColor={onColor} label={`stop ${n} RGB`} />
+            <PasteButton onColor={onColor} onGradient={onGradientText} label={`stop ${n} RGB`} />
           </div>
 
           <div className="field-row">
@@ -197,9 +221,10 @@ export function StopCard({
               ]}
               values={[hsl.h, hsl.s, hsl.l]}
               onCommit={commitHsl}
+              onDone={onDone}
             />
             <CopyButton value={formatHsl(tick.color)} />
-            <PasteButton onColor={onColor} label={`stop ${n} HSL`} />
+            <PasteButton onColor={onColor} onGradient={onGradientText} label={`stop ${n} HSL`} />
           </div>
 
           <div className="field-row">
@@ -211,9 +236,11 @@ export function StopCard({
               listId={COLOR_NAME_LIST_ID}
               placeholder="indigo"
               ariaLabel={`Stop ${n} color name`}
+              onGradientPaste={onGradientText}
+              onDone={onDone}
             />
             <CopyButton value={formatNameDisplay(tick.color)} copyValue={formatName(tick.color)} />
-            <PasteButton onColor={onColor} label={`stop ${n} name`} />
+            <PasteButton onColor={onColor} onGradient={onGradientText} label={`stop ${n} name`} />
           </div>
         </div>
 
@@ -235,7 +262,7 @@ export function StopCard({
               okGlyph="✓ Replaced"
               className="btn-swap"
               onRun={() => {
-                onColor(complement);
+                onComplement(complement);
                 return true;
               }}
             />

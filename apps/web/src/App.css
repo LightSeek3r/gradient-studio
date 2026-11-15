@@ -128,8 +128,9 @@
   height: 44px;
   border-radius: var(--radius-sm);
   border: 1px solid rgba(255, 255, 255, 0.06);
-  cursor: crosshair;
+  cursor: copy;
   user-select: none;
+  touch-action: none;
 }
 
 .tick-handle {
@@ -143,7 +144,29 @@
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(0, 0, 0, 0.4);
   z-index: 10;
   cursor: ew-resize;
+  touch-action: none;
   transition: transform 0.12s ease;
+}
+
+.tick-handle.is-selected {
+  border-color: #fff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.7), 0 0 0 2px var(--accent);
+}
+
+/* Suggested stop positions while previewing a suggestion: small outlined
+   triangles above the bar, coloured by the suggested stop colour. */
+.tick-ghost {
+  position: absolute;
+  top: -9px;
+  width: 0;
+  height: 0;
+  transform: translateX(-50%);
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 9px solid;
+  filter: drop-shadow(0 0 1px #fff) drop-shadow(0 0 1px #fff);
+  pointer-events: none;
+  z-index: 11;
 }
 
 .tick-handle:hover {
@@ -1170,4 +1193,212 @@ details[open] > .theory-summary {
   .dir-presets {
     margin-left: 0;
   }
+}
+
+/* ── U1a: header actions, selection, toast, import, suggestion diff ────────── */
+
+.studio-header-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px 14px;
+}
+
+.header-actions {
+  flex-wrap: wrap;
+}
+
+.stop-card.is-selected {
+  border-color: var(--accent);
+}
+
+.compass-handle {
+  touch-action: none;
+}
+
+.compass-handle:focus-visible {
+  outline: none;
+  stroke: #fff;
+  stroke-width: 3;
+}
+
+.compare-toggle {
+  margin: 0 0 8px;
+}
+
+.gradient-preview.is-suggested {
+  outline: 2px dashed var(--accent);
+  outline-offset: -2px;
+}
+
+.suggest-delta {
+  margin: 0 0 10px;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.delta-after,
+.delta-gain {
+  color: var(--green);
+}
+
+.delta-selected {
+  color: var(--text-muted);
+}
+
+.diff-list {
+  list-style: none;
+  margin: 0 0 12px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.diff-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-dim);
+  flex-wrap: wrap;
+}
+
+.diff-row.is-same .diff-label {
+  color: var(--text-muted);
+}
+
+.diff-swatch {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  flex-shrink: 0;
+}
+
+.diff-text {
+  font-variant-numeric: tabular-nums;
+}
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  z-index: 200;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  max-width: min(560px, calc(100vw - 32px));
+  padding: 10px 12px 10px 16px;
+  background: var(--surface-raised);
+  border: 1px solid var(--border-hi);
+  border-radius: 10px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+  color: var(--text);
+  font-size: 13px;
+}
+
+.toast.is-error {
+  border-color: var(--red);
+}
+
+.toast-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.toast-message {
+  margin: 4px 0;
+}
+
+.toast-details {
+  margin: 4px 0;
+  padding-left: 18px;
+  color: var(--text-dim);
+  font-size: 12px;
+}
+
+.import-dialog {
+  width: min(560px, calc(100vw - 32px));
+  padding: 20px;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border-hi);
+  border-radius: var(--radius);
+  font-family: var(--font-mono);
+}
+
+.import-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.import-title {
+  margin: 0 0 10px;
+  font-family: var(--font-ui);
+  font-size: 18px;
+}
+
+.import-intro {
+  margin: 0 0 10px;
+  color: var(--yellow);
+  font-size: 13px;
+}
+
+.import-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.import-text {
+  width: 100%;
+  box-sizing: border-box;
+  resize: vertical;
+  font-size: 13px;
+}
+
+.import-status {
+  min-height: 24px;
+  margin: 10px 0;
+  font-size: 12px;
+}
+
+.import-preview {
+  height: 32px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 6px;
+}
+
+.import-ok {
+  margin: 0;
+  color: var(--green);
+}
+
+.import-error {
+  margin: 0;
+  color: var(--red);
+}
+
+.import-warnings {
+  margin: 6px 0 0;
+  padding-left: 18px;
+  color: var(--yellow);
+}
+
+.import-actions {
+  justify-content: flex-end;
+}
+
+.import-actions .btn {
+  flex: 0 0 auto;
+  padding: 8px 16px;
+}
+
+.btn-text:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }

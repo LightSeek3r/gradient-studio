@@ -30,7 +30,7 @@
     "lint": "eslint .",
     "preview": "npm run preview -w gradient-studio-web",
     "typecheck": "npm run typecheck -w @opal42/gradient",
-    "test": "npm test -w @opal42/gradient",
+    "test": "npm test --workspaces --if-present",
     "vectors": "npm run vectors -w @opal42/gradient",
     "vectors:diff": "npm run vectors:diff -w @opal42/gradient"
   },

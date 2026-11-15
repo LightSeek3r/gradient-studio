@@ -30,6 +30,8 @@ export default defineConfig([
       'packages/*/scripts/**/*.ts',
       'packages/*/vitest.config.ts',
       'apps/web/vite.config.ts',
+      'apps/web/vitest.config.ts',
+      'apps/web/tests/**/*.ts',
     ],
     languageOptions: {
       globals: globals.node,

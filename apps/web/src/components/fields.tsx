@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { announce } from "../announce";
 import { readClipboardText, writeClipboardText } from "../clipboard";
 import { parseAnyColor } from "@opal42/gradient";
+import { looksLikeGradient } from "../import/parse-linear-gradient";
 
 // ── Flash button ──────────────────────────────────────────────────────────────
 
@@ -25,7 +26,8 @@ export function FlashButton({
   glyph: string;
   title: string;
   className?: string;
-  onRun: () => Promise<boolean> | boolean;
+  /** true / false flash success / failure; null means "handled elsewhere", no flash. */
+  onRun: () => Promise<boolean | null> | boolean | null;
   /** A labelled text button rather than a 24px icon button. */
   text?: boolean;
   /** Accessible name; for text buttons it must start with the visible `glyph`. */
@@ -52,6 +54,7 @@ export function FlashButton({
       className={`btn ${text ? "btn-text" : "field-btn"} ${className} ${flash ? `flash-${flash}` : ""}`}
       onClick={async () => {
         const ok = await onRun();
+        if (ok === null) return;
         setFlash(ok ? "ok" : "err");
         announce(ok ? okMessage : errMessage);
       }}
@@ -64,9 +67,12 @@ export function FlashButton({
 /** Pastes the clipboard into a color field, accepting any notation. */
 export function PasteButton({
   onColor,
+  onGradient,
   label,
 }: {
   onColor: (hex: string) => void;
+  /** Clipboard holds a whole gradient: offer to import it instead of failing. */
+  onGradient?: (text: string) => void;
   /** Which field this pastes into, e.g. "stop 2 hex" - makes the name unique. */
   label: string;
 }) {
@@ -82,7 +88,13 @@ export function PasteButton({
         const text = await readClipboardText();
         if (!text) return false;
         const hex = parseAnyColor(text);
-        if (!hex) return false;
+        if (!hex) {
+          if (onGradient && looksLikeGradient(text)) {
+            onGradient(text);
+            return null;
+          }
+          return false;
+        }
         onColor(hex);
         return true;
       }}
@@ -129,6 +141,9 @@ export function ColorTextField({
   listId,
   placeholder,
   ariaLabel,
+  id,
+  onGradientPaste,
+  onDone,
 }: {
   value: string;
   parse: (raw: string) => string | null;
@@ -136,6 +151,11 @@ export function ColorTextField({
   listId?: string;
   placeholder?: string;
   ariaLabel: string;
+  id?: string;
+  /** A whole gradient was pasted into the field: offer to import it. */
+  onGradientPaste?: (text: string) => void;
+  /** Editing ended (blur) - closes the undo coalescing run. */
+  onDone?: () => void;
 }) {
   const [draft, setDraft] = useState<string | null>(null);
 
@@ -151,9 +171,20 @@ export function ColorTextField({
       placeholder={placeholder}
       aria-label={ariaLabel}
       title={shown}
+      id={id}
       spellCheck={false}
       autoComplete="off"
-      onBlur={() => setDraft(null)}
+      onPaste={(e) => {
+        const text = e.clipboardData.getData("text/plain");
+        if (onGradientPaste && looksLikeGradient(text)) {
+          e.preventDefault();
+          onGradientPaste(text);
+        }
+      }}
+      onBlur={() => {
+        setDraft(null);
+        onDone?.();
+      }}
       onChange={(e) => {
         setDraft(e.target.value);
         const hex = parse(e.target.value);
@@ -184,7 +215,9 @@ export function NumericTriple({
   values,
   onCommit,
   labelPrefix,
+  onDone,
 }: {
+  onDone?: () => void;
   /** Qualifies each input's accessible name, e.g. "Stop 2" -> "Stop 2 red". */
   labelPrefix: string;
   parts: [TriplePart, TriplePart, TriplePart];
@@ -222,7 +255,10 @@ export function NumericTriple({
             max={part.max}
             value={shown[i] ?? ""}
             aria-label={`${labelPrefix} ${part.name}`}
-            onBlur={() => setDrafts(null)}
+            onBlur={() => {
+              setDrafts(null);
+              onDone?.();
+            }}
             onChange={(e) => change(i, e.target.value)}
           />
           {part.suffix && <span className="triple-suffix">{part.suffix}</span>}

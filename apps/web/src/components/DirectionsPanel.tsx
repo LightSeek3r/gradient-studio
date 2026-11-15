@@ -1,7 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import {
   MAX_DIRECTIONS,
-  spreadDirectionAngles,
   type GradientBlendMode,
   type GradientDirection,
 } from "@opal42/gradient";
@@ -40,20 +39,24 @@ function angleToVector(angle: number): { x: number; y: number } {
 // ── Compass ───────────────────────────────────────────────────────────────────
 
 /**
- * Shows every active direction as a spoke and lets each be dragged. Reading
- * seven angles as numbers is hard; reading them as a fan is immediate.
+ * Shows every active direction as a spoke and lets each be dragged (pointer
+ * events with capture: mouse, pen and touch) or turned with the keyboard
+ * (each handle is an ARIA slider). Reading seven angles as numbers is hard;
+ * reading them as a fan is immediate.
  */
 function Compass({
   directions,
   onAngle,
+  onCommit,
 }: {
   directions: GradientDirection[];
   onAngle: (id: number, angle: number) => void;
+  onCommit: () => void;
 }) {
   const svgRef = useRef<SVGSVGElement>(null);
   const [dragId, setDragId] = useState<number | null>(null);
 
-  const angleFrom = useCallback((clientX: number, clientY: number): number | null => {
+  const angleFrom = (clientX: number, clientY: number): number | null => {
     const svg = svgRef.current;
     if (!svg) return null;
     const rect = svg.getBoundingClientRect();
@@ -62,40 +65,49 @@ function Compass({
     if (dx === 0 && dy === 0) return null;
     const deg = (Math.atan2(dx, -dy) * 180) / Math.PI;
     return Math.round(((deg % 360) + 360) % 360);
-  }, []);
+  };
 
-  useEffect(() => {
-    if (dragId === null) return;
-
-    const move = (e: PointerEvent) => {
-      const angle = angleFrom(e.clientX, e.clientY);
-      if (angle !== null) onAngle(dragId, angle);
-    };
-    const up = () => setDragId(null);
-
-    window.addEventListener("pointermove", move);
-    window.addEventListener("pointerup", up);
-    window.addEventListener("pointercancel", up);
-    return () => {
-      window.removeEventListener("pointermove", move);
-      window.removeEventListener("pointerup", up);
-      window.removeEventListener("pointercancel", up);
-    };
-  }, [dragId, angleFrom, onAngle]);
+  const onKeyDown = (e: React.KeyboardEvent, d: GradientDirection) => {
+    const step = e.shiftKey ? 15 : 1;
+    let next: number;
+    switch (e.key) {
+      case "ArrowRight":
+      case "ArrowUp":
+        next = d.angle + step;
+        break;
+      case "ArrowLeft":
+      case "ArrowDown":
+        next = d.angle - step;
+        break;
+      case "PageUp":
+        next = d.angle + 15;
+        break;
+      case "PageDown":
+        next = d.angle - 15;
+        break;
+      case "Home":
+        next = 0;
+        break;
+      default:
+        return;
+    }
+    e.preventDefault();
+    onAngle(d.id, ((next % 360) + 360) % 360);
+  };
 
   return (
     <svg
       ref={svgRef}
       className="compass"
       viewBox="-90 -90 180 180"
-      role="img"
+      role="group"
       aria-label="Gradient direction compass"
     >
       <circle className="compass-ring" cx={0} cy={0} r={COMPASS_RADIUS} />
       <circle className="compass-ring compass-ring-inner" cx={0} cy={0} r={COMPASS_RADIUS / 2} />
       <line className="compass-axis" x1={-COMPASS_RADIUS} y1={0} x2={COMPASS_RADIUS} y2={0} />
       <line className="compass-axis" x1={0} y1={-COMPASS_RADIUS} x2={0} y2={COMPASS_RADIUS} />
-      <text className="compass-cardinal" x={0} y={-COMPASS_RADIUS - 10} textAnchor="middle">
+      <text className="compass-cardinal" x={0} y={-COMPASS_RADIUS - 10} textAnchor="middle" aria-hidden="true">
         0°
       </text>
 
@@ -124,12 +136,50 @@ function Compass({
               r={8}
               fill={color}
               className="compass-handle"
+              role="slider"
+              tabIndex={0}
+              aria-label={`Direction ${i + 1} angle`}
+              aria-valuemin={0}
+              aria-valuemax={359}
+              aria-valuenow={d.angle}
+              aria-valuetext={`${d.angle} degrees`}
+              data-direction-id={d.id}
+              onKeyDown={(e) => onKeyDown(e, d)}
+              onBlur={onCommit}
               onPointerDown={(e) => {
+                if (e.button !== 0) return;
                 e.preventDefault();
+                try {
+                  e.currentTarget.setPointerCapture(e.pointerId);
+                } catch {
+                  // Synthetic or already-released pointer: drag still works while over the element.
+                }
+                (e.currentTarget as SVGCircleElement).focus();
                 setDragId(d.id);
               }}
+              onPointerMove={(e) => {
+                if (dragId !== d.id) return;
+                const angle = angleFrom(e.clientX, e.clientY);
+                if (angle !== null) onAngle(d.id, angle);
+              }}
+              onPointerUp={(e) => {
+                if (dragId !== d.id) return;
+                if (e.currentTarget.hasPointerCapture(e.pointerId)) e.currentTarget.releasePointerCapture(e.pointerId);
+                setDragId(null);
+                onCommit();
+              }}
+              onPointerCancel={() => {
+                setDragId(null);
+                onCommit();
+              }}
             />
-            <text x={x * reach} y={y * reach + 3} textAnchor="middle" className="compass-handle-label">
+            <text
+              x={x * reach}
+              y={y * reach + 3}
+              textAnchor="middle"
+              className="compass-handle-label"
+              aria-hidden="true"
+            >
               {i + 1}
             </text>
           </g>
@@ -143,71 +193,36 @@ function Compass({
 
 // ── Panel ─────────────────────────────────────────────────────────────────────
 
+export interface DirectionsPanelProps {
+  directions: GradientDirection[];
+  blend: GradientBlendMode;
+  onAngle: (id: number, angle: number) => void;
+  onWeight: (id: number, weight: number) => void;
+  onEnabled: (id: number, enabled: boolean) => void;
+  onAdd: () => void;
+  onRemove: (id: number) => void;
+  onSpread: () => void;
+  /** "Spread: N" preset - changes the count, keeping existing layers. */
+  onCount: (count: number) => void;
+  onBlend: (next: GradientBlendMode) => void;
+  /** A continuous edit (drag, slider, typing) ended. */
+  onCommit: () => void;
+}
+
 export function DirectionsPanel({
   directions,
   blend,
-  onDirections,
+  onAngle,
+  onWeight,
+  onEnabled,
+  onAdd,
+  onRemove,
+  onSpread,
+  onCount,
   onBlend,
-}: {
-  directions: GradientDirection[];
-  blend: GradientBlendMode;
-  onDirections: (next: GradientDirection[]) => void;
-  onBlend: (next: GradientBlendMode) => void;
-}) {
+  onCommit,
+}: DirectionsPanelProps) {
   const enabledCount = directions.filter((d) => d.enabled).length;
-
-  const patch = useCallback(
-    (id: number, changes: Partial<GradientDirection>) => {
-      onDirections(directions.map((d) => (d.id === id ? { ...d, ...changes } : d)));
-    },
-    [directions, onDirections],
-  );
-
-  const setAngle = useCallback(
-    (id: number, angle: number) => patch(id, { angle }),
-    [patch],
-  );
-
-  const add = () => {
-    if (directions.length >= MAX_DIRECTIONS) return;
-    const nextId = directions.reduce((max, d) => Math.max(max, d.id), 0) + 1;
-    // Drop the new spoke in the widest angular gap so it reads as distinct.
-    const angles = [...directions.map((d) => d.angle)].sort((a, b) => a - b);
-    let angle = (angles[0] ?? 135) + 45;
-    let widest = -1;
-    for (let i = 0; i < angles.length; i++) {
-      const next = i === angles.length - 1 ? angles[0] + 360 : angles[i + 1];
-      const gap = next - angles[i];
-      if (gap > widest) {
-        widest = gap;
-        angle = Math.round((angles[i] + gap / 2) % 360);
-      }
-    }
-    onDirections([...directions, { id: nextId, angle, weight: 60, enabled: true }]);
-  };
-
-  const remove = (id: number) => {
-    if (directions.length <= 1) return;
-    onDirections(directions.filter((d) => d.id !== id));
-  };
-
-  const spread = () => {
-    const angles = spreadDirectionAngles(directions.length, directions[0]?.angle ?? 135);
-    onDirections(directions.map((d, i) => ({ ...d, angle: angles[i] })));
-  };
-
-  const setCount = (count: number) => {
-    const angles = spreadDirectionAngles(count);
-    const nextId = directions.reduce((max, d) => Math.max(max, d.id), 0);
-    onDirections(
-      angles.map((angle, i) => ({
-        id: directions[i]?.id ?? nextId + i + 1,
-        angle,
-        weight: directions[i]?.weight ?? 100,
-        enabled: true,
-      })),
-    );
-  };
 
   return (
     <section className="directions">
@@ -216,7 +231,7 @@ export function DirectionsPanel({
       </div>
 
       <div className="directions-body">
-        <Compass directions={directions} onAngle={setAngle} />
+        <Compass directions={directions} onAngle={onAngle} onCommit={onCommit} />
 
         <div className="directions-rows">
           {directions.map((d, i) => {
@@ -239,7 +254,7 @@ export function DirectionsPanel({
                   }
                   aria-pressed={d.enabled}
                   disabled={lockEnabled}
-                  onClick={() => patch(d.id, { enabled: !d.enabled })}
+                  onClick={() => onEnabled(d.id, !d.enabled)}
                 >
                   {i + 1}
                 </button>
@@ -254,10 +269,9 @@ export function DirectionsPanel({
                     aria-label={`Direction ${i + 1} angle`}
                     onChange={(e) => {
                       const n = Number(e.target.value);
-                      if (Number.isFinite(n)) {
-                        patch(d.id, { angle: ((Math.round(n) % 360) + 360) % 360 });
-                      }
+                      if (e.target.value.trim() !== "" && Number.isFinite(n)) onAngle(d.id, n);
                     }}
+                    onBlur={onCommit}
                   />
                   <span className="triple-suffix">°</span>
                 </label>
@@ -269,7 +283,9 @@ export function DirectionsPanel({
                   max={359}
                   value={d.angle}
                   aria-label={`Direction ${i + 1} angle slider`}
-                  onChange={(e) => patch(d.id, { angle: +e.target.value })}
+                  onChange={(e) => onAngle(d.id, +e.target.value)}
+                  onPointerUp={onCommit}
+                  onBlur={onCommit}
                 />
 
                 <label className="dir-weight">
@@ -281,7 +297,9 @@ export function DirectionsPanel({
                     max={100}
                     value={d.weight}
                     aria-label={`Direction ${i + 1} weight`}
-                    onChange={(e) => patch(d.id, { weight: +e.target.value })}
+                    onChange={(e) => onWeight(d.id, +e.target.value)}
+                    onPointerUp={onCommit}
+                    onBlur={onCommit}
                   />
                   <span className="dir-weight-value">{d.weight}</span>
                 </label>
@@ -292,7 +310,7 @@ export function DirectionsPanel({
                     className="btn btn-remove"
                     title="Remove this direction"
                     aria-label={`Remove direction ${i + 1}`}
-                    onClick={() => remove(d.id)}
+                    onClick={() => onRemove(d.id)}
                   >
                     ×
                   </button>
@@ -305,12 +323,12 @@ export function DirectionsPanel({
             <button
               type="button"
               className="btn btn-add"
-              onClick={add}
+              onClick={onAdd}
               disabled={directions.length >= MAX_DIRECTIONS}
             >
               + Direction
             </button>
-            <button type="button" className="btn btn-ghost" onClick={spread}>
+            <button type="button" className="btn btn-ghost" onClick={onSpread}>
               ⟳ Spread evenly
             </button>
             <div className="dir-presets" role="group" aria-label="Spread: number of evenly-spaced directions">
@@ -325,7 +343,7 @@ export function DirectionsPanel({
                   title={`Spread: ${n} evenly-spaced direction${n > 1 ? "s" : ""}`}
                   aria-label={`Spread: ${n} direction${n > 1 ? "s" : ""}`}
                   aria-pressed={directions.length === n}
-                  onClick={() => setCount(n)}
+                  onClick={() => onCount(n)}
                 >
                   {n}
                 </button>
