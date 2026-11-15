@@ -1,13 +1,15 @@
-/* Global tokens and resets. Component styles live in App.css. */
+/* Global design tokens and resets. Component styles live in App.css. */
 
 :root {
   /* The UI is dark-only: tell the browser so native controls, scrollbars and
      datalists render dark under a light OS scheme. */
   color-scheme: dark;
 
+  /* ── Colour ── */
   --bg: #060a12;
   --surface: #0c1220;
   --surface-raised: #101828;
+  --surface-sunken: #080d18;
   --border: #26344f;
   --border-hi: #3a4c70;
   --text: #c8d6ee;
@@ -23,11 +25,67 @@
   --score-good: #4ade80;
   --score-warn: #facc15;
   --score-bad: #f87171;
-  --radius: 16px;
-  --radius-sm: 9px;
-  --dur-fast: 120ms;
+  --hairline: rgba(255, 255, 255, 0.08);
+  --scrim: rgba(6, 10, 18, 0.8);
+  --brand-from: #818cf8;
+  --brand-via: #a855f7;
+  --brand-to: #c084fc;
+
+  /* ── Type ── */
   --font-ui: "Space Grotesk", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", "Fira Mono", ui-monospace, monospace;
+  --fs-xs: 11px;
+  --fs-sm: 12px;
+  --fs-base: 13px;
+  --fs-md: 14px;
+  --fs-lg: 16px;
+  --fs-xl: 20px;
+  --fs-2xl: 28px;
+  --fs-display: 56px;
+  --lh-prose: 1.55;
+  --lh-tight: 1.2;
+
+  /* ── Spacing (4px scale) ── */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+  --sp-10: 40px;
+  --sp-12: 48px;
+
+  /* ── Radii ── */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-pill: 999px;
+
+  /* ── Elevation / stacking ── */
+  --shadow-1: 0 1px 6px rgba(0, 0, 0, 0.5);
+  --shadow-2: 0 8px 30px rgba(0, 0, 0, 0.5);
+  --z-stage: 20;
+  --z-rail: 10;
+  --z-tabbar: 40;
+  --z-skip: 100;
+  --z-toast: 200;
+
+  /* ── Motion ── */
+  --dur-fast: 120ms;
+  --dur: 200ms;
+  --dur-slow: 400ms;
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+
+  /* ── Safe-area insets (notches, home indicator) ── */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+
+  /* Minimum interactive size on touch layouts (WCAG 2.5.5 / platform guidance). */
+  --hit: 44px;
+  --tabbar-h: 56px;
 }
 
 *,
@@ -36,11 +94,44 @@
   box-sizing: border-box;
 }
 
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
 body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
   background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: var(--fs-base);
+  line-height: var(--lh-prose);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+/* Values, hex and CSS are mono with tabular figures; prose stays in the UI face. */
+.mono,
+code,
+pre {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
 }
 
 /* One visible keyboard focus ring for everything interactive. */
@@ -65,13 +156,14 @@ body {
   position: absolute;
   top: 8px;
   left: 8px;
-  z-index: 100;
-  padding: 8px 14px;
-  border-radius: 8px;
+  z-index: var(--z-skip);
+  padding: var(--sp-2) var(--sp-4);
+  border-radius: var(--radius-md);
   background: var(--accent);
   color: var(--on-accent);
-  font-family: var(--font-mono);
-  font-size: 12px;
+  font-family: var(--font-ui);
+  font-size: var(--fs-sm);
+  font-weight: 500;
   text-decoration: none;
   transform: translateY(-200%);
 }

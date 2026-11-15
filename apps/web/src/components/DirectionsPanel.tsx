@@ -1,9 +1,13 @@
-import { useRef, useState } from "react";
+import { useId, useRef, useState } from "react";
 import {
   MAX_DIRECTIONS,
   type GradientBlendMode,
   type GradientDirection,
 } from "@opal42/gradient";
+import { Button } from "./ui/Button";
+import { Icon } from "./ui/Icon";
+import { Segmented } from "./ui/Segmented";
+import { Surface } from "./ui/Surface";
 
 /** Per-direction identity colors for the compass and row markers. */
 const DIRECTION_COLORS = [
@@ -99,7 +103,7 @@ function Compass({
     <svg
       ref={svgRef}
       className="compass"
-      viewBox="-90 -90 180 180"
+      viewBox="-74 -74 148 148"
       role="group"
       aria-label="Gradient direction compass"
     >
@@ -107,7 +111,7 @@ function Compass({
       <circle className="compass-ring compass-ring-inner" cx={0} cy={0} r={COMPASS_RADIUS / 2} />
       <line className="compass-axis" x1={-COMPASS_RADIUS} y1={0} x2={COMPASS_RADIUS} y2={0} />
       <line className="compass-axis" x1={0} y1={-COMPASS_RADIUS} x2={0} y2={COMPASS_RADIUS} />
-      <text className="compass-cardinal" x={0} y={-COMPASS_RADIUS - 10} textAnchor="middle" aria-hidden="true">
+      <text className="compass-cardinal" x={0} y={-COMPASS_RADIUS - 6} textAnchor="middle" aria-hidden="true">
         0°
       </text>
 
@@ -135,6 +139,15 @@ function Compass({
               cy={y * reach}
               r={8}
               fill={color}
+              className="compass-dot"
+              aria-hidden="true"
+            />
+            {/* Invisible, larger hit area: the slider the pointer and keyboard drive. */}
+            <circle
+              cx={x * reach}
+              cy={y * reach}
+              r={14}
+              fill="transparent"
               className="compass-handle"
               role="slider"
               tabIndex={0}
@@ -196,6 +209,8 @@ function Compass({
 export interface DirectionsPanelProps {
   directions: GradientDirection[];
   blend: GradientBlendMode;
+  /** One-panel-at-a-time layout: the panel is always expanded, with no disclosure. */
+  tabbed: boolean;
   onAngle: (id: number, angle: number) => void;
   onWeight: (id: number, weight: number) => void;
   onEnabled: (id: number, enabled: boolean) => void;
@@ -209,9 +224,25 @@ export interface DirectionsPanelProps {
   onCommit: () => void;
 }
 
+/** One-line description of the layers: "Direction 135° · 1 layer". */
+function directionsSummary(directions: GradientDirection[], blend: GradientBlendMode): string {
+  if (directions.length === 1) return `Direction ${directions[0].angle}° · 1 layer`;
+  const angles = directions.map((d) => `${d.angle}°`).join(", ");
+  const blendLabel = BLEND_MODES.find((m) => m.value === blend)?.label.split(" — ")[0] ?? blend;
+  return `${directions.length} directions · ${angles} · ${blendLabel.toLowerCase()}`;
+}
+
+const SPREAD_OPTIONS = Array.from({ length: MAX_DIRECTIONS }, (_, i) => ({
+  value: i + 1,
+  label: String(i + 1),
+  ariaLabel: `Spread: ${i + 1} direction${i > 0 ? "s" : ""}`,
+  title: `Spread: ${i + 1} evenly-spaced direction${i > 0 ? "s" : ""}`,
+}));
+
 export function DirectionsPanel({
   directions,
   blend,
+  tabbed,
   onAngle,
   onWeight,
   onEnabled,
@@ -223,154 +254,172 @@ export function DirectionsPanel({
   onCommit,
 }: DirectionsPanelProps) {
   const enabledCount = directions.filter((d) => d.enabled).length;
+  // A single layer is the common case and needs no screen space; several do.
+  const [open, setOpen] = useState(directions.length > 1);
+  const expanded = tabbed || open;
+  const bodyId = useId();
+  const summary = directionsSummary(directions, blend);
 
   return (
-    <section className="directions">
-      <div className="section-label">
-        Directions — {directions.length}/{MAX_DIRECTIONS}, drag the compass to aim
-      </div>
+    <Surface as="section" pad="none" className="directions" aria-labelledby={`${bodyId}-h`}>
+      <h2 className="panel-title" id={`${bodyId}-h`}>
+        {tabbed ? (
+          <span className="panel-title-static">
+            Directions
+            <span className="panel-summary">{summary}</span>
+          </span>
+        ) : (
+          <button
+            type="button"
+            className="disclosure-button"
+            aria-expanded={expanded}
+            aria-controls={bodyId}
+            onClick={() => setOpen(!open)}
+          >
+            <Icon name="chevron" size={14} className="disclosure-chevron" />
+            <span className="panel-title-text">Directions</span>
+            <span className="panel-summary">{summary}</span>
+          </button>
+        )}
+      </h2>
 
-      <div className="directions-body">
-        <Compass directions={directions} onAngle={onAngle} onCommit={onCommit} />
+      <div id={bodyId} className="directions-content" hidden={!expanded}>
+        <p className="panel-hint">
+          {directions.length}/{MAX_DIRECTIONS} layers. Drag the compass to aim. Directions and blend are not scored.
+        </p>
+        <div className="directions-body">
+          <Compass directions={directions} onAngle={onAngle} onCommit={onCommit} />
 
-        <div className="directions-rows">
-          {directions.map((d, i) => {
-            const color = DIRECTION_COLORS[i % DIRECTION_COLORS.length];
-            // Never let the last active direction be switched off — there would
-            // be nothing left to render.
-            const lockEnabled = d.enabled && enabledCount === 1;
-            return (
-              <div key={d.id} className={`dir-row${d.enabled ? "" : " is-off"}`}>
-                <button
-                  type="button"
-                  className="dir-toggle"
-                  style={{ background: d.enabled ? color : "transparent", borderColor: color }}
-                  title={
-                    lockEnabled
-                      ? "At least one direction must stay active"
-                      : d.enabled
-                        ? "Mute this direction"
-                        : "Activate this direction"
-                  }
-                  aria-pressed={d.enabled}
-                  disabled={lockEnabled}
-                  onClick={() => onEnabled(d.id, !d.enabled)}
-                >
-                  {i + 1}
-                </button>
+          <div className="directions-rows">
+            {directions.map((d, i) => {
+              const color = DIRECTION_COLORS[i % DIRECTION_COLORS.length];
+              // Never let the last active direction be switched off - there would
+              // be nothing left to render.
+              const lockEnabled = d.enabled && enabledCount === 1;
+              return (
+                <div key={d.id} className={`dir-row${d.enabled ? "" : " is-off"}`}>
+                  <button
+                    type="button"
+                    className="dir-toggle"
+                    style={{ background: d.enabled ? color : "transparent", borderColor: color }}
+                    title={
+                      lockEnabled
+                        ? "At least one direction must stay active"
+                        : d.enabled
+                          ? "Mute this direction"
+                          : "Activate this direction"
+                    }
+                    aria-pressed={d.enabled}
+                    aria-label={`Direction ${i + 1} active`}
+                    disabled={lockEnabled}
+                    onClick={() => onEnabled(d.id, !d.enabled)}
+                  >
+                    {i + 1}
+                  </button>
 
-                <label className="dir-angle">
-                  <input
-                    type="number"
-                    className="field-input field-num"
-                    min={0}
-                    max={360}
-                    value={d.angle}
-                    aria-label={`Direction ${i + 1} angle`}
-                    onChange={(e) => {
-                      const n = Number(e.target.value);
-                      if (e.target.value.trim() !== "" && Number.isFinite(n)) onAngle(d.id, n);
-                    }}
-                    onBlur={onCommit}
-                  />
-                  <span className="triple-suffix">°</span>
-                </label>
+                  <label className="dir-angle">
+                    <input
+                      type="number"
+                      inputMode="numeric"
+                      className="field-input field-num"
+                      min={0}
+                      max={360}
+                      value={d.angle}
+                      aria-label={`Direction ${i + 1} angle`}
+                      onChange={(e) => {
+                        const n = Number(e.target.value);
+                        if (e.target.value.trim() !== "" && Number.isFinite(n)) onAngle(d.id, n);
+                      }}
+                      onBlur={onCommit}
+                    />
+                    <span className="unit">°</span>
+                  </label>
 
-                <input
-                  type="range"
-                  className="dir-slider"
-                  min={0}
-                  max={359}
-                  value={d.angle}
-                  aria-label={`Direction ${i + 1} angle slider`}
-                  onChange={(e) => onAngle(d.id, +e.target.value)}
-                  onPointerUp={onCommit}
-                  onBlur={onCommit}
-                />
-
-                <label className="dir-weight">
-                  <span className="triple-label">W</span>
                   <input
                     type="range"
-                    className="dir-slider dir-slider-weight"
-                    min={1}
-                    max={100}
-                    value={d.weight}
-                    aria-label={`Direction ${i + 1} weight`}
-                    onChange={(e) => onWeight(d.id, +e.target.value)}
+                    className="dir-slider"
+                    min={0}
+                    max={359}
+                    value={d.angle}
+                    aria-label={`Direction ${i + 1} angle slider`}
+                    onChange={(e) => onAngle(d.id, +e.target.value)}
                     onPointerUp={onCommit}
                     onBlur={onCommit}
                   />
-                  <span className="dir-weight-value">{d.weight}</span>
-                </label>
 
-                {directions.length > 1 && (
-                  <button
-                    type="button"
-                    className="btn btn-remove"
-                    title="Remove this direction"
-                    aria-label={`Remove direction ${i + 1}`}
-                    onClick={() => onRemove(d.id)}
-                  >
-                    ×
-                  </button>
-                )}
+                  {directions.length > 1 && (
+                    <Button
+                      variant="icon"
+                      icon="x"
+                      className="dir-remove"
+                      title="Remove this direction"
+                      aria-label={`Remove direction ${i + 1}`}
+                      onClick={() => onRemove(d.id)}
+                    />
+                  )}
+
+                  <label className="dir-weight">
+                    <span className="unit">Weight</span>
+                    <input
+                      type="range"
+                      className="dir-slider dir-slider-weight"
+                      min={1}
+                      max={100}
+                      value={d.weight}
+                      aria-label={`Direction ${i + 1} weight`}
+                      onChange={(e) => onWeight(d.id, +e.target.value)}
+                      onPointerUp={onCommit}
+                      onBlur={onCommit}
+                    />
+                    <span className="dir-weight-value mono">{d.weight}</span>
+                  </label>
+                </div>
+              );
+            })}
+
+            <div className="dir-actions">
+              <Button variant="secondary" size="sm" icon="plus" onClick={onAdd} disabled={directions.length >= MAX_DIRECTIONS}>
+                Direction
+              </Button>
+              <Button variant="ghost" size="sm" icon="rotate" onClick={onSpread}>
+                Spread evenly
+              </Button>
+              <div className="dir-presets">
+                <span className="dir-presets-label" aria-hidden="true">
+                  Spread:
+                </span>
+                <Segmented
+                  mode="buttons"
+                  size="sm"
+                  label="Spread: number of evenly-spaced directions"
+                  options={SPREAD_OPTIONS}
+                  value={directions.length}
+                  onChange={onCount}
+                />
               </div>
-            );
-          })}
-
-          <div className="dir-actions">
-            <button
-              type="button"
-              className="btn btn-add"
-              onClick={onAdd}
-              disabled={directions.length >= MAX_DIRECTIONS}
-            >
-              + Direction
-            </button>
-            <button type="button" className="btn btn-ghost" onClick={onSpread}>
-              ⟳ Spread evenly
-            </button>
-            <div className="dir-presets" role="group" aria-label="Spread: number of evenly-spaced directions">
-              <span className="dir-presets-label" aria-hidden="true">
-                Spread:
-              </span>
-              {Array.from({ length: MAX_DIRECTIONS }, (_, i) => i + 1).map((n) => (
-                <button
-                  key={n}
-                  type="button"
-                  className={`btn dir-preset${directions.length === n ? " active" : ""}`}
-                  title={`Spread: ${n} evenly-spaced direction${n > 1 ? "s" : ""}`}
-                  aria-label={`Spread: ${n} direction${n > 1 ? "s" : ""}`}
-                  aria-pressed={directions.length === n}
-                  onClick={() => onCount(n)}
-                >
-                  {n}
-                </button>
-              ))}
             </div>
-          </div>
 
-          {/* Blend only matters once there are layers to blend. */}
-          {directions.length > 1 && (
-            <label className="dir-blend">
-              <span className="triple-label">Blend</span>
-              <select
-                className="field-input field-select"
-                value={blend}
-                aria-label="Direction blend mode"
-                onChange={(e) => onBlend(e.target.value as GradientBlendMode)}
-              >
-                {BLEND_MODES.map((m) => (
-                  <option key={m.value} value={m.value}>
-                    {m.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-          )}
+            {/* Blend only matters once there are layers to blend. */}
+            {directions.length > 1 && (
+              <label className="dir-blend">
+                <span className="unit">Blend</span>
+                <select
+                  className="field-input field-select"
+                  value={blend}
+                  aria-label="Direction blend mode"
+                  onChange={(e) => onBlend(e.target.value as GradientBlendMode)}
+                >
+                  {BLEND_MODES.map((m) => (
+                    <option key={m.value} value={m.value}>
+                      {m.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
+          </div>
         </div>
       </div>
-    </section>
+    </Surface>
   );
 }

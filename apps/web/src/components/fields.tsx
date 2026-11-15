@@ -3,40 +3,50 @@ import { announce } from "../announce";
 import { readClipboardText, writeClipboardText } from "../clipboard";
 import { parseAnyColor } from "@opal42/gradient";
 import { looksLikeGradient } from "../import/parse-linear-gradient";
+import { Button, type ButtonSize, type ButtonVariant } from "./ui/Button";
+import type { IconName } from "./ui/Icon";
 
 // ── Flash button ──────────────────────────────────────────────────────────────
 
 /**
- * A tiny action button that reports the outcome of an async operation by
- * flashing green or red for a moment — clipboard work fails silently often
+ * An action button that reports the outcome of an async operation by
+ * flashing green or red for a moment - clipboard work fails silently often
  * enough (permissions, unparseable text) that it needs visible feedback.
+ * Icon-only unless a `label` is given.
  */
 export function FlashButton({
-  glyph,
+  icon,
+  label,
   title,
   className = "",
   onRun,
-  text = false,
   ariaLabel,
+  variant,
+  size,
+  collapse,
   okMessage = "Done",
   errMessage = "Failed",
-  okGlyph = "✓",
-  errGlyph = "✕",
+  okLabel = "Done",
+  errLabel = "Failed",
 }: {
-  glyph: string;
+  icon: IconName;
+  /** Visible text; without it the button is a square icon button named by `ariaLabel`/`title`. */
+  label?: string;
   title: string;
   className?: string;
   /** true / false flash success / failure; null means "handled elsewhere", no flash. */
   onRun: () => Promise<boolean | null> | boolean | null;
-  /** A labelled text button rather than a 24px icon button. */
-  text?: boolean;
-  /** Accessible name; for text buttons it must start with the visible `glyph`. */
+  /** Accessible name; for labelled buttons it must start with the visible `label`. */
   ariaLabel?: string;
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+  collapse?: boolean;
   /** Spoken (via the status region) when the action succeeds / fails. */
   okMessage?: string;
   errMessage?: string;
-  okGlyph?: string;
-  errGlyph?: string;
+  /** Visible text while flashing (labelled buttons only). */
+  okLabel?: string;
+  errLabel?: string;
 }) {
   const [flash, setFlash] = useState<"ok" | "err" | null>(null);
 
@@ -46,12 +56,20 @@ export function FlashButton({
     return () => clearTimeout(t);
   }, [flash]);
 
+  const shownIcon: IconName = flash === "ok" ? "check" : flash === "err" ? "alert" : icon;
+  const textual = label !== undefined;
+  const shownLabel = flash === "ok" ? okLabel : flash === "err" ? errLabel : label;
+
   return (
-    <button
-      type="button"
+    <Button
+      variant={variant ?? (textual ? "secondary" : "icon")}
+      size={size ?? "md"}
+      icon={shownIcon}
+      collapse={collapse}
       title={title}
-      aria-label={flash ? undefined : (ariaLabel ?? (text ? undefined : title))}
-      className={`btn ${text ? "btn-text" : "field-btn"} ${className} ${flash ? `flash-${flash}` : ""}`}
+      // A labelled button's name is its visible text; while that text swaps, drop the override.
+      aria-label={textual ? (flash ? undefined : ariaLabel) : (ariaLabel ?? title)}
+      className={`${className}${flash ? ` flash-${flash}` : ""}`}
       onClick={async () => {
         const ok = await onRun();
         if (ok === null) return;
@@ -59,8 +77,8 @@ export function FlashButton({
         announce(ok ? okMessage : errMessage);
       }}
     >
-      {flash === "ok" ? okGlyph : flash === "err" ? errGlyph : glyph}
-    </button>
+      {textual ? shownLabel : undefined}
+    </Button>
   );
 }
 
@@ -78,7 +96,7 @@ export function PasteButton({
 }) {
   return (
     <FlashButton
-      glyph="⎘"
+      icon="paste"
       title={`Paste a single color into ${label} (hex, rgb, hsl or name)`}
       ariaLabel={`Paste into ${label}`}
       className="btn-paste"
@@ -116,7 +134,7 @@ export function CopyButton({
 }) {
   return (
     <FlashButton
-      glyph="⧉"
+      icon="copy"
       title={`Copy ${label ?? value}`}
       className="btn-copy"
       okMessage={`Copied ${label ?? value}`}
@@ -247,9 +265,13 @@ export function NumericTriple({
     <div className="field-triple">
       {parts.map((part, i) => (
         <label key={part.label} className="triple-cell">
-          <span className="triple-label">{part.label}</span>
+          <span className="triple-label" aria-hidden="true">
+            {part.label}
+            {part.suffix}
+          </span>
           <input
             type="number"
+            inputMode="numeric"
             className="field-input field-num"
             min={part.min}
             max={part.max}
@@ -261,7 +283,6 @@ export function NumericTriple({
             }}
             onChange={(e) => change(i, e.target.value)}
           />
-          {part.suffix && <span className="triple-suffix">{part.suffix}</span>}
         </label>
       ))}
     </div>

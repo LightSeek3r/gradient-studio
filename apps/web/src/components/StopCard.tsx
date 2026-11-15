@@ -15,14 +15,11 @@ import {
   rgbToHex,
   type GradientTick,
 } from "@opal42/gradient";
-import {
-  ColorTextField,
-  CopyButton,
-  FlashButton,
-  NumericTriple,
-  PasteButton,
-} from "./fields";
-import { stopHexFieldId } from "./dom-ids";
+import { ColorTextField, CopyButton, FlashButton, NumericTriple, PasteButton } from "./fields";
+import { stopCardId, stopHexFieldId } from "./dom-ids";
+import { Button } from "./ui/Button";
+import { Icon } from "./ui/Icon";
+import { Segmented } from "./ui/Segmented";
 
 /** `id` of the shared `<datalist>` of CSS color names, rendered once by App. */
 export const COLOR_NAME_LIST_ID = "css-color-names";
@@ -33,21 +30,33 @@ function ComplementRow({
   label,
   value,
   copyValue,
+  copyLabel,
 }: {
   label: string;
   value: string;
   copyValue?: string;
+  copyLabel: string;
 }) {
   return (
-    <div className="field-row">
+    <div className="complement-row">
       <span className="field-label">{label}</span>
-      <span className="field-readout" title={value}>
+      <span className="field-readout mono" title={value}>
         {value}
       </span>
-      <CopyButton value={value} copyValue={copyValue} />
+      <CopyButton value={value} copyValue={copyValue} label={copyLabel} />
     </div>
   );
 }
+
+/** Which colour notation the card shows at a time. */
+export type Notation = "hex" | "rgb" | "hsl" | "name";
+
+const NOTATIONS: { value: Notation; label: string }[] = [
+  { value: "hex", label: "HEX" },
+  { value: "rgb", label: "RGB" },
+  { value: "hsl", label: "HSL" },
+  { value: "name", label: "NAME" },
+];
 
 // ── Stop card ─────────────────────────────────────────────────────────────────
 
@@ -55,7 +64,8 @@ export function StopCard({
   tick,
   index,
   canRemove,
-  selected = false,
+  notation,
+  onNotation,
   onColor,
   onPosition,
   onRemove,
@@ -67,8 +77,9 @@ export function StopCard({
   tick: GradientTick;
   index: number;
   canRemove: boolean;
-  /** The stop selected on the bar (UI state, highlights the card). */
-  selected?: boolean;
+  /** Which colour notation is shown (shared across stops). */
+  notation: Notation;
+  onNotation: (n: Notation) => void;
   onColor: (hex: string) => void;
   onPosition: (position: number) => void;
   onRemove: () => void;
@@ -114,21 +125,35 @@ export function StopCard({
     );
   };
 
+  const label = (what: string) => `stop ${n} ${what}`;
+
   return (
     <div
-      className={`stop-card${selected ? " is-selected" : ""}`}
+      id={stopCardId(tick.id)}
+      className="stop-card"
+      role="group"
+      aria-label={`Stop ${n}`}
+      tabIndex={-1}
       data-stop-id={tick.id}
       onFocus={onSelect}
     >
       {/* Card header */}
       <div className="stop-head">
-        <span className="stop-swatch" style={{ background: tick.color }} />
+        <input
+          type="color"
+          className="field-picker"
+          value={tick.color}
+          aria-label={`Stop ${n} color picker`}
+          onChange={(e) => onColor(e.target.value)}
+          onBlur={onDone}
+        />
         <span className="stop-index">Stop {n}</span>
         <label className="stop-pos">
           <input
             ref={posRef}
             type="number"
-            className="field-input field-num"
+            inputMode="numeric"
+            className="field-input field-num mono"
             min={0}
             max={100}
             value={posDraft ?? tick.position}
@@ -145,56 +170,56 @@ export function StopCard({
               }
             }}
           />
-          <span className="triple-suffix">%</span>
+          <span className="unit">%</span>
         </label>
         {canRemove && (
-          <button
-            type="button"
-            className="btn btn-remove"
+          <Button
+            variant="icon"
+            icon="x"
+            className="stop-remove"
             title="Remove this stop"
             aria-label={`Remove stop ${n}`}
             onClick={onRemove}
-          >
-            ×
-          </button>
+          />
         )}
       </div>
 
-      <div className="stop-body">
-        {/* ── Editable color, every notation at once ── */}
-        <div className="field-group">
-          <div className="field-group-label">Color</div>
+      {/* ── One notation at a time ── */}
+      <div className="stop-color-row">
+        <Segmented
+          label={`Stop ${n} color notation`}
+          options={NOTATIONS}
+          value={notation}
+          onChange={onNotation}
+          className="notation-switch"
+        />
+      </div>
 
-          <div className="field-row">
-            <span className="field-label">Pick</span>
-            <input
-              type="color"
-              className="field-picker"
-              value={tick.color}
-              aria-label={`Stop ${n} color picker`}
-              onChange={(e) => onColor(e.target.value)}
-              onBlur={onDone}
-            />
-          </div>
+      <div className="stop-notation">
+        {notation === "hex" && (
+          <>
+            <label className="triple-cell">
+              <span className="triple-label" aria-hidden="true">
+                Hex
+              </span>
+              <ColorTextField
+                value={formatHex(tick.color)}
+                parse={parseHex}
+                onCommit={onColor}
+                placeholder="#4F46E5"
+                ariaLabel={`Stop ${n} hex value`}
+                id={stopHexFieldId(tick.id)}
+                onGradientPaste={onGradientText}
+                onDone={onDone}
+              />
+            </label>
+            <CopyButton value={formatHex(tick.color)} label={label("hex")} />
+            <PasteButton onColor={onColor} onGradient={onGradientText} label={label("hex")} />
+          </>
+        )}
 
-          <div className="field-row">
-            <span className="field-label">Hex</span>
-            <ColorTextField
-              value={formatHex(tick.color)}
-              parse={parseHex}
-              onCommit={onColor}
-              placeholder="#4F46E5"
-              ariaLabel={`Stop ${n} hex value`}
-              id={stopHexFieldId(tick.id)}
-              onGradientPaste={onGradientText}
-              onDone={onDone}
-            />
-            <CopyButton value={formatHex(tick.color)} />
-            <PasteButton onColor={onColor} onGradient={onGradientText} label={`stop ${n} hex`} />
-          </div>
-
-          <div className="field-row">
-            <span className="field-label">RGB</span>
+        {notation === "rgb" && (
+          <>
             <NumericTriple
               labelPrefix={`Stop ${n}`}
               parts={[
@@ -206,12 +231,13 @@ export function StopCard({
               onCommit={([r, g, b]) => onColor(rgbToHex({ r, g, b }))}
               onDone={onDone}
             />
-            <CopyButton value={formatRgb(tick.color)} />
-            <PasteButton onColor={onColor} onGradient={onGradientText} label={`stop ${n} RGB`} />
-          </div>
+            <CopyButton value={formatRgb(tick.color)} label={label("RGB")} />
+            <PasteButton onColor={onColor} onGradient={onGradientText} label={label("RGB")} />
+          </>
+        )}
 
-          <div className="field-row">
-            <span className="field-label">HSL</span>
+        {notation === "hsl" && (
+          <>
             <NumericTriple
               labelPrefix={`Stop ${n}`}
               parts={[
@@ -223,61 +249,72 @@ export function StopCard({
               onCommit={commitHsl}
               onDone={onDone}
             />
-            <CopyButton value={formatHsl(tick.color)} />
-            <PasteButton onColor={onColor} onGradient={onGradientText} label={`stop ${n} HSL`} />
-          </div>
+            <CopyButton value={formatHsl(tick.color)} label={label("HSL")} />
+            <PasteButton onColor={onColor} onGradient={onGradientText} label={label("HSL")} />
+          </>
+        )}
 
-          <div className="field-row">
-            <span className="field-label">Name</span>
-            <ColorTextField
+        {notation === "name" && (
+          <>
+            <label className="triple-cell">
+              <span className="triple-label" aria-hidden="true">
+                Name
+              </span>
+              <ColorTextField
+                value={formatNameDisplay(tick.color)}
+                parse={parseName}
+                onCommit={onColor}
+                listId={COLOR_NAME_LIST_ID}
+                placeholder="indigo"
+                ariaLabel={`Stop ${n} color name`}
+                onGradientPaste={onGradientText}
+                onDone={onDone}
+              />
+            </label>
+            <CopyButton
               value={formatNameDisplay(tick.color)}
-              parse={parseName}
-              onCommit={onColor}
-              listId={COLOR_NAME_LIST_ID}
-              placeholder="indigo"
-              ariaLabel={`Stop ${n} color name`}
-              onGradientPaste={onGradientText}
-              onDone={onDone}
+              copyValue={formatName(tick.color)}
+              label={label("name")}
             />
-            <CopyButton value={formatNameDisplay(tick.color)} copyValue={formatName(tick.color)} />
-            <PasteButton onColor={onColor} onGradient={onGradientText} label={`stop ${n} name`} />
-          </div>
-        </div>
+            <PasteButton onColor={onColor} onGradient={onGradientText} label={label("name")} />
+          </>
+        )}
+      </div>
 
-        {/* ── Complement, copy-only ── */}
-        <details className="field-group">
-          <summary className="field-group-label disclosure-summary">
-            <span className="complement-swatch" style={{ background: complement }} />
-            Complement <span className="field-group-note">OKLCH +180°</span>
-          </summary>
+      {/* ── Complement, closed by default ── */}
+      <details className="complement">
+        <summary className="disclosure-summary complement-summary">
+          <Icon name="chevron" size={14} className="disclosure-chevron" />
+          <span className="complement-swatch" style={{ background: complement }} aria-hidden="true" />
+          <span className="complement-title">Complement</span>
+          <span className="complement-note">OKLCH +180°</span>
+        </summary>
 
-          <div className="field-row">
-            <span className="field-label">Swap</span>
-            <FlashButton
-              text
-              glyph="Replace stop with complement"
-              ariaLabel={`Replace stop with complement (stop ${n})`}
-              title={`Replace stop ${n} with its complement`}
-              okMessage={`Stop ${n} replaced with its complement`}
-              okGlyph="✓ Replaced"
-              className="btn-swap"
-              onRun={() => {
-                onComplement(complement);
-                return true;
-              }}
-            />
-          </div>
-
-          <ComplementRow label="Hex" value={formatHex(complement)} />
-          <ComplementRow label="RGB" value={formatRgb(complement)} />
-          <ComplementRow label="HSL" value={formatHsl(complement)} />
+        <div className="complement-body">
+          <FlashButton
+            icon="swap"
+            label="Replace stop with complement"
+            ariaLabel={`Replace stop with complement (stop ${n})`}
+            title={`Replace stop ${n} with its complement`}
+            okMessage={`Stop ${n} replaced with its complement`}
+            okLabel="Replaced"
+            size="sm"
+            onRun={() => {
+              onComplement(complement);
+              return true;
+            }}
+          />
+          <ComplementRow label="Hex" value={formatHex(complement)} copyLabel={label("complement hex")} />
+          <ComplementRow label="RGB" value={formatRgb(complement)} copyLabel={label("complement RGB")} />
+          <ComplementRow label="HSL" value={formatHsl(complement)} copyLabel={label("complement HSL")} />
           <ComplementRow
             label="Name"
             value={formatNameDisplay(complement)}
             copyValue={formatName(complement)}
+            copyLabel={label("complement name")}
           />
-        </details>
-      </div>
+        </div>
+      </details>
     </div>
   );
 }

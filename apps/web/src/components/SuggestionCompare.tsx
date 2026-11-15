@@ -1,28 +1,25 @@
 import type { Suggestion } from "../suggest/compare";
+import { Button } from "./ui/Button";
+import { Icon } from "./ui/Icon";
+import { Segmented } from "./ui/Segmented";
 
 export type CompareView = "original" | "suggested";
 
-/** Original | Suggested segmented control, shown directly above the preview. */
+const VIEW_OPTIONS = [
+  { value: "original" as const, label: "Original" },
+  { value: "suggested" as const, label: "Suggested" },
+];
+
+/** Original | Suggested segmented control: what the sticky preview and Export show. */
 export function CompareToggle({ view, onView }: { view: CompareView; onView: (v: CompareView) => void }) {
   return (
-    <div className="btn-row toggle-row compare-toggle" role="group" aria-label="Preview">
-      <button
-        type="button"
-        className={`btn btn-toggle ${view === "original" ? "active" : ""}`}
-        aria-pressed={view === "original"}
-        onClick={() => onView("original")}
-      >
-        Original
-      </button>
-      <button
-        type="button"
-        className={`btn btn-toggle ${view === "suggested" ? "active" : ""}`}
-        aria-pressed={view === "suggested"}
-        onClick={() => onView("suggested")}
-      >
-        Suggested
-      </button>
-    </div>
+    <Segmented
+      label="Preview"
+      options={VIEW_OPTIONS}
+      value={view}
+      onChange={onView}
+      className="compare-toggle"
+    />
   );
 }
 
@@ -56,16 +53,17 @@ export function SuggestionPanel({
   if (!suggestion) {
     return (
       <div className="btn-row">
-        <button type="button" className="btn btn-primary" onClick={onSuggest}>
-          ✦ Suggest
-        </button>
+        <Button variant="primary" icon="sparkles" block onClick={onSuggest}>
+          Suggest
+        </Button>
       </div>
     );
   }
   if (!suggestion.useful) {
     return (
       <p className="suggest-note" role="note">
-        {suggestion.reason}
+        <Icon name="info" size={14} />
+        <span>{suggestion.reason}</span>
       </p>
     );
   }
@@ -78,8 +76,8 @@ export function SuggestionPanel({
   return (
     <div className="suggestion">
       <p className="suggest-delta">
-        Score <span className="delta-before">{before}</span> → <span className="delta-after">{after}</span>
-        <span className="delta-gain"> ({after - before >= 0 ? "+" : ""}{after - before})</span>
+        Score <span className="delta-before mono">{before}</span> → <span className="delta-after mono">{after}</span>
+        <span className="delta-gain mono"> ({after - before >= 0 ? "+" : ""}{after - before})</span>
         {selectedScore !== null && selectedChanged < changed.length && (
           <span className="delta-selected"> · selected only: {selectedScore}</span>
         )}
@@ -99,7 +97,7 @@ export function SuggestionPanel({
               <Swatch color={d.before.color} />
               <span className="diff-arrow" aria-hidden="true">→</span>
               <Swatch color={d.after.color} />
-              <span className="diff-text">
+              <span className="diff-text mono">
                 {d.before.color === d.after.color ? d.before.color : `${d.before.color} → ${d.after.color}`}
                 {", "}
                 {d.before.position === d.after.position
@@ -112,12 +110,12 @@ export function SuggestionPanel({
         ))}
       </ul>
       <div className="btn-row">
-        <button type="button" className="btn btn-apply" onClick={onApplySelected} disabled={selectedChanged === 0}>
+        <Button variant="primary" icon="check" onClick={onApplySelected} disabled={selectedChanged === 0}>
           Apply selected ({selectedChanged})
-        </button>
-        <button type="button" className="btn btn-apply" onClick={onApplyAll}>
+        </Button>
+        <Button variant="secondary" onClick={onApplyAll}>
           Apply all
-        </button>
+        </Button>
       </div>
     </div>
   );

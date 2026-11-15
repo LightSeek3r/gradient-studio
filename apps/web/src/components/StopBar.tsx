@@ -143,7 +143,7 @@ export function StopBar({
           aria-valuenow={tick.position}
           aria-valuetext={`Stop ${i + 1}, ${tick.position} percent, colour ${tick.color}`}
           data-stop-id={tick.id}
-          style={{ left: `${tick.position}%`, background: tick.color }}
+          style={{ left: `${tick.position}%`, "--c": tick.color } as React.CSSProperties}
           onFocus={() => onSelect(tick.id)}
           onKeyDown={(e) => onKeyDown(e, tick, i)}
           onBlur={onCommit}

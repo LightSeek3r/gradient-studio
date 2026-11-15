@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { buildGradientCSS } from "@opal42/gradient";
+import { Button } from "./ui/Button";
 import { parseLinearGradient, type ImportedGradient } from "../import/parse-linear-gradient";
 
 /**
@@ -95,12 +96,12 @@ export function ImportDialog({
           )}
         </div>
         <div className="btn-row import-actions">
-          <button type="button" className="btn btn-toggle" onClick={onClose}>
+          <Button variant="ghost" onClick={onClose}>
             Cancel
-          </button>
-          <button type="submit" className="btn btn-primary" disabled={!result?.ok}>
+          </Button>
+          <Button type="submit" variant="primary" icon="import" disabled={!result?.ok}>
             Import
-          </button>
+          </Button>
         </div>
       </form>
     </dialog>

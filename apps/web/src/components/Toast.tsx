@@ -1,4 +1,5 @@
 import type { ToastData } from "../hooks/useToast";
+import { Button } from "./ui/Button";
 
 /**
  * Visual toast. Screen readers hear it through the shared status region
@@ -18,6 +19,8 @@ export function Toast({
   if (!toast) return null;
   return (
     <div
+      role="region"
+      aria-label="Notification"
       className={`toast${toast.tone === "error" ? " is-error" : ""}`}
       onMouseEnter={() => onPause(true)}
       onMouseLeave={() => onPause(false)}
@@ -36,20 +39,27 @@ export function Toast({
         )}
       </div>
       {toast.undo && (
-        <button
-          type="button"
-          className="btn btn-text toast-undo"
+        <Button
+          variant="secondary"
+          size="sm"
+          icon="undo"
+          className="toast-undo"
           onClick={() => {
             onUndo();
             onDismiss();
           }}
         >
           Undo
-        </button>
+        </Button>
       )}
-      <button type="button" className="btn btn-remove toast-close" aria-label="Dismiss notification" onClick={onDismiss}>
-        ×
-      </button>
+      <Button
+        variant="icon"
+        size="sm"
+        icon="x"
+        className="toast-close"
+        aria-label="Dismiss notification"
+        onClick={onDismiss}
+      />
     </div>
   );
 }
