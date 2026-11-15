@@ -4,6 +4,8 @@ import {
   suggestGradient,
   buildGradientCSS,
   buildMultiGradientStyle,
+  colorAtPosition,
+  rgbToHex,
   MAX_DIRECTIONS,
   type GradientBlendMode,
   type GradientDirection,
@@ -12,8 +14,15 @@ import {
 import { CSS_COLOR_NAMES, CSS_NAMED_COLORS } from "./color-formats";
 import { COLOR_NAME_LIST_ID, StopCard } from "./components/StopCard";
 import { DirectionsPanel } from "./components/DirectionsPanel";
-import { CopyButton } from "./components/fields";
+import { CopyButton, FlashButton } from "./components/fields";
+import { writeClipboardText } from "./clipboard";
+import { StatusRegion } from "./components/StatusRegion";
+import { scoreBand } from "./score-band";
 import "./App.css";
+
+/** Hard ceiling on colour stops. */
+const MAX_STOPS = 10;
+const GITHUB_URL = "https://github.com/LightSeek3r/gradient-studio";
 
 // ── CSS export ────────────────────────────────────────────────────────────────
 
@@ -22,20 +31,74 @@ function isDefaultBlend(mode: string): boolean {
   return mode.split(", ").every((m) => m === "normal");
 }
 
-/** Copy-paste-ready CSS declarations for the current gradient. */
+/** Split on commas that are not inside parentheses. */
+function splitTopLevel(input: string): string[] {
+  const parts: string[] = [];
+  let depth = 0;
+  let start = 0;
+  for (let i = 0; i < input.length; i++) {
+    const ch = input[i];
+    if (ch === "(") depth++;
+    else if (ch === ")") depth--;
+    else if (ch === "," && depth === 0) {
+      parts.push(input.slice(start, i).trim());
+      start = i + 1;
+    }
+  }
+  parts.push(input.slice(start).trim());
+  return parts;
+}
+
+/** `rgba(r, g, b, 1)` is just a verbose `#rrggbb` - emit the short form. */
+function opaqueRgbaToHex(css: string): string {
+  return css.replace(/rgba\(\s*(\d+),\s*(\d+),\s*(\d+),\s*1\s*\)/g, (_m, r, g, b) =>
+    rgbToHex({ r: +r, g: +g, b: +b }),
+  );
+}
+
+/**
+ * Copy-paste-ready CSS declarations for the current gradient, one colour stop
+ * per line so long multi-layer values stay readable (and wrap) on any width.
+ */
 function buildExportLines(style: { background: string; backgroundBlendMode: string }): string[] {
-  const lines = [`background: ${style.background};`];
+  const layers = splitTopLevel(opaqueRgbaToHex(style.background));
+  const lines: string[] = [];
+
+  if (!layers.every((l) => /^linear-gradient\(/.test(l))) {
+    lines.push(`background: ${layers.join(", ")};`);
+  } else if (layers.length === 1) {
+    const [angle, ...stops] = splitTopLevel(layers[0].slice("linear-gradient(".length, -1));
+    lines.push(`background: linear-gradient(${angle},`);
+    stops.forEach((stop, i) => lines.push(`  ${stop}${i === stops.length - 1 ? ");" : ","}`));
+  } else {
+    lines.push("background:");
+    layers.forEach((layer, li) => {
+      const [angle, ...stops] = splitTopLevel(layer.slice("linear-gradient(".length, -1));
+      const lastLayer = li === layers.length - 1;
+      lines.push(`  linear-gradient(${angle},`);
+      stops.forEach((stop, i) => {
+        const end = i === stops.length - 1 ? (lastLayer ? ");" : "),") : ",";
+        lines.push(`    ${stop}${end}`);
+      });
+    });
+  }
+
   if (!isDefaultBlend(style.backgroundBlendMode)) {
     lines.push(`background-blend-mode: ${style.backgroundBlendMode};`);
   }
   return lines;
 }
 
+/** Same stops, same colours, same order. */
+function sameStops(a: GradientTick[], b: GradientTick[]): boolean {
+  return a.length === b.length && a.every((t, i) => t.color === b[i].color && t.position === b[i].position);
+}
+
 // ── Score bar ─────────────────────────────────────────────────────────────────
 
 function ScoreBar({ label, value, max }: { label: string; value: number; max: number }) {
   const pct = (value / max) * 100;
-  const color = pct >= 75 ? "#4ade80" : pct >= 45 ? "#facc15" : "#f87171";
+  const color = scoreBand(pct).color;
   return (
     <div className="score-bar">
       <div className="score-bar-header">
@@ -86,6 +149,24 @@ export default function App() {
 
   const sortedTicks = [...ticks].sort((a, b) => a.position - b.position);
 
+  const band = scoreBand(score);
+  const atStopCap = ticks.length >= MAX_STOPS;
+  const showingSuggested = showSuggested && suggested !== null;
+  // Suggest is deterministic: if re-running it would reproduce the current
+  // suggestion, say so rather than offering a button that does nothing.
+  const suggestionIsCurrent = suggested !== null && sameStops(suggested, suggestGradient(ticks));
+  const exportLines = buildExportLines(gradientStyle);
+  const exportText = exportLines.join("\n");
+
+  // Screen-reader summary of the live score, debounced so dragging a handle
+  // doesn't produce a flood of announcements.
+  const scoreSummary = `Score ${score}, ${band.label}, ${issues.length} ${issues.length === 1 ? "issue" : "issues"}`;
+  const [announcedScore, setAnnouncedScore] = useState(scoreSummary);
+  useEffect(() => {
+    const t = setTimeout(() => setAnnouncedScore(scoreSummary), 700);
+    return () => clearTimeout(t);
+  }, [scoreSummary]);
+
   const generate = () => {
     const s = suggestGradient(ticks);
     setSuggested(s);
@@ -93,6 +174,7 @@ export default function App() {
   };
 
   const addTick = useCallback(() => {
+    if (ticks.length >= MAX_STOPS) return;
     const sorted = [...ticks.map((t) => t.position)].sort((a, b) => a - b);
     let bestPos = 50;
     let bestGap = 0;
@@ -103,14 +185,17 @@ export default function App() {
         bestPos = Math.round((sorted[i] + sorted[i + 1]) / 2);
       }
     }
-    setTicks((prev) => [...prev, mkTick("#a78bfa", bestPos)]);
+    // Sample the gradient where the stop lands so adding one doesn't change the look.
+    setTicks((prev) => [...prev, mkTick(colorAtPosition(ticks, bestPos), bestPos)]);
     setShowSuggested(false);
+    setSuggested(null);
   }, [ticks]);
 
   const removeTick = (id: number) => {
     if (ticks.length <= 2) return;
     setTicks((prev) => prev.filter((t) => t.id !== id));
     setShowSuggested(false);
+    setSuggested(null);
   };
 
   const updateColor = (id: number, color: string) => {
@@ -122,6 +207,7 @@ export default function App() {
   const updatePosition = (id: number, position: number) => {
     setTicks((prev) => prev.map((t) => (t.id === id ? { ...t, position } : t)));
     setShowSuggested(false);
+    setSuggested(null);
   };
 
   const handleBarMouseDown = (e: React.MouseEvent, id: number) => {
@@ -137,6 +223,7 @@ export default function App() {
       const pos = Math.round(x * 100);
       setTicks((prev) => prev.map((t) => (t.id === dragging ? { ...t, position: pos } : t)));
       setShowSuggested(false);
+      setSuggested(null);
     },
     [dragging],
   );
@@ -152,11 +239,19 @@ export default function App() {
     };
   }, [handleMouseMove, handleMouseUp]);
 
-  const scoreColor = score >= 75 ? "#4ade80" : score >= 50 ? "#facc15" : "#f87171";
-  const scoreLabel = score >= 80 ? "Excellent" : score >= 65 ? "Good" : score >= 45 ? "Fair" : "Poor";
+  const scoreColor = band.color;
+  const scoreLabel = band.label;
 
   return (
     <div className="studio">
+      <a className="skip-link" href="#main">
+        Skip to main content
+      </a>
+      <StatusRegion />
+      <div className="sr-only" aria-live="polite" aria-atomic="true">
+        {announcedScore}
+      </div>
+
       {/* Shared CSS color-name autocomplete for every stop's Name field */}
       <datalist id={COLOR_NAME_LIST_ID}>
         {CSS_COLOR_NAMES.map((name) => (
@@ -183,6 +278,7 @@ export default function App() {
           </div>
         </header>
 
+        <main id="main" tabIndex={-1}>
         {/* Preview */}
         <div className="gradient-preview" style={gradientStyle} />
 
@@ -190,62 +286,85 @@ export default function App() {
         <div className="controls-surface">
           {/* Tick bar */}
           <section className="tick-bar-section">
-          <div className="section-label">Color Stops — drag to reposition</div>
-          <div ref={barRef} className="tick-bar" style={{ background: barCSS }}>
-            {sortedTicks.map((tick) => (
-              <div
+            <div className="section-label">Color Stops — drag to reposition</div>
+            <div ref={barRef} className="tick-bar" style={{ background: barCSS }}>
+              {sortedTicks.map((tick) => (
+                <div
+                  key={tick.id}
+                  className="tick-handle"
+                  onMouseDown={(e) => handleBarMouseDown(e, tick.id)}
+                  style={{
+                    left: `${tick.position}%`,
+                    background: tick.color,
+                  }}
+                />
+              ))}
+            </div>
+          </section>
+
+          {/* Stop editors — every notation, always visible */}
+          <div className="stop-list">
+            {sortedTicks.map((tick, i) => (
+              <StopCard
                 key={tick.id}
-                className="tick-handle"
-                onMouseDown={(e) => handleBarMouseDown(e, tick.id)}
-                style={{
-                  left: `${tick.position}%`,
-                  background: tick.color,
-                }}
+                tick={tick}
+                index={i}
+                canRemove={ticks.length > 2}
+                onColor={(hex) => updateColor(tick.id, hex)}
+                onPosition={(pos) => updatePosition(tick.id, pos)}
+                onRemove={() => removeTick(tick.id)}
               />
             ))}
+            <button
+              className="btn btn-add btn-add-stop"
+              onClick={addTick}
+              disabled={atStopCap}
+              title={atStopCap ? `Maximum of ${MAX_STOPS} stops reached` : "Add a stop in the widest gap"}
+            >
+              + Add stop{atStopCap ? ` (max ${MAX_STOPS})` : ""}
+            </button>
           </div>
-        </section>
 
-        {/* Stop editors — every notation, always visible */}
-        <div className="stop-list">
-          {sortedTicks.map((tick, i) => (
-            <StopCard
-              key={tick.id}
-              tick={tick}
-              index={i}
-              canRemove={ticks.length > 2}
-              onColor={(hex) => updateColor(tick.id, hex)}
-              onPosition={(pos) => updatePosition(tick.id, pos)}
-              onRemove={() => removeTick(tick.id)}
-            />
-          ))}
-          <button className="btn btn-add btn-add-stop" onClick={addTick}>
-            + Add stop
-          </button>
+          {/* Directions */}
+          <DirectionsPanel
+            directions={directions}
+            blend={blend}
+            onDirections={setDirections}
+            onBlend={setBlend}
+          />
         </div>
-
-        {/* Directions */}
-        <DirectionsPanel
-          directions={directions}
-          blend={blend}
-          onDirections={setDirections}
-          onBlend={setBlend}
-        />
-        </div>{/* end controls-surface */}
+        {/* end controls-surface */}
 
         {/* Export */}
         <div className="panel export-panel">
           <div className="export-head">
             <div className="section-label" style={{ marginBottom: 0 }}>
-              Export CSS
+              {showingSuggested ? "Suggested CSS" : "Export CSS"}
             </div>
-            <CopyButton value={buildExportLines(gradientStyle).join("\n")} />
+            <div className="export-actions">
+              <CopyButton value={exportText} label={showingSuggested ? "suggested CSS" : "CSS"} />
+              <FlashButton
+                text
+                glyph="Copy CSS"
+                title="Copy the CSS to the clipboard"
+                className="btn-copy-css"
+                okGlyph="Copied ✓"
+                errGlyph="Copy failed"
+                okMessage="CSS copied to clipboard"
+                errMessage="Copy failed"
+                onRun={() => writeClipboardText(exportText)}
+              />
+            </div>
           </div>
-          <pre className="export-code">
-            {buildExportLines(gradientStyle).map((line) => (
-              <div key={line}>{line}</div>
+          <pre className="export-code" tabIndex={0} aria-label={showingSuggested ? "Suggested CSS" : "Export CSS"}>
+            {exportLines.map((line, i) => (
+              <div key={i}>{line}</div>
             ))}
           </pre>
+          <p className="export-note">
+            Standard CSS: browsers interpolate between stops in sRGB, not OKLAB.
+            {showingSuggested && " This is the suggested gradient, not the stops shown above."}
+          </p>
         </div>
 
         {/* Score + Suggestion panels */}
@@ -258,10 +377,16 @@ export default function App() {
                 {score}
               </span>
               <span className="score-max">/100</span>
-              <span className="score-badge" style={{ background: `${scoreColor}22`, color: scoreColor }}>
+              <span
+                className="score-badge"
+                style={{ background: `color-mix(in srgb, ${scoreColor} 14%, transparent)`, color: scoreColor }}
+              >
                 {scoreLabel}
               </span>
             </div>
+            <p className="scope-note">
+              Scores the color stops only — directions and blend are not scored.
+            </p>
             <ScoreBar label="Lightness flow" value={details.lightness} max={30} />
             <ScoreBar label="Hue arc" value={details.hue} max={30} />
             <ScoreBar label="Chroma balance" value={details.chroma} max={20} />
@@ -270,7 +395,9 @@ export default function App() {
               <div className="issues">
                 {issues.map((issue, i) => (
                   <div key={i} className="issue">
-                    <span className="issue-icon">⚠</span>
+                    <span className={`issue-icon${band.tone === "good" ? " is-neutral" : ""}`} aria-hidden="true">
+                      {band.tone === "good" ? "•" : "⚠"}
+                    </span>
                     {issue}
                   </div>
                 ))}
@@ -282,8 +409,8 @@ export default function App() {
           <div className="panel">
             <div className="section-label">Perceptual Refinement</div>
             <p className="panel-description">
-              Interpolates your colors through <span className="accent">OKLAB space</span>, smooths lightness flow,
-              balances chroma, and redistributes stops rhythmically.
+              Analyses your colors in <span className="accent">OKLAB space</span>, smooths lightness flow, balances
+              chroma, and redistributes stops rhythmically. Exported CSS stays standard sRGB.
             </p>
 
             {suggested && (
@@ -294,9 +421,15 @@ export default function App() {
             )}
 
             <div className="btn-row">
-              <button className="btn btn-primary" onClick={generate}>
-                {suggested ? "↻ Re-suggest" : "✦ Suggest"}
-              </button>
+              {suggestionIsCurrent ? (
+                <p className="suggest-note" title="Suggest is deterministic: running it again on these stops gives the same result">
+                  Suggestion is up to date for these stops
+                </p>
+              ) : (
+                <button className="btn btn-primary" onClick={generate}>
+                  {suggested ? "↻ Re-suggest" : "✦ Suggest"}
+                </button>
+              )}
               {suggested && (
                 <button
                   className="btn btn-apply"
@@ -315,12 +448,14 @@ export default function App() {
               <div className="btn-row toggle-row">
                 <button
                   className={`btn btn-toggle ${!showSuggested ? "active" : ""}`}
+                  aria-pressed={!showSuggested}
                   onClick={() => setShowSuggested(false)}
                 >
                   Original
                 </button>
                 <button
                   className={`btn btn-toggle ${showSuggested ? "active" : ""}`}
+                  aria-pressed={showSuggested}
                   onClick={() => setShowSuggested(true)}
                 >
                   Suggested
@@ -329,9 +464,10 @@ export default function App() {
             )}
           </div>
         </div>
+        </main>
 
-        {/* Theory note */}
-        <footer>
+        {/* Theory note + footer */}
+        <footer className="studio-footer">
           <details className="theory-note">
             <summary className="disclosure-summary theory-summary">How does this work?</summary>
             <p>
@@ -356,6 +492,19 @@ export default function App() {
               reducing chroma so the hue never drifts.
             </p>
           </details>
+          <p className="footer-line">
+            Runs entirely in your browser. Nothing is uploaded.
+            <span className="footer-sep" aria-hidden="true">
+              ·
+            </span>
+            v{__APP_VERSION__}
+            <span className="footer-sep" aria-hidden="true">
+              ·
+            </span>
+            <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer">
+              GitHub
+            </a>
+          </p>
         </footer>
       </div>
     </div>

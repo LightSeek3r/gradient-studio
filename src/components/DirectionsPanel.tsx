@@ -313,13 +313,18 @@ export function DirectionsPanel({
             <button type="button" className="btn btn-ghost" onClick={spread}>
               ⟳ Spread evenly
             </button>
-            <div className="dir-presets">
+            <div className="dir-presets" role="group" aria-label="Spread: number of evenly-spaced directions">
+              <span className="dir-presets-label" aria-hidden="true">
+                Spread:
+              </span>
               {Array.from({ length: MAX_DIRECTIONS }, (_, i) => i + 1).map((n) => (
                 <button
                   key={n}
                   type="button"
                   className={`btn dir-preset${directions.length === n ? " active" : ""}`}
-                  title={`${n} evenly-spaced direction${n > 1 ? "s" : ""}`}
+                  title={`Spread: ${n} evenly-spaced direction${n > 1 ? "s" : ""}`}
+                  aria-label={`Spread: ${n} direction${n > 1 ? "s" : ""}`}
+                  aria-pressed={directions.length === n}
                   onClick={() => setCount(n)}
                 >
                   {n}
@@ -328,21 +333,24 @@ export function DirectionsPanel({
             </div>
           </div>
 
-          <label className="dir-blend">
-            <span className="triple-label">Blend</span>
-            <select
-              className="field-input field-select"
-              value={blend}
-              aria-label="Direction blend mode"
-              onChange={(e) => onBlend(e.target.value as GradientBlendMode)}
-            >
-              {BLEND_MODES.map((m) => (
-                <option key={m.value} value={m.value}>
-                  {m.label}
-                </option>
-              ))}
-            </select>
-          </label>
+          {/* Blend only matters once there are layers to blend. */}
+          {directions.length > 1 && (
+            <label className="dir-blend">
+              <span className="triple-label">Blend</span>
+              <select
+                className="field-input field-select"
+                value={blend}
+                aria-label="Direction blend mode"
+                onChange={(e) => onBlend(e.target.value as GradientBlendMode)}
+              >
+                {BLEND_MODES.map((m) => (
+                  <option key={m.value} value={m.value}>
+                    {m.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
         </div>
       </div>
     </section>

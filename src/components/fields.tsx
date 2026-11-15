@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { announce } from "../announce";
 import { readClipboardText, writeClipboardText } from "../clipboard";
 import { parseAnyColor } from "../color-formats";
 
@@ -14,11 +15,26 @@ export function FlashButton({
   title,
   className = "",
   onRun,
+  text = false,
+  ariaLabel,
+  okMessage = "Done",
+  errMessage = "Failed",
+  okGlyph = "✓",
+  errGlyph = "✕",
 }: {
   glyph: string;
   title: string;
   className?: string;
   onRun: () => Promise<boolean> | boolean;
+  /** A labelled text button rather than a 24px icon button. */
+  text?: boolean;
+  /** Accessible name; for text buttons it must start with the visible `glyph`. */
+  ariaLabel?: string;
+  /** Spoken (via the status region) when the action succeeds / fails. */
+  okMessage?: string;
+  errMessage?: string;
+  okGlyph?: string;
+  errGlyph?: string;
 }) {
   const [flash, setFlash] = useState<"ok" | "err" | null>(null);
 
@@ -32,22 +48,36 @@ export function FlashButton({
     <button
       type="button"
       title={title}
-      aria-label={title}
-      className={`btn field-btn ${className} ${flash ? `flash-${flash}` : ""}`}
-      onClick={async () => setFlash((await onRun()) ? "ok" : "err")}
+      aria-label={flash ? undefined : (ariaLabel ?? (text ? undefined : title))}
+      className={`btn ${text ? "btn-text" : "field-btn"} ${className} ${flash ? `flash-${flash}` : ""}`}
+      onClick={async () => {
+        const ok = await onRun();
+        setFlash(ok ? "ok" : "err");
+        announce(ok ? okMessage : errMessage);
+      }}
     >
-      {flash === "ok" ? "✓" : flash === "err" ? "✕" : glyph}
+      {flash === "ok" ? okGlyph : flash === "err" ? errGlyph : glyph}
     </button>
   );
 }
 
 /** Pastes the clipboard into a color field, accepting any notation. */
-export function PasteButton({ onColor }: { onColor: (hex: string) => void }) {
+export function PasteButton({
+  onColor,
+  label,
+}: {
+  onColor: (hex: string) => void;
+  /** Which field this pastes into, e.g. "stop 2 hex" - makes the name unique. */
+  label: string;
+}) {
   return (
     <FlashButton
       glyph="⎘"
-      title="Paste a color from the clipboard (hex, rgb, hsl or name)"
+      title={`Paste a single color into ${label} (hex, rgb, hsl or name)`}
+      ariaLabel={`Paste into ${label}`}
       className="btn-paste"
+      okMessage={`Pasted into ${label}`}
+      errMessage={`Could not paste into ${label}: clipboard does not hold a single color`}
       onRun={async () => {
         const text = await readClipboardText();
         if (!text) return false;
@@ -60,13 +90,26 @@ export function PasteButton({ onColor }: { onColor: (hex: string) => void }) {
   );
 }
 
-export function CopyButton({ value }: { value: string }) {
+export function CopyButton({
+  value,
+  copyValue,
+  label,
+}: {
+  /** What is shown / named in the tooltip. */
+  value: string;
+  /** What actually lands on the clipboard, when it differs from `value`. */
+  copyValue?: string;
+  /** Short name used instead of `value` in the tooltip and announcement. */
+  label?: string;
+}) {
   return (
     <FlashButton
       glyph="⧉"
-      title={`Copy ${value}`}
+      title={`Copy ${label ?? value}`}
       className="btn-copy"
-      onRun={() => writeClipboardText(value)}
+      okMessage={`Copied ${label ?? value}`}
+      errMessage="Copy failed"
+      onRun={() => writeClipboardText(copyValue ?? value)}
     />
   );
 }
@@ -107,6 +150,7 @@ export function ColorTextField({
       list={listId}
       placeholder={placeholder}
       aria-label={ariaLabel}
+      title={shown}
       spellCheck={false}
       autoComplete="off"
       onBlur={() => setDraft(null)}
@@ -123,6 +167,8 @@ export function ColorTextField({
 
 export interface TriplePart {
   label: string;
+  /** Spoken name, e.g. "red" - combined with the stop to label the input. */
+  name: string;
   min: number;
   max: number;
   suffix?: string;
@@ -137,7 +183,10 @@ export function NumericTriple({
   parts,
   values,
   onCommit,
+  labelPrefix,
 }: {
+  /** Qualifies each input's accessible name, e.g. "Stop 2" -> "Stop 2 red". */
+  labelPrefix: string;
   parts: [TriplePart, TriplePart, TriplePart];
   values: [number, number, number];
   onCommit: (values: [number, number, number]) => void;
@@ -172,7 +221,7 @@ export function NumericTriple({
             min={part.min}
             max={part.max}
             value={shown[i] ?? ""}
-            aria-label={part.label}
+            aria-label={`${labelPrefix} ${part.name}`}
             onBlur={() => setDrafts(null)}
             onChange={(e) => change(i, e.target.value)}
           />

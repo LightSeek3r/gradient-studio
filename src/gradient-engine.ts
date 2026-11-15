@@ -711,3 +711,37 @@ export function interpolateGradient(ticks: GradientTick[], n: number): string[] 
   }
   return result;
 }
+
+/**
+ * The colour a gradient shows at `position` (0-100), interpolated in OKLAB
+ * between the surrounding stops. Positions outside the stop range take the
+ * nearest end stop's colour, matching how CSS paints beyond the first/last stop.
+ */
+export function colorAtPosition(ticks: GradientTick[], position: number): string {
+  if (ticks.length === 0) return "#000000";
+  const sorted = [...ticks].sort((a, b) => a.position - b.position);
+  if (position <= sorted[0].position) return sorted[0].color;
+  const last = sorted[sorted.length - 1];
+  if (position >= last.position) return last.color;
+
+  let lo = 0;
+  for (let i = 0; i < sorted.length - 1; i++) {
+    if (sorted[i + 1].position >= position) {
+      lo = i;
+      break;
+    }
+  }
+  const a = sorted[lo];
+  const b = sorted[lo + 1];
+  const span = b.position - a.position;
+  const frac = span === 0 ? 0 : (position - a.position) / span;
+  const la = rgbToOklab(hexToRgb(a.color));
+  const lb = rgbToOklab(hexToRgb(b.color));
+  return rgbToHex(
+    oklabToRgb({
+      L: la.L + (lb.L - la.L) * frac,
+      a: la.a + (lb.a - la.a) * frac,
+      b: la.b + (lb.b - la.b) * frac,
+    }),
+  );
+}

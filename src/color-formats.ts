@@ -399,9 +399,15 @@ export function parseHsl(raw: string): string | null {
   return hslToHex({ h, s: asPercent(tokens[1]), l: asPercent(tokens[2]) });
 }
 
-/** A CSS color keyword. Tolerates spaces, casing, and a leading `~`. */
+/** Display form of a name: `nearest: midnightblue` when it is only an approximation. */
+export function formatNameDisplay(hex: string): string {
+  const { name, exact } = nearestColorName(hex);
+  return exact ? name : `nearest: ${name}`;
+}
+
+/** A CSS color keyword. Tolerates spaces, casing, and a leading `~` or `nearest:`. */
 export function parseName(raw: string): string | null {
-  const key = raw.trim().toLowerCase().replace(/^~/, "").replace(/[\s_-]/g, "");
+  const key = raw.trim().toLowerCase().replace(/^(~|nearest\s*:)/, "").replace(/[\s_-]/g, "");
   return CSS_NAMED_COLORS[key] ?? null;
 }
 
@@ -413,8 +419,15 @@ export function parseAnyColor(raw: string): string | null {
   const text = raw.trim();
   if (!text) return null;
 
-  if (/^rgba?\s*\(/i.test(text)) return parseRgb(text);
-  if (/^hsla?\s*\(/i.test(text)) return parseHsl(text);
+  // A gradient (or anything else holding several colours) is not "a colour":
+  // reading its first number as a channel silently yields a wrong colour.
+  if (/gradient\s*\(/i.test(text)) return null;
+  const hashes = text.match(/#/g)?.length ?? 0;
+  const functions = text.match(/\b(?:rgba?|hsla?)\s*\(/gi)?.length ?? 0;
+  if (hashes + functions > 1) return null;
+
+  if (/^rgba?\s*\(/i.test(text)) return /^[^()]*\([^()]*\)?\s*$/.test(text) ? parseRgb(text) : null;
+  if (/^hsla?\s*\(/i.test(text)) return /^[^()]*\([^()]*\)?\s*$/.test(text) ? parseHsl(text) : null;
   if (text.startsWith("#")) return parseHex(text);
 
   const named = parseName(text);
@@ -423,7 +436,10 @@ export function parseAnyColor(raw: string): string | null {
   const hex = parseHex(text);
   if (hex) return hex;
 
-  // Bare triples: percent signs read as HSL, plain numbers as RGB.
+  // Bare triples: percent signs read as HSL, plain numbers as RGB. Only plain
+  // numbers and separators qualify - stray words or punctuation mean it's not a
+  // lone colour value.
+  if (!/^[\d\s.,%/+-]+(?:deg|grad|rad|turn)?[\d\s.,%/+-]*$/i.test(text)) return null;
   const tokens = numericTokens(text);
   if (tokens.length >= 3) {
     const looksHsl = tokens.slice(1, 3).some((t) => t.percent);
