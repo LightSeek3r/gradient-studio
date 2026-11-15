@@ -8,8 +8,8 @@ playground and the documentation for that metric. The plan behind this is
 
 ## The core
 
-The core is `src/gradient-engine.ts`, `src/color-formats.ts` and the scoring
-model `src/scoring-model-v1.ts` (to become `packages/core`). It is:
+The core is `packages/core/src/gradient-engine.ts`, `color-formats.ts` and the scoring
+model `scoring-model-v1.ts`. It is:
 
 - **pure functions** — same input, same output; no clock, no randomness, no
   global state, no mutation of arguments;

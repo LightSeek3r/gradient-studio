@@ -8,7 +8,7 @@ import { describe, expect, it } from "vitest";
 import { scoreGradient } from "../src/gradient-engine";
 import { V1_FINDING_CODES, V1_MODEL } from "../src/scoring-model-v1";
 
-const spec = readFileSync(new URL("../spec/scoring-v1.md", import.meta.url), "utf-8");
+const spec = readFileSync(new URL("../../../spec/scoring-v1.md", import.meta.url), "utf-8");
 
 function get(path: string): unknown {
   return path.split(".").reduce<unknown>((o, k) => (o as Record<string, unknown> | undefined)?.[k], V1_MODEL);

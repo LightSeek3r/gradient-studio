@@ -130,22 +130,29 @@ is in use) for the current stops, directions, weights and blend, with a copy but
 
 ## Project structure
 
+An npm-workspaces monorepo: a DOM-free engine package and the web app that uses it.
+
 ```
-src/
-  gradient-engine.ts     OKLAB/OKLCH conversions, the quality scorer, the suggestion engine,
-                         and CSS composition (single angle and multi-direction)
-  color-formats.ts       hex/RGB/HSL/named-colour parsing and formatting, the 148 CSS colour
-                         names, gamut mapping and complementary colours
-  clipboard.ts           clipboard read/write with a fallback; every call resolves, never throws
-  components/
+packages/core/           @opal42/gradient (working name, private): the engine, no DOM
+  src/gradient-engine.ts   OKLAB/OKLCH conversions, the quality scorer, the suggestion engine,
+                           and CSS composition (single angle and multi-direction)
+  src/color-formats.ts     hex/RGB/HSL/named-colour parsing and formatting, the 148 CSS colour
+                           names, gamut mapping and complementary colours
+  src/scoring-model-v1.ts  the frozen v1 scoring model (thresholds and weights)
+  src/index.ts             the public surface
+  tests/, scripts/         Vitest suite; vector generator and diff tool
+apps/web/                gradient-studio-web (private): the React app, built into /dist
+  src/clipboard.ts         clipboard read/write with a fallback; every call resolves, never throws
+  src/components/
     StopCard.tsx           the per-stop editor (all formats, complement, swap)
     DirectionsPanel.tsx    the compass, direction rows, presets and blend mode
     fields.tsx             shared copy/paste buttons and format-aware inputs
-  App.tsx                top-level state and layout
-  App.css, index.css     styles
-public/                  favicon, app icons, web manifest and the Open Graph image
-docs/                    the README screenshots and the repository's social preview image
-index.html               page shell, meta description, Open Graph and Twitter Card tags
+  src/App.tsx              top-level state and layout
+  src/App.css, index.css   styles
+  public/                  favicon, app icons, web manifest and the Open Graph image
+  index.html               page shell, meta description, Open Graph and Twitter Card tags
+spec/                    scoring-v1.md and the characterisation vectors
+docs/                    the README screenshots, the plan and the social preview image
 ```
 
 ## Getting started
@@ -157,13 +164,17 @@ git clone https://github.com/LightSeek3r/gradient-studio.git
 cd gradient-studio
 npm ci
 npm run dev       # Vite dev server on http://localhost:5173
-npm run lint      # ESLint
-npm run build     # type-check (tsc -b) and build into dist/
+npm run lint      # ESLint (all workspaces)
+npm run typecheck # type-check the core package (no DOM)
+npm test          # Vitest suite in packages/core
+npm run build     # type-check and build the web app into the repo-root dist/
 npm run preview   # serve the production build on http://localhost:4173
 ```
 
+All commands run from the repository root and delegate to the workspaces.
+
 There is no configuration, no environment variable and no backend: `npm run build` produces a
-static site in `dist/` that any static host can serve.
+static site in the repo-root `dist/` that any static host can serve.
 
 ## Deployment
 

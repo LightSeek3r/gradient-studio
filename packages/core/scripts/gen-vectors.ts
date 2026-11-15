@@ -358,7 +358,7 @@ function colorInputs(): { kind: ColorCase["kind"]; input: unknown }[] {
 // ── Output ────────────────────────────────────────────────────────────────────
 
 const here = dirname(fileURLToPath(import.meta.url));
-const outDir = resolve(here, "../spec/vectors");
+const outDir = resolve(here, "../../../spec/vectors");
 
 /**
  * One case per line so diffs of regenerated vectors stay reviewable. Key order

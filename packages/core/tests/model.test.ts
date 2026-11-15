@@ -82,7 +82,7 @@ describe("V1_MODEL", () => {
 
 describe("measurements and the boundary table", () => {
   const corpus = (
-    JSON.parse(readFileSync(new URL("../spec/vectors/v1-score.json", import.meta.url), "utf-8")) as {
+    JSON.parse(readFileSync(new URL("../../../spec/vectors/v1-score.json", import.meta.url), "utf-8")) as {
       cases: ScoreCase[];
     }
   ).cases;

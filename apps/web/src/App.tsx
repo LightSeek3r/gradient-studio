@@ -6,12 +6,13 @@ import {
   buildMultiGradientStyle,
   colorAtPosition,
   rgbToHex,
+  CSS_COLOR_NAMES,
+  CSS_NAMED_COLORS,
   MAX_DIRECTIONS,
   type GradientBlendMode,
   type GradientDirection,
   type GradientTick,
-} from "./gradient-engine";
-import { CSS_COLOR_NAMES, CSS_NAMED_COLORS } from "./color-formats";
+} from "@opal42/gradient";
 import { COLOR_NAME_LIST_ID, StopCard } from "./components/StopCard";
 import { DirectionsPanel } from "./components/DirectionsPanel";
 import { CopyButton, FlashButton } from "./components/fields";

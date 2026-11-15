@@ -29,8 +29,11 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Type-check core (no DOM)
+        run: npm run typecheck -w @opal42/gradient
+
       - name: Test
         run: npm test
 
-      - name: Type-check and build
+      - name: Build
         run: npm run build

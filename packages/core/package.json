@@ -1,0 +1,23 @@
+{
+  "name": "@opal42/gradient",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Gradient scoring and colour engine (OKLAB/OKLCH). Working name; scope unverified.",
+  "license": "MIT",
+  "author": "LightSeek3r (https://github.com/LightSeek3r)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LightSeek3r/gradient-studio.git",
+    "directory": "packages/core"
+  },
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.scripts.json",
+    "test": "vitest run",
+    "vectors": "vite-node scripts/gen-vectors.ts",
+    "vectors:diff": "vite-node scripts/vector-diff.ts"
+  }
+}

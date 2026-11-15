@@ -21,16 +21,19 @@ See **Getting started** in the [README](README.md). In short: `npm ci`, then `np
 3. Run the checks CI runs:
 
    ```bash
-   npm run lint     # ESLint
-   npm run build    # type-check (tsc -b) and production build
+   npm run lint      # ESLint (all workspaces)
+   npm run typecheck # core package, no DOM
+   npm test          # Vitest suite
+   npm run build     # type-check and production build into dist/
    ```
 
 4. Put the reason in the PR description. For UI changes, add a before/after screenshot.
 
 ### House rules
 
-- **Colour maths lives in `src/gradient-engine.ts` and `src/color-formats.ts`**, as pure functions
-  with no React in them; components only call them.
+- **Colour maths lives in `packages/core`** (`gradient-engine.ts`, `color-formats.ts`,
+  `scoring-model-v1.ts`), as pure functions with no React and no DOM; the web app in `apps/web`
+  imports it as `@opal42/gradient`, never by relative path into core's `src`.
 - **Scores and suggestions are computed in OKLAB/OKLCH.** A change to the scorer should say which
   gradients score differently and why.
 - **No network requests and no tracking.** The app is a static page and stays one.

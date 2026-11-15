@@ -8,11 +8,13 @@ import {
   formatRgb,
   hexToHsl,
   hexToHslPrecise,
+  hexToRgb,
   hslToHex,
   parseHex,
   parseName,
-} from "../color-formats";
-import { hexToRgb, rgbToHex, type GradientTick } from "../gradient-engine";
+  rgbToHex,
+  type GradientTick,
+} from "@opal42/gradient";
 import {
   ColorTextField,
   CopyButton,

@@ -6,23 +6,31 @@ import tseslint from 'typescript-eslint'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([
-  globalIgnores(['dist']),
+  globalIgnores(['dist', '**/node_modules', '**/coverage']),
   {
+    // Every workspace: base JS + TypeScript rules.
     files: ['**/*.{ts,tsx}'],
-    extends: [
-      js.configs.recommended,
-      tseslint.configs.recommended,
-      reactHooks.configs.flat.recommended,
-      reactRefresh.configs.vite,
-    ],
+    extends: [js.configs.recommended, tseslint.configs.recommended],
     languageOptions: {
       ecmaVersion: 2020,
+    },
+  },
+  {
+    // The web app runs in the browser and is the only place React rules apply.
+    files: ['apps/web/**/*.{ts,tsx}'],
+    extends: [reactHooks.configs.flat.recommended, reactRefresh.configs.vite],
+    languageOptions: {
       globals: globals.browser,
     },
   },
   {
-    // Tests, vector generator and tool configs run in Node, not the browser.
-    files: ['tests/**/*.ts', 'scripts/**/*.ts', 'vitest.config.ts'],
+    // Core tests, vector scripts and tool configs run in Node, not the browser.
+    files: [
+      'packages/*/tests/**/*.ts',
+      'packages/*/scripts/**/*.ts',
+      'packages/*/vitest.config.ts',
+      'apps/web/vite.config.ts',
+    ],
     languageOptions: {
       globals: globals.node,
     },

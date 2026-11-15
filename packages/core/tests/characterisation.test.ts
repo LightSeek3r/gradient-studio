@@ -30,7 +30,7 @@ interface VectorFile<T> {
 }
 
 function load<T>(name: string): VectorFile<T> {
-  const url = new URL(`../spec/vectors/${name}`, import.meta.url);
+  const url = new URL(`../../../spec/vectors/${name}`, import.meta.url);
   return JSON.parse(readFileSync(url, "utf-8")) as VectorFile<T>;
 }
 

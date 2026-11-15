@@ -30,7 +30,7 @@ type Json = Record<string, unknown>;
 type Defect = "D1" | "D2" | "D3" | "D4" | "D5" | "D6" | "D7";
 
 const here = dirname(fileURLToPath(import.meta.url));
-const root = resolve(here, "..");
+const root = resolve(here, "../../..");
 const ref = process.argv.slice(2).find((a) => !a.startsWith("--")) ?? "HEAD";
 const markdown = process.argv.includes("--markdown");
 

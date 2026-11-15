@@ -25,7 +25,7 @@ import { mulberry32, type ScoreCase } from "../scripts/vector-lib";
 // ── Corpus ────────────────────────────────────────────────────────────────────
 
 const vectorCorpus: GradientTick[][] = (
-  JSON.parse(readFileSync(new URL("../spec/vectors/v1-score.json", import.meta.url), "utf-8")) as {
+  JSON.parse(readFileSync(new URL("../../../spec/vectors/v1-score.json", import.meta.url), "utf-8")) as {
     cases: ScoreCase[];
   }
 ).cases.map((c) => c.stops.map((s) => ({ ...s })));

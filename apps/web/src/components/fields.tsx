@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { announce } from "../announce";
 import { readClipboardText, writeClipboardText } from "../clipboard";
-import { parseAnyColor } from "../color-formats";
+import { parseAnyColor } from "@opal42/gradient";
 
 // ── Flash button ──────────────────────────────────────────────────────────────
 

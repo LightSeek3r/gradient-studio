@@ -4,7 +4,7 @@ import {
   spreadDirectionAngles,
   type GradientBlendMode,
   type GradientDirection,
-} from "../gradient-engine";
+} from "@opal42/gradient";
 
 /** Per-direction identity colors for the compass and row markers. */
 const DIRECTION_COLORS = [
