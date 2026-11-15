@@ -11,7 +11,7 @@ Gradient Studio is today an algorithm plus a web page. The plan: make it **the q
 
 **Why this survives native `linear-gradient(in oklch, …)`** (Baseline "newly available" since 2024-06; "widely available" about now): browsers can now *interpolate* well but cannot *judge* — which stops, how much hue/chroma travel, dead zones, banding, gamut, which space and hue path to pick. Nobody else scores: culori / Color.js / chroma.js are colour math; postcss-easing-gradients and Josh Comeau-style recipes give fixes without diagnosis.
 
-**Honest caveat that shapes the whole plan:** nobody has yet checked that this score matches human judgement. Until that's done (Phase 0.5), it is a "smoothness metric by our definition", not a quality oracle, and must not be sold as one.
+**Honest caveat that shapes the whole plan:** nobody has yet checked that this score matches human judgement. Until that's done (the optional Phase 0.5 survey, currently passed on), it is a "smoothness metric by our definition", not a quality oracle, and must not be sold as one.
 
 **Principles.** Core = pure functions, zero runtime deps, no network/storage/DOM/Node globals. Deterministic *within one JS implementation*; ports conform on non-boundary vectors (see §3.3). Explainable: every point lost maps to a published, coded rule. No telemetry in any product surface; any research data collection is separate, explicit and documented. MIT.
 
@@ -120,8 +120,12 @@ complement(color): string
 
 ## 4. Decisions
 
-**D1. Naming — open decision for the owner (recommendation below).**
-"Gradient Studio" is generic and already in use (a Peerlist project, Taskade templates, a near-identical ChatGPT app "Gradients Studio"); agent directories are exactly where we want to be found. `@unit42/*` should be **avoided**: Unit 42 is also Palo Alto Networks' threat-intelligence brand (trademark/confusion risk) — credit "by Unit42" in READMEs only. **Recommendation:** keep "Gradient Studio" for the web app and repo; pick a **distinctive coined name for the metric/packages/CLI before the first publish** (renaming after publish is the expensive step). Before publishing: npm/GitHub/JSR search + INPI/EUIPO/USPTO check. Fallback scope: `@lightseek3r/*`. Do **not** squat PyPI/crates.io placeholders (crates.io policy; PyPI PEP 541). Below, `@scope/…` stands for the chosen name.
+**D1. Naming — decided (working name), pending availability and trademark checks.**
+"Gradient Studio" is generic and already in use (a Peerlist project, Taskade templates, a near-identical ChatGPT app "Gradients Studio"); agent directories are exactly where we want to be found. `@unit42/*` is **avoided**: Unit 42 is also Palo Alto Networks' threat-intelligence brand. The owner proposed **`@opal42`**, and it is adopted as the publisher scope: it keeps the "42" tie to the owner's Unit42 brand without the "Unit" overlap, and an opal's play of colour is an apt image for gradients.
+- **App and repo:** stay "Gradient Studio".
+- **Packages (working names):** `@opal42/gradient` (core), `opal42` (CLI; `npx opal42 score …`, bin `opal42`), `@opal42/stylelint-plugin`, `@opal42/mcp`. The metric is called the **Opal score** (descriptive fallback: "gradient smoothness score").
+- **Not yet verified (the owner must do the first, I can't from this environment):** (a) the `@opal42` npm org/scope is actually claimable — unscoped names `opal42`, `opal-gradient`, `opalgrade`, `chromalint`, `gradelint`, `oklint`, `gradescore` returned 404 on the npm registry, which is *not* proof the scope is free; the GitHub API was blocked here, so the `opal42` GitHub org/user is unchecked too; (b) "Opal" is a crowded word in software — notably **Opal, the Ruby-to-JavaScript compiler** (its own CLI is `opal`, hence the bin name `opal42`), plus consumer apps — so run an INPI/EUIPO/USPTO check (software classes 9/42) before the first publish; (c) JSR scope.
+- **Fallback:** `@lightseek3r/*`. Do **not** squat PyPI/crates.io placeholders (crates.io policy; PyPI PEP 541). Below, `@scope/…` = `@opal42/…` while the working name holds.
 
 **D2. Browser extension — Phase 3 at most, DevTools panel only.** Reach is real (D report), but it needs the parser proven on real CSS, and a store account is the juiciest phishing target a solo maintainer can own. Needs hardware-key 2FA + dedicated publisher account first. Popup/context menu/EyeDropper cut from v1 (the web app is the editor).
 
@@ -129,7 +133,7 @@ complement(color): string
 
 **D4. No public REST product.** One stateless Worker later, solely for remote MCP. Hosted privacy wording: "stateless: no storage, no request-body logging, no cookies; Cloudflare, as processor, still sees IP addresses (personal data under GDPR)". Disable Workers Logs/observability/Logpush explicitly. "Nothing leaves your device" is reserved for app, library, CLI, extensions.
 
-**D5. Validate the metric before promoting it** (new). No `min-score` lint default and no public bench leaderboard until the human-agreement result is published (Phase 0.5).
+**D5. Be honest about an unvalidated metric.** Owner passed on the validation survey for now (Phase 0.5 is optional). Until a human-agreement result exists: no default `min-score` threshold, neutral wording in the UI/CLI/Skill ("smoothness score", not "quality"), and the bench is labelled as smoothness-only. If the survey is run later, publish its result before adding defaults.
 
 **D6. Capacity cap:** at most **six maintained surfaces through Phase 2** — core, CLI, stylelint plugin, MCP+Skill (counts as one), web app, GitHub Action. JSR, PWA, Worker, bench, pre-commit are folded in or moved later (see roadmap). A surface missing its continue-gate is archived with a README note.
 
@@ -151,15 +155,15 @@ Effort: S ≤ 1 wk · M 2–4 · L > 4 (solo). Value 1–5.
 | Core package (npm) | **NOW** | M | 5 | tests, defects fixed | Root dependency |
 | Parser with source ranges | **NOW** | M-L | 5 | core | Hardest piece; own line item |
 | Launch write-up ("why your gradient looks muddy") + shareable playground URLs | **NOW** | S | 4 | web app URL state | Cheapest demand probe, before the CLI |
-| Metric validation survey | **NOW** | S-M | 5 | — | Gates D5 |
+| Metric validation survey | OPTIONAL | S-M | 5 | — | Owner passed for now; D5 labelling rules apply instead |
 | CLI (`score`/`refine`/`--json`/`--min-score`) | **NOW** | S | 5 | parser | Substrate for Action/hooks |
-| Stylelint plugin (+autofix, opt-in) | NEXT | M | 5 | parser ranges, D5 | Best differentiation |
+| Stylelint plugin (+autofix, opt-in) | NEXT | M | 5 | parser ranges | Best differentiation; no default threshold (D5) |
 | GitHub Action + pre-commit recipe | NEXT | S | 4 | CLI | Thin wrappers |
-| Agent Skill → MCP stdio | NEXT | S-M | 4 | CLI/core | Strongest niche; threshold derived from validation |
+| Agent Skill → MCP stdio | NEXT | S-M | 4 | CLI/core | Strongest niche; no hard-coded threshold (D5) |
 | Web app: URL state, paste-CSS import, a11y, PWA SW | NEXT | M | 4 | core | App = docs/demo |
 | JSR publish | NEXT | S | 2 | explicit return types | Near-free |
 | Remote MCP (stateless Worker) | LATER | S | 3 | MCP stdio, privacy wording | |
-| GradientBench ("smoothness by our metric", not validation) | LATER | M | 3 | D5 result | Awareness, with caveats |
+| GradientBench ("smoothness by our metric", not validation) | LATER | M | 3 | CLI, Skill | Awareness; labelled smoothness-only (D5) |
 | VS Code (+Open VSX (U)) | LATER | M | 4 | parser ranges, stylelint proof | |
 | Chrome/Edge+Firefox DevTools panel (WXT) | LATER | M | 4 | core 1.0, account security | D2 |
 | Figma plugin | LATER | M | 4 | `bakeStops`, matrix helper | Figma lacks interpolation spaces |
@@ -198,8 +202,17 @@ Goal: engine tested, defects fixed, frozen as v1, in a workspace; web app unchan
 
 Exit: vectors replay green; core typechecks without DOM; app numerically identical (except fixed bugs, noted in changelog). Gate: names claimable (else fallback scope).
 
-### Phase 0.5 — Validate the metric (weeks 3–5, parallel)
-~40 gradient pairs, 20+ raters, **run as an offline/opt-in survey** (this is data collection: needs consent text and retention rules, kept separate from the product). Report rank correlation (Spearman/Kendall) between human preference and score, per dimension. **Gate (D5):** publish the result before any lint default, bench leaderboard, or "refine if < N" guidance. If correlation is weak, re-weight in v2 and say so.
+### Phase 0.5 — Validate the metric (OPTIONAL — owner chose to pass for now)
+~40 gradient pairs, 20+ raters, **run as an offline/opt-in survey** (this is data collection: needs consent text and retention rules, kept separate from the product). Report rank correlation (Spearman/Kendall) between human preference and score, per dimension.
+**If skipped (current decision), D5 becomes a labelling rule instead of a gate:** the score is always described as a *smoothness score by our definition, not a quality verdict*; `min-score` has **no default threshold** (users must choose one); the Skill ships without a hard-coded "refine if < 70"; GradientBench is labelled as measuring smoothness only; the UI drops verdict words like "Excellent" in favour of neutral bands. Revisit when there is user demand for a defensible threshold.
+
+### Track U — Web app UX (parallel to Phases 0–2; details in [`UX-REVIEW.md`](UX-REVIEW.md))
+The app review found real bugs (silent wrong import of pasted CSS, a position field that re-sorts mid-keystroke, Export CSS that disagrees with the visible stops while a suggestion is shown, a no-op "Re-suggest"), measurable accessibility failures (74 contrast failures, 31 of 92 tab stops with no visible focus, mouse-only stop handles, no `aria-live`) and a layout that puts the score ~1,700 px away from the stops it scores.
+- **U0 (1–2 days, no dependencies):** quick wins and bugfixes — `color-scheme`, `:focus-visible`, contrast tokens, font weights, hex export, `<main>`/`aria-live`, add-stop sampling + cap, parser rejects `gradient(`, position commit-on-blur.
+- **U1 (2–3 weeks):** two-column sticky layout + mobile sheet, selected-stop inspector, pointer/keyboard handles, `GradientDocument` + undo/redo, URL-hash + autosave, paste-anywhere CSS import, honest Suggest compare.
+- **U2 (after Phase 0 task 10 — coded, located issues):** issue lane, points ledger, per-issue "Fix this" with ghost preview, sparklines, delta badge.
+- **U3:** export tabs, issue-code preset gallery, recent history, EN/FR, SVG icons, design-token extraction.
+U0 can start before Phase 0 finishes; U1's import should reuse the Phase 1 parser (a minimal stops/angle parser can ship earlier); U2 shares its deliverable with the core API.
 
 ### Phase 1 — Library, parser, CLI (weeks 5–10)
 Deliverables: new API (§3.4, v1 model only); `parseGradient` per D7 with a real-world corpus harvested from popular OSS CSS and a fuzz suite with a **time budget** (ReDoS; Worker 10 ms CPU (U)); `toCSS`, `bakeStops`; CLI (stdin/files, `--json`, `--min-score`, documented exit codes, stable JSON schema); exports map, `sideEffects:false`, size-limit/publint/arethetypeswrong (budgets from first measurement; targets ≤4 KB core / ≤3 KB colour+names gz are unmeasured); changesets + npm Trusted Publishing with provenance; app migrated via `compat`. **Launch write-up** with shareable playground URLs.
@@ -207,7 +220,7 @@ Exit: `0.x` published with provenance; parser passes corpus; CLI schema document
 Gate (≈ week 18): any outside signal (stranger issue, dependent repo, downloads not explained by CI). None → keep going but lead Phase 2 with the Skill/awareness work rather than more tooling.
 
 ### Phase 2 — Lint and agents (weeks 11–17)
-Stylelint plugin (rules: `min-score` once D5 permits, per-code rules; skips alpha-varying/hard-stop/repeating by default; autofix opt-in); GitHub Action (composite over CLI) + pre-commit recipe; Agent Skill `gradient-quality` (threshold from Phase 0.5); `@scope/mcp` stdio with `score_gradient`, `refine_gradient`, `complement`, `render_preview` (**escape/allow-list all SVG inputs**); MCP Registry entry; web app URL-hash state, paste-CSS import, PWA service worker, a11y fixes (§7). **Core 1.0** only after stylelint + MCP both consume it.
+Stylelint plugin (rules: `min-score` with no default threshold (D5), per-code rules; skips alpha-varying/hard-stop/repeating by default; autofix opt-in); GitHub Action (composite over CLI) + pre-commit recipe; Agent Skill `gradient-quality` (no hard-coded threshold; D5); `@scope/mcp` stdio with `score_gradient`, `refine_gradient`, `complement`, `render_preview` (**escape/allow-list all SVG inputs**); MCP Registry entry; web app URL-hash state, paste-CSS import, PWA service worker, a11y fixes (§7). **Core 1.0** only after stylelint + MCP both consume it.
 Exit: stylelint runs on two third-party codebases without false-positive storms; MCP works in two different clients.
 Gate: choose the stronger track by evidence (lint adoption vs agent attention) to lead Phase 3.
 
@@ -224,7 +237,7 @@ v2 research spike outcome, Python port if a user exists, DTCG, web component, se
 - **Testing.** Unit + golden vectors (regenerated only by an explicit, reviewed script). Property tests (fast-check, dev only): hue rotation by 360° invariance; score always integer 0–100 and never NaN; `gamutMap` idempotent and in gamut; `parseGradient(toCSS(doc))` round-trips; parser never throws. Visual regression for the web app (few Playwright shots) plus a check that `bakeStops` matches the browser's `in oklab` render within tolerance.
 - **Release.** Changesets; Trusted Publishing (OIDC) with provenance, no long-lived tokens; SHA-pinned actions (already so); Node 24 + oldest supported Node for the CLI.
 - **Docs.** The web app is the docs site: a permalink per issue code with a live example from the URL hash, generated from the spec; CLI/lint messages link there.
-- **Accessibility (web app).** Stop handles: `role="slider"`, `tabIndex`, arrow keys, value text; compass keyboard path; restore `:focus-visible`; `aria-live` on score; `prefers-reduced-motion`; light theme via `prefers-color-scheme`; verify 320 px (U); add `eslint-plugin-jsx-a11y`.
+- **Accessibility and UX (web app).** Measured in [`UX-REVIEW.md`](UX-REVIEW.md) (axe: 74 contrast failures, 3 label/name mismatches, no `<main>`; 31 of 92 tab stops without visible focus; 104 of 106 touch targets under 44 px; 320 px input clipping — but no page-level overflow). Fixes are tracked as Track U in §6; add `eslint-plugin-jsx-a11y` and an axe check to CI.
 - **i18n.** Issue codes are the stable layer; English messages + override hook in core; EN/FR catalogue in the web app first.
 - **Security / supply chain.** Hardware-key 2FA everywhere; dedicated store publisher account; manifest permission diff in CI; zero runtime deps in core. No third-party colour-name lists (ntc etc.) without attribution — the 148 CSS names are spec facts, no licence issue.
 - **Governance.** `SCOPE.md` (no colour-space race with culori/Color.js; new rules need spec + vectors). Public roadmap = §5.
@@ -234,7 +247,7 @@ v2 research spike outcome, Python port if a user exists, DTCG, web component, se
 
 ## 8. Risks and verification checklist
 
-**Risks.** (1) Metric credibility — Phase 0.5, published spec, honest labelling. (2) Parser scope creep — D7 skip list + corpus. (3) Score drift — versioned models + vectors. (4) Solo burnout/sprawl — D6 and freeze gates. (5) Account takeover — §7. (6) Platforms catch up (DevTools/CSS add hints) — spec, validation data and agent tooling are harder to commoditise than the editor. (7) v2 underestimated — it's a research spike, not on the critical path. (8) Circularity — the bench uses the same metric `refine` optimises, so it cannot validate it.
+**Risks.** (1) Metric credibility — published spec, neutral wording (D5), optional Phase 0.5 survey if a defensible threshold is ever needed. (2) Parser scope creep — D7 skip list + corpus. (3) Score drift — versioned models + vectors. (4) Solo burnout/sprawl — D6 and freeze gates. (5) Account takeover — §7. (6) Platforms catch up (DevTools/CSS add hints) — spec, validation data and agent tooling are harder to commoditise than the editor. (7) v2 underestimated — it's a research spike, not on the critical path. (8) Circularity — the bench uses the same metric `refine` optimises, so it cannot validate it.
 
 **(U) items — verify before the phase named**
 
