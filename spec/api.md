@@ -120,6 +120,59 @@ positions, keeps `angle`, `interpolation` and stop `id`s. When it declines
 (`declined.code`: `unscorable`, `single-position`, `would-lower-score`) the
 input document itself is returned and `after` equals `before`.
 
+### `proposeFixes(doc | ticks) → Fix[]`
+
+Targeted alternatives to the all-or-nothing `refine`: at most **one fix per
+finding**, in the order of the findings.
+
+```ts
+interface Fix<T = GradientDocument> {
+  code: string;            // the finding it removes, e.g. "lightness/reversal"
+  label: string;           // "Make stop 2 lighter" (stop numbers are 1-based, in position order)
+  kind: "lightness" | "hue" | "chroma" | "position" | "mixed";
+  gain: number;            // after.score − before.score, always > 0
+  before: ScoreResult;
+  after: ScoreResult;
+  document: T;             // the input with the fix applied
+  changedStops: number[];  // indices into the input's stops
+}
+```
+
+Accepts a `GradientDocument` or the engine's `GradientTick[]` (positions 0–100,
+any array order); `document` has the shape that was passed in. For ticks,
+`before`/`after` describe the position-sorted stops.
+
+**How.** For each finding a fixed list of candidate edits is generated on the
+stops the finding names (`stops`, plus the stops lying on its `segment`):
+lightness, hue, chroma or position of one stop, of all the named stops
+together, and the one-click refinement restricted to those stops. Every
+candidate is re-scored by the v1 engine. Among the candidates that satisfy the
+contract, the one with the smallest change (OKLAB ΔE plus position shift) that
+recovers at least the finding's `pointsLost` wins (or, when none recovers that
+much, the most any candidate recovers). There is no scoring logic in
+`proposeFixes`; a finding with no acceptable candidate has no fix.
+
+**Contract** (checked over every input of `spec/vectors/v1-score.json`):
+
+- the total score strictly increases; a fix with `gain ≤ 0` is never returned;
+- the targeted finding is gone from `after`;
+- no finding becomes more severe, and a finding that was not there before is
+  never more severe than the one that was fixed;
+- only stops the finding names are edited; untouched stops are the input's own
+  objects; stop count, order and `id`s do not change;
+- hard stops stay hard: a stop within `V1_MODEL.refine.hardStopGap` of a
+  neighbour is never moved, and a moved stop never lands that close to one;
+- achromatic stops (`C ≤ V1_MODEL.refine.achromaticAtMost`) stay achromatic;
+- pure and deterministic; never throws. Unscorable or malformed input and
+  gradients without findings give `[]`.
+
+Notes: `gain` can differ from the finding's `pointsLost` (the edit may remove
+or add another finding, and a clamped dimension absorbs penalties — a finding
+in a dimension that stays at 0 has no fix). Removing a finding outright can
+need a large edit (e.g. a hue arc above 180° must come down to 120°). A
+document with automatic positions only gets colour fixes, since moving one
+stop would move the stops spaced from it. New positions are whole percents.
+
 ### `toCSS(doc, opts?) → string | null`
 
 `linear-gradient(<angle>deg[ in <space>[ <hue> hue]], <stops>)`, or

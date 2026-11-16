@@ -25,6 +25,17 @@
   --score-good: #4ade80;
   --score-warn: #facc15;
   --score-bad: #f87171;
+  /* Score bands: steps of one cool hue (descriptive, not pass/fail). */
+  --band-1: #b4c0ff;
+  --band-2: #a3afee;
+  --band-3: #98a3d6;
+  --band-4: #929bbf;
+  /* Per-issue severity (always paired with a shape or line pattern). */
+  --sev-error: #ff9d8a;
+  --sev-warning: #ecc85a;
+  --sev-info: #8fb0e6;
+  --delta-up: #7fe0b0;
+  --delta-down: #ffb199;
   --hairline: rgba(255, 255, 255, 0.08);
   --scrim: rgba(6, 10, 18, 0.8);
   --brand-from: #818cf8;

@@ -470,10 +470,118 @@
   z-index: 11;
 }
 
-/* Issue lane: findings will be drawn here, in the bar's own coordinate frame. */
+/* Split preview while a fix is previewed: the lower half is the fixed gradient. */
+.gradient-preview.fix-preview-layer {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  min-height: 0;
+  max-height: none;
+  aspect-ratio: auto;
+  clip-path: inset(50% 0 0 0);
+}
+
+.split-divider {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 0;
+  border-top: 2px dashed #fff;
+  filter: drop-shadow(0 0 1px #000);
+  pointer-events: none;
+}
+
+.split-label {
+  position: absolute;
+  left: var(--sp-3);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 24px;
+  padding: 0 var(--sp-3);
+  border-radius: var(--radius-pill);
+  background: var(--scrim);
+  backdrop-filter: blur(8px);
+  color: var(--text);
+  font-size: var(--fs-xs);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+
+.split-label--now {
+  bottom: calc(50% + var(--sp-2));
+}
+
+.split-label--fix {
+  top: calc(50% + var(--sp-2));
+  border: 1px dashed var(--accent);
+}
+
+.split-label .mono {
+  color: var(--delta-up);
+  letter-spacing: 0;
+}
+
+/* Fix preview ghosts: where (and in which colour) the edited stops would be.
+   They ride on the bar's top edge so the real handle stays visible below. */
+.tick-ghost--fix {
+  top: 0;
+  width: 18px;
+  height: 18px;
+  transform: translate(-50%, -60%);
+  border: 2px dashed #fff;
+  border-radius: 50%;
+  background: currentColor;
+  filter: drop-shadow(0 0 2px #000);
+  z-index: 13;
+}
+
+/* Handles named by the highlighted issue. */
+.tick-handle.is-flagged::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 30px;
+  height: 30px;
+  transform: translate(-50%, -50%);
+  border: 2px dashed #fff;
+  border-radius: 50%;
+  filter: drop-shadow(0 0 1px #000);
+  pointer-events: none;
+}
+
+/* Live score change above the handle being edited. */
+.tick-delta {
+  position: absolute;
+  left: 50%;
+  bottom: calc(50% + 18px);
+  transform: translateX(-50%);
+  padding: 1px 6px;
+  border-radius: var(--radius-pill);
+  border: 1px solid currentColor;
+  background: var(--surface-sunken);
+  color: var(--text-dim);
+  font-size: var(--fs-xs);
+  font-weight: 500;
+  line-height: 1.4;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* Issue lane: findings drawn in the bar's own coordinate frame, stacked in rows. */
 .issue-lane {
-  height: 12px;
+  --lane-row-h: 18px;
+  position: relative;
+  height: calc(var(--lane-rows, 1) * var(--lane-row-h));
   margin-top: var(--sp-2);
+}
+
+.issue-lane.is-empty {
+  height: 12px;
 }
 
 .issue-lane-track {
@@ -481,6 +589,174 @@
   border-radius: var(--radius-pill);
   background: var(--surface-sunken);
   border: 1px solid var(--hairline);
+}
+
+.lane-mark {
+  position: absolute;
+  top: calc(var(--row) * var(--lane-row-h));
+  height: var(--lane-row-h);
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: none;
+  color: var(--sev);
+  opacity: 0.8;
+}
+
+button.lane-mark {
+  cursor: pointer;
+}
+
+.lane-mark.is-point {
+  min-width: 20px;
+  margin-left: -10px;
+}
+
+.lane-mark:hover,
+.lane-mark:focus-visible,
+.lane-mark.is-active {
+  opacity: 1;
+  background: color-mix(in srgb, var(--sev) 16%, transparent);
+}
+
+/* Stops-only findings: a faint connector between the named stops. */
+.lane-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  border-top: 1px dotted currentColor;
+  opacity: 0.55;
+}
+
+.lane-mark.is-point .lane-line {
+  display: none;
+}
+
+/* Segment findings: a bracket under the segment; the line pattern encodes severity. */
+.lane-mark.is-bracket .lane-line {
+  top: 3px;
+  height: 8px;
+  border: 2px solid currentColor;
+  border-top: 0;
+  border-radius: 0 0 4px 4px;
+  opacity: 1;
+}
+
+.lane-mark.is-bracket.sev-warning .lane-line {
+  border-style: dashed;
+}
+
+.lane-mark.is-bracket.sev-info .lane-line {
+  border-style: dotted;
+}
+
+.lane-stop {
+  position: absolute;
+  top: 50%;
+  display: grid;
+  place-items: center;
+  width: 14px;
+  height: 14px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: var(--surface);
+}
+
+.lane-mark.is-bracket .lane-stop {
+  top: calc(3px + 8px);
+}
+
+.lane-overflow {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  padding: 0 4px;
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+  line-height: 1.3;
+}
+
+.issue-lane.is-static {
+  --lane-row-h: 14px;
+}
+
+/* ── Curves: lightness, chroma, hue on the bar's x-axis ─────────────────────── */
+
+.curves--stage {
+  /* Same horizontal frame as the stop bar inside the stage card. */
+  padding: var(--sp-2) calc(var(--handle-hit) / 2 + var(--sp-1) + 1px) var(--sp-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+}
+
+.curves-body {
+  margin-top: var(--sp-1);
+}
+
+.curve {
+  margin: 0 0 var(--sp-2);
+}
+
+.curve-caption {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: var(--fs-xs);
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.curve-label {
+  color: var(--text-dim);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.curve-svg {
+  display: block;
+  width: 100%;
+  height: 44px;
+  border-radius: 4px;
+  background: var(--surface-sunken);
+  overflow: hidden;
+}
+
+.curve-line {
+  fill: none;
+  stroke: var(--text);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.curve-tick {
+  stroke: var(--border-hi);
+  stroke-width: 1;
+}
+
+.curve-shade {
+  fill: var(--sev);
+  opacity: 0.16;
+}
+
+.curve-shade.is-stop {
+  opacity: 0.3;
+}
+
+.curve-shade.is-active {
+  opacity: 0.42;
+}
+
+.curves-note {
+  margin: var(--sp-2) 0 0;
+  font-size: var(--fs-xs);
+  line-height: 1.5;
+  color: var(--text-muted);
 }
 
 /* ── Workspace ─────────────────────────────────────────────────────────────── */
@@ -1175,6 +1451,7 @@ details[open] > .disclosure-summary .disclosure-chevron,
   margin-left: auto;
   padding: 3px var(--sp-3);
   border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--band) 14%, transparent);
   color: var(--band);
   font-size: var(--fs-xs);
   font-weight: 600;
@@ -1182,53 +1459,360 @@ details[open] > .disclosure-summary .disclosure-chevron,
   text-transform: uppercase;
 }
 
-.score-bar {
-  margin-bottom: var(--sp-3);
+.score-strip .delta-badge {
+  align-self: center;
+  margin-left: var(--sp-2);
 }
 
-.score-bar-header {
+.delta-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px var(--sp-2);
+  border-radius: var(--radius-pill);
+  border: 1px solid currentColor;
+  background: var(--surface-sunken);
+  color: var(--text-dim);
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+
+.delta-badge.is-up,
+.tick-delta.is-up {
+  color: var(--delta-up);
+}
+
+.delta-badge.is-down,
+.tick-delta.is-down {
+  color: var(--delta-down);
+}
+
+/* Severity: colour plus a shape (glyph) or a line pattern (lane brackets). */
+.sev-error {
+  --sev: var(--sev-error);
+}
+
+.sev-warning {
+  --sev: var(--sev-warning);
+}
+
+.sev-info {
+  --sev: var(--sev-info);
+}
+
+.sev-glyph {
+  flex: none;
+  color: var(--sev);
+}
+
+/* Points ledger */
+
+.score-ledger {
+  outline: none;
+}
+
+.ledger-equation {
+  margin: 0 0 var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--radius-sm);
+  background: var(--surface-sunken);
+  border: 1px solid var(--hairline);
+  color: var(--text);
+  font-size: var(--fs-sm);
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.ledger {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ledger-row {
+  border-top: 1px solid var(--hairline);
+  border-left: 2px solid transparent;
+  transition: background var(--dur-fast) var(--ease);
+}
+
+.ledger-row:first-child {
+  border-top: 0;
+}
+
+.ledger-row.is-active {
+  background: var(--accent-dim);
+  border-left-color: var(--sev);
+}
+
+.ledger-line {
   display: flex;
-  justify-content: space-between;
-  margin-bottom: var(--sp-1);
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.ledger-toggle,
+.ledger-static {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: var(--sp-2);
+  min-width: 0;
+  min-height: 36px;
+  padding: var(--sp-1) var(--sp-2) var(--sp-1) var(--sp-1);
+  font-size: var(--fs-base);
+  line-height: var(--lh-tight);
+  color: var(--text);
+  text-align: left;
+}
+
+.ledger-toggle {
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  cursor: pointer;
+}
+
+.ledger-toggle:hover {
+  background: var(--hairline);
+}
+
+.ledger-static {
+  padding-left: calc(var(--sp-1) + 14px + var(--sp-2));
+}
+
+.ledger-name {
+  flex: 1;
+  min-width: 0;
+}
+
+.ledger-points {
+  flex: none;
+  font-size: var(--fs-md);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
+.ledger-start .ledger-static,
+.ledger-floor .ledger-static {
+  color: var(--text-dim);
+}
+
+.ledger-floor-note {
+  display: block;
+  margin-top: 2px;
+  font-size: var(--fs-xs);
+  line-height: 1.4;
+  color: var(--text-muted);
+}
+
+.ledger-total {
+  border-top: 1px solid var(--border-hi);
+}
+
+.ledger-total .ledger-static {
+  font-weight: 600;
+}
+
+.ledger-total .ledger-points {
+  font-size: var(--fs-lg);
+  color: var(--band, var(--text));
+}
+
+.fix-actions {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: var(--sp-1);
+}
+
+.fix-button {
+  white-space: nowrap;
+}
+
+.fix-button.is-previewing {
+  border-color: var(--accent);
+}
+
+.fix-gain {
+  font-variant-numeric: tabular-nums;
+}
+
+.fix-strip {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--sp-1) var(--sp-2);
+  padding: var(--sp-2) var(--sp-2) var(--sp-3) calc(var(--sp-1) + 14px + var(--sp-2));
+}
+
+.fix-strip-label {
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.fix-strip-bar {
+  height: 20px;
+  border-radius: 4px;
+  border: 1px solid var(--hairline);
+}
+
+.fix-strip-note {
+  grid-column: 1 / -1;
   font-size: var(--fs-sm);
   color: var(--text-dim);
 }
 
-.score-bar-track {
-  height: 4px;
-  border-radius: 2px;
-  background: var(--border);
+.ledger-body {
+  padding: 0 var(--sp-2) var(--sp-3) calc(var(--sp-1) + 14px + var(--sp-2));
 }
 
-.score-bar-fill {
-  height: 100%;
-  border-radius: 2px;
-  transition: width var(--dur-slow) var(--ease);
-}
-
-.issues {
-  margin: var(--sp-4) 0 0;
-  padding: var(--sp-3) 0 0;
-  list-style: none;
-  border-top: 1px solid var(--border);
-}
-
-.issue {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--sp-2);
-  margin-bottom: var(--sp-2);
-  font-size: var(--fs-base);
+.ledger-body p {
+  margin: 0 0 var(--sp-2);
+  font-size: var(--fs-sm);
   line-height: var(--lh-prose);
   color: var(--text-dim);
 }
 
-.issue-icon {
-  margin-top: 3px;
-  color: var(--red);
+.ledger-body .ledger-message {
+  color: var(--text);
 }
 
-.issue-icon.is-neutral {
+.ledger-key {
+  margin-right: 2px;
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.ledger-link {
+  margin-left: calc(-1 * var(--sp-2));
+}
+
+.ledger-empty {
+  margin: var(--sp-2) 0 0;
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+}
+
+/* Compact per-dimension summary under the ledger */
+
+.dims {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-3) var(--sp-4);
+  margin-top: var(--sp-4);
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--border);
+}
+
+.dim {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 3px var(--sp-2);
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  cursor: help;
+}
+
+.dim-value {
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+.dim-max {
+  color: var(--text-muted);
+}
+
+.dim-track {
+  grid-column: 1 / -1;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--border);
+}
+
+.dim-fill {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+  background: var(--text-muted);
+  transition: width var(--dur-slow) var(--ease);
+}
+
+/* Examples (one per rule) */
+
+.examples {
+  margin-top: var(--sp-4);
+  padding-top: var(--sp-2);
+  border-top: 1px solid var(--border);
+}
+
+.examples-summary,
+.curves-summary {
+  min-height: 32px;
+  font-size: var(--fs-base);
+  font-weight: 600;
+  color: var(--text);
+}
+
+.curves-hint {
+  font-size: var(--fs-xs);
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+.examples-note {
+  margin: var(--sp-1) 0 var(--sp-2);
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+}
+
+.examples-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.example-link {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  grid-template-areas: "swatch name" "swatch code";
+  align-items: center;
+  column-gap: var(--sp-3);
+  padding: var(--sp-1) var(--sp-2) var(--sp-1) var(--sp-1);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  text-decoration: none;
+}
+
+.example-link:hover {
+  background: var(--hairline);
+}
+
+.example-swatch {
+  grid-area: swatch;
+  height: 22px;
+  border-radius: 4px;
+  border: 1px solid var(--hairline);
+}
+
+.example-name {
+  grid-area: name;
+  font-size: var(--fs-base);
+  line-height: 1.3;
+}
+
+.example-code {
+  grid-area: code;
+  font-size: var(--fs-xs);
+  line-height: 1.3;
   color: var(--text-muted);
 }
 
@@ -1789,6 +2373,26 @@ details[open] > .theory-summary {
 
   .theory-summary {
     min-height: var(--hit);
+  }
+
+  .examples-summary,
+  .curves-summary,
+  .ledger-toggle,
+  .example-link {
+    min-height: var(--hit);
+  }
+
+  /* Narrow rows: the fix button drops under the rule name. */
+  .ledger-line {
+    flex-wrap: wrap;
+  }
+
+  .ledger-toggle {
+    flex-basis: 100%;
+  }
+
+  .fix-actions {
+    margin: 0 0 var(--sp-2) auto;
   }
 
   .skip-link,

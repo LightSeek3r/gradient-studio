@@ -14,3 +14,4 @@ export { refine, score, scoreParsed } from "./api/score";
 export { complement, toCSS, toCSSWithFallback } from "./api/css";
 export { parseCssColor } from "./css/color";
 export { parseGradient } from "./css/parse";
+export { proposeFixes, type Fix, type FixKind } from "./api/fixes";

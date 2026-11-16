@@ -1,20 +1,30 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   scoreGradient,
+  proposeFixes,
   buildMultiGradientStyle,
+  buildGradientCSS,
   CSS_COLOR_NAMES,
   CSS_NAMED_COLORS,
   MAX_DIRECTIONS,
 } from "@opal42/gradient";
 import { COLOR_NAME_LIST_ID, StopCard, type Notation } from "./components/StopCard";
 import { StopChip } from "./components/StopChip";
-import { stopCardId } from "./components/dom-ids";
+import { ledgerToggleId, stopCardId } from "./components/dom-ids";
 import { DirectionsPanel } from "./components/DirectionsPanel";
 import { FlashButton } from "./components/fields";
 import { StopBar } from "./components/StopBar";
 import { IssueLane } from "./components/IssueLane";
 import { MobileTabBar } from "./components/MobileTabBar";
-import { ScoreDetails, ScoreStrip } from "./components/ScorePanel";
+import {
+  DeltaBadge,
+  ScoreLedger,
+  ScoreStrip,
+  type FixOffer,
+  type FixPreviewState,
+} from "./components/ScorePanel";
+import { Curves } from "./components/Curves";
+import { Examples } from "./components/Examples";
 import { Toast } from "./components/Toast";
 import { ImportDialog } from "./components/ImportDialog";
 import { CompareToggle, SuggestionPanel, type CompareView } from "./components/SuggestionCompare";
@@ -24,7 +34,12 @@ import { Icon } from "./components/ui/Icon";
 import { Surface } from "./components/ui/Surface";
 import { writeClipboardText } from "./clipboard";
 import { announce } from "./announce";
-import { scoreBand } from "./score-band";
+import { formatDelta, scoreBand } from "./score-band";
+import { buildLedger } from "./explain/ledger";
+import { ruleText } from "./explain/explain";
+import { exampleDocument, findExample } from "./examples";
+import { issueHash } from "./persist/issue-link";
+import { useScoreDelta } from "./hooks/useScoreDelta";
 import { buildExportLines } from "./export/css-export";
 import { MAX_STOPS, MIN_STOPS, nextId, sortTicks, type GradientDocument } from "./state/document";
 import { useGradientDocument } from "./state/useGradientDocument";
@@ -54,6 +69,11 @@ interface CompareState {
   view: CompareView;
 }
 
+/** A fix preview is only live for the document it was requested on. */
+interface FixPreview extends FixPreviewState {
+  doc: GradientDocument;
+}
+
 interface ImportDialogState {
   text: string;
   intro?: string;
@@ -63,7 +83,8 @@ interface ImportDialogState {
 // ── Main component ────────────────────────────────────────────────────────────
 
 export default function App() {
-  const store = useGradientDocument(() => loadInitialDocument().document);
+  const [initial] = useState(loadInitialDocument);
+  const store = useGradientDocument(() => initial.document);
   const { doc, dispatch, commit, canUndo, canRedo } = store;
   const { toast, show: showToast, dismiss: dismissToast, setPaused: pauseToast } = useToast();
 
@@ -73,6 +94,16 @@ export default function App() {
   const [selectedStopId, setSelectedStopId] = useState<number | null>(null);
   const [compareState, setCompareState] = useState<CompareState | null>(null);
   const [importDialog, setImportDialog] = useState<ImportDialogState | null>(null);
+  // Explainability UI state: which ledger rows the user opened or closed, the
+  // issue highlighted in both the lane and the ledger, and the fix on preview.
+  const [ledgerOpen, setLedgerOpen] = useState<Record<string, boolean>>(() =>
+    initial.issue ? { [initial.issue]: true } : {},
+  );
+  // The worst row opens by itself, except when a rule was asked for by link.
+  const [autoOpenWorst, setAutoOpenWorst] = useState(!initial.issue);
+  const [activeIssue, setActiveIssue] = useState<string | null>(null);
+  const [fixPreviewState, setFixPreviewState] = useState<FixPreview | null>(null);
+  const [curvesOpen, setCurvesOpen] = useState(true);
 
   // Any edit to the document makes a suggestion stale: it is only "live" while
   // the document is exactly the one it was computed from.
@@ -93,7 +124,18 @@ export default function App() {
       ? selectedStopId
       : (sortedTicks[0]?.id ?? null);
 
-  const { score, issues, details } = scoreGradient(doc.ticks);
+  const scored = useMemo(() => scoreGradient(doc.ticks), [doc.ticks]);
+  const { score, issues } = scored;
+  const ledger = useMemo(() => buildLedger(scored.findings, scored.score), [scored]);
+  // Targeted fixes, one per finding at most (core `proposeFixes`).
+  const fixes = useMemo(() => proposeFixes(doc.ticks), [doc.ticks]);
+  const fixOffers = useMemo(
+    () => new Map<string, FixOffer>(fixes.map((f) => [f.code, { gain: f.gain, label: f.label }])),
+    [fixes],
+  );
+  const fixPreview = fixPreviewState && fixPreviewState.doc === doc ? fixPreviewState : null;
+  const previewFix = fixPreview ? (fixes.find((f) => f.code === fixPreview.code) ?? null) : null;
+  const scoreDelta = useScoreDelta(score);
   // Preview and export always show the same thing: the candidate while the
   // suggested view is active, the document otherwise.
   const previewTicks = showingSuggested && candidate ? candidate : doc.ticks;
@@ -108,7 +150,7 @@ export default function App() {
 
   // Screen-reader summary of the live score, debounced so dragging a handle
   // doesn't produce a flood of announcements.
-  const scoreSummary = `Score ${score}, ${band.label}, ${issues.length} ${issues.length === 1 ? "issue" : "issues"}`;
+  const scoreSummary = `Smoothness score ${score}, ${band.label}, ${issues.length} ${issues.length === 1 ? "issue" : "issues"}`;
   const [announcedScore, setAnnouncedScore] = useState(scoreSummary);
   useEffect(() => {
     const t = setTimeout(() => setAnnouncedScore(scoreSummary), 700);
@@ -169,9 +211,80 @@ export default function App() {
     },
   });
 
-  usePersistence(doc, (linked) => {
-    destructive({ type: "import", document: linked }, "Loaded the gradient from the link");
-  });
+  // ── Issues: lane <-> ledger, examples, fixes ──
+  const isLedgerOpen = (code: string) => ledgerOpen[code] ?? (autoOpenWorst && code === ledger.rows[0]?.code);
+  const highlighted = activeIssue ?? fixPreview?.code ?? null;
+  const highlightedRow = highlighted ? ledger.rows.find((r) => r.code === highlighted) : undefined;
+  const flaggedStops = useMemo(() => {
+    const ids = new Set<number>();
+    if (!highlightedRow) return ids;
+    const sorted = sortTicks(doc.ticks);
+    for (const i of highlightedRow.stops ?? []) if (sorted[i]) ids.add(sorted[i].id);
+    const seg = highlightedRow.segment;
+    if (seg) for (const t of sorted) if (t.position >= seg[0] && t.position <= seg[1]) ids.add(t.id);
+    return ids;
+  }, [highlightedRow, doc.ticks]);
+
+  const focusLedgerRow = (code: string) => {
+    // Two frames: the tab panel (mobile) and the row body must be rendered first.
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() => {
+        const el = document.getElementById(ledgerToggleId(code));
+        el?.scrollIntoView({ block: "nearest" });
+        el?.focus({ preventScroll: true });
+      }),
+    );
+  };
+
+  /** Lane marker activated: open that issue's ledger row and go to it. */
+  const openIssue = (code: string) => {
+    setLedgerOpen((prev) => ({ ...prev, [code]: true }));
+    if (tabbed) setTab("score");
+    focusLedgerRow(code);
+  };
+
+  /** An issue permalink or an Examples entry: load the rule's example and open its row. */
+  const loadExample = (code: string, opts: { setHash?: boolean } = {}) => {
+    const example = findExample(code);
+    if (!example) return;
+    destructive(
+      { type: "import", document: exampleDocument(example) },
+      `Loaded the example for “${ruleText(code).name}”`,
+    );
+    setSelectedStopId(null);
+    setLedgerOpen({ [code]: true });
+    setAutoOpenWorst(false);
+    if (opts.setHash) {
+      try {
+        window.history.replaceState(window.history.state, "", issueHash(code));
+      } catch {
+        // Sandboxed frames can refuse replaceState; the example still loads.
+      }
+    }
+    if (tabbed) setTab("score");
+    focusLedgerRow(code);
+  };
+
+  const applyFix = (code: string) => {
+    const fix = fixes.find((f) => f.code === code);
+    if (!fix || fix.after.status !== "ok") return;
+    setFixPreviewState(null);
+    setActiveIssue(null);
+    destructive(
+      { type: "applySuggestion", ticks: fix.document },
+      `${fix.label} (score ${score} → ${fix.after.score})`,
+    );
+    // The fixed row is gone; keep keyboard focus in the ledger.
+    requestAnimationFrame(() => document.getElementById("score-ledger")?.focus({ preventScroll: true }));
+  };
+
+  usePersistence(
+    doc,
+    (linked) => {
+      destructive({ type: "import", document: linked }, "Loaded the gradient from the link");
+    },
+    (code) => loadExample(code),
+  );
 
   // ── Stops ──
   const stopNumber = (id: number) => sortedTicks.findIndex((t) => t.id === id) + 1;
@@ -289,7 +402,7 @@ export default function App() {
         <header className="studio-header">
           <div className="studio-heading">
             <h1 className="studio-title">Gradient Studio</h1>
-            <p className="studio-subtitle">Perceptual quality analysis &amp; one-click refinement</p>
+            <p className="studio-subtitle">Perceptual smoothness score, targeted fixes &amp; one-click refinement</p>
           </div>
           <div className="header-actions" role="toolbar" aria-label="Document">
             <Button
@@ -355,7 +468,25 @@ export default function App() {
                     style={gradientStyle}
                     data-view={showingSuggested ? "suggested" : "original"}
                   />
-                  {showingSuggested && (
+                  {previewFix && (
+                    <>
+                      {/* Split preview: the lower half shows the gradient with the fix applied. */}
+                      <div
+                        className="gradient-preview fix-preview-layer"
+                        style={buildMultiGradientStyle(previewFix.document, doc.directions, doc.blend)}
+                        data-testid="fix-preview"
+                        aria-hidden="true"
+                      />
+                      <span className="split-divider" aria-hidden="true" />
+                      <span className="split-label split-label--now" aria-hidden="true">
+                        Now
+                      </span>
+                      <span className="split-label split-label--fix" aria-hidden="true">
+                        With fix <span className="mono">+{previewFix.gain}</span>
+                      </span>
+                    </>
+                  )}
+                  {showingSuggested && !previewFix && (
                     <span className="preview-badge" aria-hidden="true">
                       Suggested preview
                     </span>
@@ -370,6 +501,7 @@ export default function App() {
                     >
                       <span className="sr-only">Score </span>
                       <span className="score-chip-value mono">{score}</span>
+                      <DeltaBadge delta={scoreDelta.delta} />
                       <span className="score-chip-label">{band.label}</span>
                     </button>
                   )}
@@ -378,23 +510,66 @@ export default function App() {
                   <StopBar
                     ticks={doc.ticks}
                     selectedId={selectedId}
-                    ghosts={showingSuggested ? candidate : null}
+                    ghosts={
+                      previewFix
+                        ? previewFix.changedStops.map((i) => previewFix.document[i])
+                        : showingSuggested
+                          ? candidate
+                          : null
+                    }
+                    ghostKind={previewFix ? "fix" : "suggestion"}
+                    flagged={flaggedStops}
+                    badge={
+                      scoreDelta.delta !== null && scoreDelta.stopId !== null
+                        ? {
+                            id: scoreDelta.stopId,
+                            text: formatDelta(scoreDelta.delta),
+                            dir: scoreDelta.delta > 0 ? "up" : scoreDelta.delta < 0 ? "down" : "same",
+                          }
+                        : null
+                    }
                     canAdd={!atStopCap}
                     canRemove={canRemoveStop}
                     onSelect={setSelectedStopId}
-                    onMoveTo={(id, position) =>
-                      dispatch({ type: "setStopPosition", id, position }, `move:${id}`)
-                    }
-                    onMoveBy={(id, delta) => dispatch({ type: "moveStop", id, delta }, `move:${id}`)}
-                    onCommit={commit}
+                    onMoveTo={(id, position) => {
+                      scoreDelta.begin(id);
+                      dispatch({ type: "setStopPosition", id, position }, `move:${id}`);
+                    }}
+                    onMoveBy={(id, delta) => {
+                      scoreDelta.begin(id);
+                      dispatch({ type: "moveStop", id, delta }, `move:${id}`);
+                    }}
+                    onCommit={() => {
+                      commit();
+                      scoreDelta.end();
+                    }}
                     onAddAt={addStopAt}
                     onRemove={(id) => removeStop(id)}
                     onOpen={focusStopEditor}
                   />
-                  <IssueLane />
+                  <IssueLane
+                    rows={ledger.rows}
+                    positions={sortedTicks.map((t) => t.position)}
+                    active={highlighted}
+                    onActive={setActiveIssue}
+                    onOpen={openIssue}
+                    interactive={!tabbed}
+                  />
                 </div>
               </div>
             </div>
+
+            {/* Curves share the stop bar's x-axis (desktop); on mobile they live in the Score tab. */}
+            {!tabbed && (
+              <Curves
+                ticks={doc.ticks}
+                rows={ledger.rows}
+                active={highlighted}
+                open={curvesOpen}
+                onToggle={setCurvesOpen}
+                placement="stage"
+              />
+            )}
 
             {/* Stops: the selected one in full, the rest as chips */}
             <div {...panelProps("stops")} className="tab-panel">
@@ -434,9 +609,10 @@ export default function App() {
                         notation={notation}
                         onNotation={setNotation}
                         onSelect={() => setSelectedStopId(tick.id)}
-                        onColor={(color) =>
-                          dispatch({ type: "setStopColor", id: tick.id, color }, `color:${tick.id}`)
-                        }
+                        onColor={(color) => {
+                          scoreDelta.begin(tick.id);
+                          dispatch({ type: "setStopColor", id: tick.id, color }, `color:${tick.id}`);
+                        }}
                         onPosition={(position) =>
                           dispatch({ type: "setStopPosition", id: tick.id, position })
                         }
@@ -448,7 +624,10 @@ export default function App() {
                           )
                         }
                         onGradientText={(text) => openImport(text, GRADIENT_PASTE_PROMPT)}
-                        onDone={commit}
+                        onDone={() => {
+                          commit();
+                          scoreDelta.end();
+                        }}
                       />
                     ) : (
                       <StopChip
@@ -493,16 +672,46 @@ export default function App() {
           {/* ── Right rail: score, refine, export ── */}
           <div className="rail">
             <div {...panelProps("score")} className="tab-panel">
-              <ScoreStrip score={score} band={band} />
+              <ScoreStrip score={score} band={band} delta={scoreDelta.delta} />
               <Surface as="section" id="score-details" aria-labelledby="score-h">
                 <h2 className="panel-title" id="score-h">
-                  Score details
+                  Smoothness score
                 </h2>
                 <p className="scope-note">
-                  Scores your color stops only. Directions and blend are not scored.
+                  How evenly your color stops flow, by this app&rsquo;s definition. It is not a verdict on
+                  quality. Directions and blend are not scored.
                 </p>
-                <ScoreDetails details={details} issues={issues} band={band} />
+                <ScoreLedger
+                  ledger={ledger}
+                  fixes={fixOffers}
+                  isOpen={isLedgerOpen}
+                  onToggle={(code, open) => setLedgerOpen((prev) => ({ ...prev, [code]: open }))}
+                  active={highlighted}
+                  onActive={setActiveIssue}
+                  preview={fixPreview}
+                  onPreview={(next) => setFixPreviewState(next ? { ...next, doc } : null)}
+                  onApplyFix={applyFix}
+                  previewStrip={
+                    previewFix
+                      ? { now: buildGradientCSS(doc.ticks, 90), fixed: buildGradientCSS(previewFix.document, 90) }
+                      : null
+                  }
+                />
+                <Examples onOpen={(code) => loadExample(code, { setHash: true })} />
               </Surface>
+
+              {tabbed && (
+                <Surface as="section" aria-label="Curves">
+                  <Curves
+                    ticks={doc.ticks}
+                    rows={ledger.rows}
+                    active={highlighted}
+                    open={curvesOpen}
+                    onToggle={setCurvesOpen}
+                    placement="panel"
+                  />
+                </Surface>
+              )}
 
               <Surface as="section" aria-labelledby="refine-h">
                 <h2 className="panel-title" id="refine-h">
@@ -577,6 +786,7 @@ export default function App() {
             </summary>
             <p>
               <span className="accent-strong">Scoring: </span>
+              a smoothness score by this app&rsquo;s own definition, not a validated measure of quality.{" "}
               Lightness flow (30pts) penalizes reversals, H-K brightness wobble &amp; uneven perceptual speed.
               Hue arc (30pts) rewards arcs &lt;120° and consistent hue direction. Chroma balance (20pts)
               penalizes saturation spikes, midpoint desaturation &amp; banding risk. Stop rhythm (20pts)

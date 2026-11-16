@@ -6,6 +6,21 @@ All notable changes to Gradient Studio are listed here. The format follows
 
 ## [Unreleased]
 
+### Added (explainable score, U2)
+
+- Points ledger: "100 − 20 − 12 − 10 = 58", one expandable row per deduction saying what the rule
+  measures, with an explicit "floor 0" line when a dimension's penalties exceed its budget.
+- Issue lane under the stop bar (brackets over segments, markers on stops) linked both ways with
+  the ledger; lightness, chroma and hue curves on the bar's x-axis.
+- "Fix this (+N)" per issue with a split preview and ghost handle (core `proposeFixes`), applied as
+  one undoable step; a live score delta while a stop is dragged or recoloured.
+- One example gradient per rule and issue permalinks (`#issue=<code>`, see `docs/URL-FORMAT.md`).
+
+### Changed
+
+- The score is labelled a smoothness score, with descriptive bands (smooth, mostly smooth, uneven,
+  rough) in one hue instead of Excellent/Good/Fair/Poor in green, amber and red.
+
 ### Fixed (scoring engine, before freezing scoring model v1)
 
 Every vector these change is accounted for in `spec/vectors/CHANGES-v1.md`.

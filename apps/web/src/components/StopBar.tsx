@@ -28,6 +28,12 @@ export interface StopBarProps {
   onRemove: (id: number) => void;
   /** Enter on a handle: move focus to that stop's editor. */
   onOpen: (id: number) => void;
+  /** Stops named by the highlighted issue: their handles get a ring. */
+  flagged?: ReadonlySet<number> | null;
+  /** Live score change shown above the handle being edited. */
+  badge?: { id: number; text: string; dir: "up" | "down" | "same" } | null;
+  /** Label of the ghost markers, for the visible legend class (`suggestion` or `fix`). */
+  ghostKind?: "suggestion" | "fix";
 }
 
 /**
@@ -47,6 +53,9 @@ export function StopBar({
   onAddAt,
   onRemove,
   onOpen,
+  flagged,
+  badge,
+  ghostKind = "suggestion",
 }: StopBarProps) {
   const barRef = useRef<HTMLDivElement>(null);
   const handleRefs = useRef(new Map<number, HTMLDivElement>());
@@ -122,9 +131,9 @@ export function StopBar({
       {ghosts?.map((g) => (
         <span
           key={`ghost-${g.id}`}
-          className="tick-ghost"
+          className={`tick-ghost tick-ghost--${ghostKind}`}
           aria-hidden="true"
-          style={{ left: `${g.position}%`, borderTopColor: g.color }}
+          style={{ left: `${g.position}%`, borderTopColor: g.color, color: g.color }}
         />
       ))}
       {sorted.map((tick, i) => (
@@ -134,7 +143,7 @@ export function StopBar({
             if (el) handleRefs.current.set(tick.id, el);
             else handleRefs.current.delete(tick.id);
           }}
-          className={`tick-handle${tick.id === selectedId ? " is-selected" : ""}`}
+          className={`tick-handle${tick.id === selectedId ? " is-selected" : ""}${flagged?.has(tick.id) ? " is-flagged" : ""}`}
           role="slider"
           tabIndex={0}
           aria-label={`Stop ${i + 1}`}
@@ -174,7 +183,13 @@ export function StopBar({
             dragId.current = null;
             onCommit();
           }}
-        />
+        >
+          {badge && badge.id === tick.id && (
+            <span className={`tick-delta mono is-${badge.dir}`} aria-hidden="true">
+              {badge.text}
+            </span>
+          )}
+        </div>
       ))}
     </div>
   );

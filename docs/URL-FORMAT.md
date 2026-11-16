@@ -46,6 +46,36 @@ fragment is capped at 1024 characters (a maximal valid document is about 230).
   fragment by hand (or pasting another link into the same tab) loads it as an
   undoable import.
 
+## Issue permalinks: `#issue=<code>`
+
+A second fragment shape links to **one rule of the score** instead of a
+gradient:
+
+```
+#issue=lightness/reversal
+```
+
+`<code>` is a finding code of scoring model v1 (`dimension/rule`, see
+`spec/scoring-v1.md`). Opening such a link loads that rule's example gradient
+(`apps/web/src/examples.ts`, one per code, each tested to trigger its rule) and
+expands the rule's row in the points ledger. Every ledger row has a "Copy link
+to this rule" button, and the "Examples" list in the app is made of these links.
+
+- It cannot be mistaken for a document: document fragments start with the
+  version tag (`v1;`), issue fragments with `issue=`. Each decoder rejects the
+  other's shape.
+- The code may be percent-encoded (`lightness%2Freversal`). Matching is exact
+  and case-sensitive. An unknown code, or anything longer than 128 characters,
+  is ignored: the link then behaves like a broken document link (autosave or
+  the default gradient is shown).
+- An issue link wins over autosave on load. In an open tab it loads the example
+  as an undoable import.
+- The fragment stays `#issue=<code>` while the example is untouched; the first
+  edit replaces it with the normal `#v1;…` document fragment.
+
+Implementation: `apps/web/src/persist/issue-link.ts` (tests in
+`apps/web/tests/explain.test.ts`).
+
 ## Not stored
 
 Selection, the suggestion being compared, open dialogs and undo history are
