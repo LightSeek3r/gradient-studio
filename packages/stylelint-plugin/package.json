@@ -1,0 +1,67 @@
+{
+  "name": "@opal42/stylelint-plugin",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Stylelint rules that report the smoothness score of CSS gradients (OKLAB/OKLCH), with an opt-in autofix. Working name. No network, no telemetry.",
+  "keywords": [
+    "stylelint",
+    "stylelint-plugin",
+    "gradient",
+    "css-gradient",
+    "oklab",
+    "oklch",
+    "linter"
+  ],
+  "license": "MIT",
+  "author": "LightSeek3r (https://github.com/LightSeek3r)",
+  "homepage": "https://github.com/LightSeek3r/gradient-studio/blob/master/docs/stylelint.md",
+  "bugs": {
+    "url": "https://github.com/LightSeek3r/gradient-studio/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LightSeek3r/gradient-studio.git",
+    "directory": "packages/stylelint-plugin"
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "dependencies": {
+    "@opal42/gradient": "^0.0.0"
+  },
+  "peerDependencies": {
+    "stylelint": ">=16.14.0"
+  },
+  "devDependencies": {
+    "postcss-less": "^7.1.1",
+    "postcss-scss": "^4.0.9",
+    "stylelint": "^18.0.0"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "lint:package": "publint --strict",
+    "attw": "attw --pack . --profile esm-only",
+    "size": "size-limit",
+    "prepack": "npm run build"
+  }
+}

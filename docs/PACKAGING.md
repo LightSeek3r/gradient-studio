@@ -131,3 +131,13 @@ the measurement plus about 10% headroom, as before.
 Open question: `parseGradient` on its own grew by about 0.7 kB when `proposeFixes` was added even though
 it does not use it. That suggests a small tree-shaking leak (a shared chunk or module-level work). It is
 worth investigating before 1.0; the budget was raised only so the check keeps catching *new* regressions.
+
+## Stylelint plugin
+
+`@opal42/stylelint-plugin` ([`stylelint.md`](stylelint.md)) follows the CLI
+pattern: tsdown, ESM only, one entry (`dist/index.js` + `.d.ts`), `private`,
+`@opal42/gradient` a dependency and `stylelint` (>= 16.14) a peer dependency,
+both external. Own code is about 4.1 kB gzip (budget 4.5 kB); the tarball has
+`dist`, `LICENSE`, `README.md` and `package.json`. The same three checks cover it
+(`lint:package`, `attw`, `size`), and CI loads the built plugin through the
+Stylelint CLI.

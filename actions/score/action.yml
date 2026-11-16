@@ -1,0 +1,109 @@
+name: Gradient smoothness score
+description: >-
+  Scores the linear CSS gradients in your files with the opal42 CLI and writes
+  GitHub annotations. A smoothness score by our definition, not a quality
+  verdict; there is no default threshold. No network access of its own and no
+  telemetry.
+author: LightSeek3r
+
+inputs:
+  paths:
+    description: >-
+      Files, directories or globs to scan, separated by spaces or newlines.
+      Globs (including **) are expanded by bash before the CLI runs.
+    required: false
+    default: "."
+  min-score:
+    description: >-
+      Fail the step if a scored gradient is below this score (0-100, inclusive).
+      There is no default: leave it empty to annotate without ever failing on scores.
+    required: false
+    default: ""
+  fail-on-unscorable:
+    description: "Fail the step if a gradient was skipped (var(), calc(), radial, ...). 'true' or 'false'."
+    required: false
+    default: "false"
+  ignore:
+    description: >-
+      Paths to skip, one glob per line (passed as repeated --ignore options of the CLI).
+    required: false
+    default: ""
+  version:
+    description: >-
+      Version of the opal42 CLI to run with npx (opal42@<version>). Used only
+      when cli-path is empty. Nothing is published yet, so for now use cli-path.
+    required: false
+    default: "latest"
+  cli-path:
+    description: >-
+      Path to a locally built CLI (for example packages/cli/dist/cli.js). When
+      set, it is run with node and nothing is downloaded.
+    required: false
+    default: ""
+  working-directory:
+    description: Directory to run in. Annotation paths are relative to it.
+    required: false
+    default: "."
+
+runs:
+  using: composite
+  steps:
+    - name: Score gradients
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        OPAL42_PATHS: ${{ inputs.paths }}
+        OPAL42_MIN_SCORE: ${{ inputs.min-score }}
+        OPAL42_FAIL_UNSCORABLE: ${{ inputs.fail-on-unscorable }}
+        OPAL42_IGNORE: ${{ inputs.ignore }}
+        OPAL42_VERSION: ${{ inputs.version }}
+        OPAL42_CLI_PATH: ${{ inputs.cli-path }}
+      run: |
+        set -euo pipefail
+
+        # Node 22 or newer is required (the caller sets it up, e.g. actions/setup-node).
+        node -e 'if (+process.versions.node.split(".")[0] < 22) { console.error("opal42 needs Node 22 or newer, found " + process.version); process.exit(2); }'
+
+        args=(score --format github)
+
+        if [[ -n "$OPAL42_MIN_SCORE" ]]; then
+          if ! [[ "$OPAL42_MIN_SCORE" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
+            echo "::error::min-score must be a number from 0 to 100, got '$OPAL42_MIN_SCORE'"
+            exit 2
+          fi
+          args+=(--min-score "$OPAL42_MIN_SCORE")
+        fi
+        case "$OPAL42_FAIL_UNSCORABLE" in
+          true) args+=(--fail-on-unscorable) ;;
+          false|"") ;;
+          *) echo "::error::fail-on-unscorable must be 'true' or 'false'"; exit 2 ;;
+        esac
+
+        while IFS= read -r pattern; do
+          [[ -n "${pattern// }" ]] && args+=(--ignore "$pattern")
+        done <<< "$OPAL42_IGNORE"
+
+        # Expand globs (** included); keep plain paths as they are.
+        shopt -s globstar nullglob
+        targets=()
+        for p in $OPAL42_PATHS; do
+          if [[ "$p" == *[*?[]* ]]; then
+            matches=( $p )
+            if (( ${#matches[@]} == 0 )); then
+              echo "::notice::opal42: no file matches '$p'"
+            fi
+            targets+=("${matches[@]}")
+          else
+            targets+=("$p")
+          fi
+        done
+        if (( ${#targets[@]} == 0 )); then
+          echo "::notice::opal42: nothing to scan"
+          exit 0
+        fi
+
+        if [[ -n "$OPAL42_CLI_PATH" ]]; then
+          exec node "$OPAL42_CLI_PATH" "${args[@]}" -- "${targets[@]}"
+        else
+          exec npx --yes "opal42@${OPAL42_VERSION:-latest}" "${args[@]}" -- "${targets[@]}"
+        fi

@@ -61,5 +61,35 @@ jobs:
       - name: Agent skill is valid
         run: node skills/gradient-quality/scripts/validate-skill.mjs skills/gradient-quality
 
+      - name: Stylelint plugin smoke test
+        run: npx stylelint --config packages/stylelint-plugin/tests/smoke.config.mjs packages/cli/tests/fixtures/smooth.css
+
       - name: Vectors unchanged
         run: npm run vectors:diff
+
+  # Informational: runs the composite action from this checkout against the web
+  # app's own CSS with the locally built CLI. No min-score, and the job can never
+  # fail CI (continue-on-error); it exists to catch a broken action early.
+  dogfood-action:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build packages (core, CLI)
+        run: npm run build:packages
+
+      - name: Score the web app's CSS (annotations only)
+        uses: ./actions/score
+        continue-on-error: true
+        with:
+          paths: apps/web/src/**/*.css
+          cli-path: packages/cli/dist/cli.js

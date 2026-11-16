@@ -37,6 +37,7 @@ export default defineConfig([
       'packages/*/tsdown.config.ts',
       'packages/cli/src/**/*.ts',
       'packages/mcp/src/**/*.ts',
+      'packages/stylelint-plugin/src/**/*.ts',
       'apps/web/vite.config.ts',
       'apps/web/vitest.config.ts',
       'apps/web/tests/**/*.ts',

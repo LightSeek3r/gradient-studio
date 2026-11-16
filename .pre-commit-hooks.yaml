@@ -1,0 +1,15 @@
+# pre-commit hook definitions for gradient-studio (https://pre-commit.com).
+# Working package name; NOT usable until `opal42` is published to npm
+# (language: node installs the hook repo with npm; the repo root is a private
+# workspace with no `opal42` bin, so consumers must list the published CLI in
+# `additional_dependencies: ['opal42@<version>']`). See docs/pre-commit.md.
+- id: opal42-score
+  name: gradient smoothness score
+  description: Scores the linear CSS gradients in staged files with the opal42 CLI. Annotates only unless you pass --min-score.
+  entry: opal42 score
+  language: node
+  additional_dependencies: []
+  files: \.(css|scss|sass|less|html|htm|vue|svelte|astro|jsx|tsx|js|mjs|cjs|ts|mts|cts|md|mdx)$
+  types: [text]
+  pass_filenames: true
+  require_serial: false
