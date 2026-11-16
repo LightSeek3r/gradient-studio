@@ -116,8 +116,14 @@ darken) give more painterly composites. Each direction can be muted, reweighted 
 
 ### Export
 
-**Export CSS** always shows the exact `background` (plus `background-blend-mode` when a blend mode
-is in use) for the current stops, directions, weights and blend, with a copy button.
+The Export panel has a tab per format, each with a copy button: **CSS** (the exact `background`,
+plus `background-blend-mode`, for the current stops, directions, weights and blend), CSS with the
+`in oklab` form and an sRGB fallback, Tailwind v4, SCSS, CSS variables, SVG, SwiftUI, Jetpack
+Compose, Flutter, Godot, Android XML, W3C design tokens (JSON) and a Figma paint. Only the CSS
+tab can express several directions; the others export the base gradient and say so. The native
+tabs are labelled *untested on device*, and the design-token shape is unverified against the
+spec: see [`docs/exports.md`](docs/exports.md). The generators are also a library subpath,
+`@opal42/gradient/export`.
 
 ## Tech stack
 
@@ -140,6 +146,7 @@ packages/core/           @opal42/gradient (working name, private): the engine, n
                            names, gamut mapping and complementary colours
   src/scoring-model-v1.ts  the frozen v1 scoring model (thresholds and weights)
   src/index.ts             the public surface
+  src/export.ts            the `./export` subpath: Tailwind, SCSS, SVG, native snippets, DTCG, Figma
   tests/, scripts/         Vitest suite; vector generator and diff tool
 apps/web/                gradient-studio-web (private): the React app, built into /dist
   src/clipboard.ts         clipboard read/write with a fallback; every call resolves, never throws

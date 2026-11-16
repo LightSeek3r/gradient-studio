@@ -6,6 +6,21 @@ All notable changes to Gradient Studio are listed here. The format follows
 
 ## [Unreleased]
 
+### Added (exports, phase 3)
+
+- Core subpath `@opal42/gradient/export`: `toTailwind` (arbitrary value, native `bg-linear-*` /
+  `from-` `via-` `to-` utilities, `@theme`, `@utility`), `toScss`, `toCssVariables`, `toSvg`
+  (angle as a `gradientTransform` for any box), `toSwiftUI`, `toCompose`, `toFlutter`, `toGodot`,
+  `toAndroidXml`, `toDtcg`, `toFigmaPaint` / `fromFigmaPaint` / `angleToFigmaTransform`,
+  `cssAngleToLine` and `exportAll`. Unsupported input (invalid, repeating where the target has none)
+  is a typed result, never garbage; OKLAB/OKLCH and differing-alpha documents are pre-sampled with
+  premultiplied-correct baking for sRGB-only targets. Native snippets are untested on device and the
+  DTCG shape is unverified against the spec (`docs/exports.md`).
+- Web app: the Export panel has tabs (CSS, CSS in OKLAB with sRGB fallback, Tailwind, SCSS, CSS
+  variables, SVG, SwiftUI, Compose, Flutter, Godot, Android XML, DTCG JSON, Figma), each with copy,
+  language label, wrapped code and notes. Tabs other than CSS export the base gradient and say so
+  when several directions are layered; the Suggested view is respected.
+
 ### Added (web app: PWA, deploy-as-code, accessibility CI)
 
 - Installable and offline-capable: a generated service worker (versioned precache, no analytics,

@@ -40,7 +40,7 @@ import { ruleText } from "./explain/explain";
 import { exampleDocument, findExample } from "./examples";
 import { issueHash } from "./persist/issue-link";
 import { useScoreDelta } from "./hooks/useScoreDelta";
-import { buildExportLines } from "./export/css-export";
+import { ExportPanel } from "./components/ExportPanel";
 import { MAX_STOPS, MIN_STOPS, nextId, sortTicks, type GradientDocument } from "./state/document";
 import { useGradientDocument } from "./state/useGradientDocument";
 import { loadInitialDocument, documentLink } from "./persist/storage";
@@ -159,8 +159,6 @@ export default function App() {
   // suggested view is active, the document otherwise.
   const previewTicks = showingSuggested && candidate ? candidate : doc.ticks;
   const gradientStyle = buildMultiGradientStyle(previewTicks, doc.directions, doc.blend);
-  const exportLines = buildExportLines(gradientStyle);
-  const exportText = exportLines.join("\n");
   const selectedScore = candidate ? scoreGradient(candidate).score : null;
 
   const band = scoreBand(score);
@@ -759,41 +757,13 @@ export default function App() {
             </div>
 
             <div {...panelProps("export")} className="tab-panel">
-              <Surface as="section" aria-labelledby="export-h" className="export-panel">
-                <div className="panel-head">
-                  <h2 className="panel-title" id="export-h">
-                    {showingSuggested ? "Suggested CSS" : "Export CSS"}
-                  </h2>
-                  <FlashButton
-                    icon="copy"
-                    label="Copy CSS"
-                    variant="primary"
-                    size="sm"
-                    title="Copy the CSS to the clipboard"
-                    okLabel="Copied"
-                    errLabel="Copy failed"
-                    okMessage="CSS copied to clipboard"
-                    errMessage="Copy failed"
-                    onRun={() => writeClipboardText(exportText)}
-                  />
-                </div>
-                <pre
-                  className="export-code"
-                  // A scrollable code block must be reachable by keyboard (axe: scrollable-region-focusable).
-                  // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
-                  tabIndex={0}
-                  aria-label={showingSuggested ? "Suggested CSS" : "Export CSS"}
-                >
-                  {exportLines.map((line, i) => (
-                    <div key={i}>{line}</div>
-                  ))}
-                </pre>
-                <p className="export-note">
-                  Standard CSS: browsers interpolate between stops in sRGB, not OKLAB.
-                  {showingSuggested &&
-                    " This is the suggested gradient shown in the preview, not yet applied to your stops."}
-                </p>
-              </Surface>
+              <ExportPanel
+                ticks={previewTicks}
+                directions={doc.directions}
+                blend={doc.blend}
+                style={gradientStyle}
+                showingSuggested={showingSuggested}
+              />
             </div>
           </div>
         </main>

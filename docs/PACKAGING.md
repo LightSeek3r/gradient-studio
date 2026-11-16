@@ -11,7 +11,7 @@ installs and runs offline from the npm proxy:
 
 - `npm run build:packages` (core, then CLI). Output goes to each package's
   gitignored `dist/`.
-- Core: four entries (`index`, `css`, `color`, `names`), ESM, ES2022, unminified,
+- Core: five entries (`index`, `css`, `color`, `names`, `export`), ESM, ES2022, unminified,
   with `.d.ts`. Shared code lands in hashed chunks next to the entries.
 - CLI: `dist/cli.js` (the `bin`, shebang, executable bit set by tsdown) and
   `dist/index.js` (the `run` function; unstable until 1.0). `@opal42/gradient`
@@ -28,6 +28,7 @@ installs and runs offline from the npm proxy:
 | `./css` | `parseGradient`, `parseCssColor` and parser types |
 | `./color` | colour parse/format/convert (`parseAnyColor`, `formatHex`, `hexToOklch`, `gamutFitOklch`, ...), `parseCssColor`, `complement` |
 | `./names` | `CSS_NAMED_COLORS`, `CSS_COLOR_NAMES`, `nearestColorName` |
+| `./export` | `toTailwind`, `toScss`, `toSvg`, native snippets, `toDtcg`, Figma paints, `exportAll` ([`exports.md`](exports.md)) |
 | `./package.json` | |
 
 Each entry has a `source` condition (TypeScript source, first), then `types`
@@ -141,3 +142,17 @@ both external. Own code is about 4.1 kB gzip (budget 4.5 kB); the tarball has
 `dist`, `LICENSE`, `README.md` and `package.json`. The same three checks cover it
 (`lint:package`, `attw`, `size`), and CI loads the built plugin through the
 Stylelint CLI.
+
+
+## `./export` subpath (phase 3)
+
+A fifth entry, `dist/export.js`, not re-exported from the root (the whole-library
+budget is unchanged). Zero dependencies; it shares the colour and baking chunks.
+Measured gzip sizes and budgets (measurement plus about 10%):
+
+| Import | Measured | Budget |
+|---|---|---|
+| `./export` (all) | 12.18 kB | 13.4 kB |
+| `./export` `{ toTailwind }` | 3.88 kB | 4.3 kB |
+| `./export` `{ toDtcg }` (pulls baking) | 6.02 kB | 6.6 kB |
+| `./export` `{ cssAngleToLine }` | 198 B | 220 B |

@@ -48,6 +48,11 @@
       "types": "./dist/css.d.ts",
       "default": "./dist/css.js"
     },
+    "./export": {
+      "source": "./src/export.ts",
+      "types": "./dist/export.d.ts",
+      "default": "./dist/export.js"
+    },
     "./package.json": "./package.json"
   },
   "files": [

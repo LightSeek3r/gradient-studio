@@ -61,5 +61,33 @@
   "import": "*",
   "gzip": true,
   "limit": "2.2 kB"
+ },
+ {
+  "name": "./export (everything)",
+  "path": "dist/export.js",
+  "import": "*",
+  "gzip": true,
+  "limit": "13.4 kB"
+ },
+ {
+  "name": "./export toTailwind",
+  "path": "dist/export.js",
+  "import": "{ toTailwind }",
+  "gzip": true,
+  "limit": "4.3 kB"
+ },
+ {
+  "name": "./export toDtcg",
+  "path": "dist/export.js",
+  "import": "{ toDtcg }",
+  "gzip": true,
+  "limit": "6.6 kB"
+ },
+ {
+  "name": "./export cssAngleToLine",
+  "path": "dist/export.js",
+  "import": "{ cssAngleToLine }",
+  "gzip": true,
+  "limit": "220 B"
  }
 ]

@@ -221,6 +221,41 @@ The complement (`complementHex`) of any colour the parser supports, as
 The strict colour parser the gradient parser uses (unlike the lenient
 `parseAnyColor` for paste fields).
 
+## Export subpath
+
+`@opal42/gradient/export` (not re-exported from the package root, to keep the
+root's budget). Pure, dependency-free, **never throws**. Details, exactness notes
+and what is unverified: [`docs/exports.md`](../docs/exports.md).
+
+```ts
+type ExportResult   = { status: "ok"; text: string; language: string; notes: string[] };
+type ExportUnsupported = { status: "unsupported"; code: "invalid-document" | "unsupported-kind" | "repeating" | "invalid-input" | "unsupported-paint"; reason: string };
+```
+
+| Function | Result |
+|---|---|
+| `toTailwind(doc, { name? })` | `ok` + `arbitrary` (`bg-[linear-gradient(...)]`, exactly `toCSS`), `native` (`bg-linear-135/srgb from-[..] via-[..] to-[..]`, two or three stops, else null), `theme` (`@theme`), `utility` (`@utility`) |
+| `toScss(doc, { name? })` | variables plus a function-free `linear-gradient($angle, ...)` |
+| `toCssVariables(doc, { prefix? })` | `:root` custom properties and the gradient built from them |
+| `toSvg(doc, { width?, height?, id?, bake? })` | `<linearGradient>` with a `gradientTransform` for a width x height box |
+| `toSwiftUI`, `toFlutter({ alignment? })`, `toGodot` (+ `tres`), `toAndroidXml` (+ `variant`), `toCompose({ width?, height? })` | native snippets, **untested on device** |
+| `toDtcg(doc, { name?, colorFormat? })` | DTCG gradient token, **unverified against the normative text** |
+| `toFigmaPaint(doc, opts)` (+ `paint`), `fromFigmaPaint(paint, { aspect? })` | Figma `GRADIENT_LINEAR` paint and its inverse (`{ status: "ok", document }`) |
+| `angleToFigmaTransform(angle, aspect?)`, `figmaTransformToAngle(matrix, aspect?)` | the 2x3 matrix `[[a, c, e], [b, d, f]]` and its inverse (null when invalid) |
+| `cssAngleToLine(angle, aspect?)` | `{ x1, y1, x2, y2, length }`: the CSS gradient line in unit-box coordinates (y down) |
+| `exportAll(doc, opts?)` | `Record<ExportKey, result>` for every entry of `EXPORT_FORMATS` |
+| `EXPORT_FORMATS` | `{ key, label, language, native }[]`, stable order: `css`, `css-oklab`, `tailwind`, `scss`, `css-variables`, `svg`, `swiftui`, `compose`, `flutter`, `godot`, `android`, `dtcg`, `figma` (new formats are appended) |
+
+Options shared by the non-CSS targets: `aspect` (width / height of the box the
+start and end points are for; default 1, a square) and `bake` (pre-sample into
+about n stops with `bakeStops`; `0` = off; default 16 when the document
+interpolates in OKLAB/OKLCH or its stops have different alphas, so a target that
+interpolates in sRGB approximates CSS's OKLAB and premultiplied alpha). Names,
+prefixes and ids are reduced to safe identifiers; colours are validated hex.
+Repeating gradients are exported only by the CSS family (`css`, `css-oklab`,
+`tailwind` arbitrary/theme/utility, `scss`, `css-variables`); every other target
+returns `unsupported` with code `repeating`.
+
 ## Not in this API yet
 
 Scoring model v2 (interpolation-aware), radial and conic documents, colour

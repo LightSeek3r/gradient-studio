@@ -1911,6 +1911,58 @@ details[open] > .disclosure-summary .disclosure-chevron,
   margin: 0;
 }
 
+.export-tabs {
+  display: flex;
+  margin: 0 0 var(--sp-3);
+}
+
+.export-tabs .segmented-item {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.export-body {
+  min-width: 0;
+}
+
+.export-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+  margin: 0 0 var(--sp-2);
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+}
+
+.export-lang {
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.export-badge {
+  padding: 1px var(--sp-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm, 4px);
+  color: var(--text-dim);
+}
+
+.export-scope {
+  padding: var(--sp-2) var(--sp-3);
+  border-left: 3px solid var(--accent);
+  background: var(--accent-dim);
+  color: var(--text);
+}
+
+.export-notes {
+  margin: 0;
+  padding-left: var(--sp-4);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-prose);
+  color: var(--text-muted);
+}
+
 /* ── Footer / theory note ──────────────────────────────────────────────────── */
 
 .studio-footer {

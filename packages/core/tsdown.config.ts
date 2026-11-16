@@ -9,6 +9,7 @@ export default defineConfig({
     color: "src/color.ts",
     names: "src/names.ts",
     css: "src/css.ts",
+    export: "src/export.ts",
   },
   format: "esm",
   platform: "neutral",
