@@ -6,5 +6,8 @@ export default defineConfig({
   test: {
     environment: 'node',
     include: ['tests/**/*.test.ts'],
+    // The corpus-wide contract tests (proposeFixes, export goldens) are exhaustive on
+    // purpose and take a few seconds each; the 5 s default fails under parallel load.
+    testTimeout: 30_000,
   },
 })
