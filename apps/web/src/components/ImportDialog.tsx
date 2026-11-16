@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { buildGradientCSS } from "@opal42/gradient";
 import { Button } from "./ui/Button";
-import { parseLinearGradient, type ImportedGradient } from "../import/parse-linear-gradient";
+import { parseLinearGradient, type ImportedGradient } from "../import/adapter";
 
 /**
  * "Import CSS" dialog: a textarea with a live parse result (preview strip,
@@ -64,6 +64,8 @@ export function ImportDialog({
           rows={4}
           value={text}
           spellCheck={false}
+          // The dialog opens on request (button or paste), so moving focus into its one field is the expected behaviour, not a page-load focus grab.
+          // eslint-disable-next-line jsx-a11y/no-autofocus
           autoFocus
           aria-describedby={statusId}
           placeholder="linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 50%, #1a535c 100%)"

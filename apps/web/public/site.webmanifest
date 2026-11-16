@@ -1,14 +1,31 @@
 {
+  "id": "/",
   "name": "Gradient Studio",
   "short_name": "Gradient Studio",
-  "description": "Perceptual gradient editor with OKLAB quality scoring, every color format, complements, and multi-angle CSS export.",
+  "description": "Perceptual gradient editor with OKLAB quality scoring, every color format, complements, and multi-angle CSS export. Works offline once loaded.",
+  "lang": "en",
+  "dir": "ltr",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "orientation": "any",
   "background_color": "#060a12",
   "theme_color": "#060a12",
+  "categories": ["design", "developer tools", "productivity"],
   "icons": [
-    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
     { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ],
+  "shortcuts": [
+    {
+      "name": "Import CSS",
+      "short_name": "Import CSS",
+      "description": "Paste a CSS linear-gradient() into the editor",
+      "url": "/?action=import",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    }
   ]
 }

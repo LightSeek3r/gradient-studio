@@ -1,5 +1,5 @@
 import type { GradientDocument } from "../state/document";
-import type { ImportedGradient } from "./parse-linear-gradient";
+import type { ImportedGradient } from "./adapter";
 
 /**
  * An imported linear-gradient describes the whole look, so it replaces the

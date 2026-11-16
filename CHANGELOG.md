@@ -6,6 +6,20 @@ All notable changes to Gradient Studio are listed here. The format follows
 
 ## [Unreleased]
 
+### Added (web app: PWA, deploy-as-code, accessibility CI)
+
+- Installable and offline-capable: a generated service worker (versioned precache, no analytics,
+  no foreign origins), a non-blocking "Update available - reload" toast, a maskable icon, and an
+  "Import CSS" shortcut (`/?action=import`). See `docs/DEPLOY.md`.
+- `public/_headers` (strict CSP, security and cache headers) for Cloudflare Pages, and an example `wrangler.jsonc` under `docs/deploy/` (not active).
+- `eslint-plugin-jsx-a11y` in lint, and axe component tests (stop chip, ledger rows, import dialog).
+
+### Changed (web app import)
+
+- CSS import now runs on the core `parseGradient` through a thin adapter instead of a second parser;
+  it additionally accepts `oklab()`/`oklch()` and gradients inside whole rules. Differences are listed
+  in `docs/web-import-notes.md`.
+
 ### Added (explainable score, U2)
 
 - Points ledger: "100 − 20 − 12 − 10 = 58", one expandable row per deduction saying what the rule

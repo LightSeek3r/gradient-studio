@@ -1,5 +1,6 @@
 import js from '@eslint/js'
 import globals from 'globals'
+import jsxA11y from 'eslint-plugin-jsx-a11y'
 import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
@@ -18,9 +19,13 @@ export default defineConfig([
   {
     // The web app runs in the browser and is the only place React rules apply.
     files: ['apps/web/**/*.{ts,tsx}'],
-    extends: [reactHooks.configs.flat.recommended, reactRefresh.configs.vite],
+    extends: [reactHooks.configs.flat.recommended, reactRefresh.configs.vite, jsxA11y.flatConfigs.recommended],
     languageOptions: {
       globals: globals.browser,
+    },
+    rules: {
+      // ColorTextField renders the <input>; a <label> that wraps it is a real association.
+      'jsx-a11y/label-has-associated-control': ['error', { controlComponents: ['ColorTextField'] }],
     },
   },
   {

@@ -15,6 +15,10 @@ export interface ToastData {
   /** Show an Undo button. */
   undo?: boolean;
   tone?: "info" | "error";
+  /** A button that runs `run` (e.g. "Reload" for an app update). */
+  action?: { label: string; run: () => void };
+  /** Stay until dismissed instead of timing out (for things that wait on the person). */
+  sticky?: boolean;
 }
 
 export function useToast() {
@@ -33,7 +37,7 @@ export function useToast() {
   const dismiss = useCallback(() => setToast(null), []);
 
   useEffect(() => {
-    if (!toast || paused) return;
+    if (!toast || paused || toast.sticky) return;
     // Warnings take longer to read.
     const ms = TOAST_MS + (toast.details?.length ?? 0) * 2000;
     const t = setTimeout(() => setToast(null), ms);

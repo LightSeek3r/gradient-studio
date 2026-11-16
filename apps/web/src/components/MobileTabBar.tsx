@@ -66,6 +66,8 @@ export function MobileTabBar({
 
   return (
     <nav className="tabbar" aria-label="Panels">
+      {/* The tabs inside are the focusable elements (roving tabindex); this container only routes arrow keys, as in the APG tabs pattern. */}
+      {/* eslint-disable-next-line jsx-a11y/interactive-supports-focus */}
       <div className="tabbar-list" role="tablist" aria-label="Panels" onKeyDown={onKeyDown}>
         {TAB_IDS.map((t) => {
           const selected = t === active;

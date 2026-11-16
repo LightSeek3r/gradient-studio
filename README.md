@@ -180,7 +180,8 @@ static site in the repo-root `dist/` that any static host can serve.
 
 The [live app](https://gradient-studio-al4.pages.dev/) is the `dist/` build hosted on Cloudflare
 Pages, deployed separately from this repository. GitHub runs no deploy: the only workflow is CI,
-and the `v*` tags are release markers.
+and the `v*` tags are release markers. Headers, the Wrangler config and the offline service worker are
+documented in [docs/DEPLOY.md](docs/DEPLOY.md).
 
 `index.html` points its `canonical`, `og:url`, `og:image` and `twitter:image` tags at
 `https://gradient-studio-al4.pages.dev/`. If you host your own copy, change them to your address,

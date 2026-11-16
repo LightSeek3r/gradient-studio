@@ -1,0 +1,13 @@
+{
+  // EXAMPLE ONLY - not active. Copy to the repo root as wrangler.jsonc after setting "name" to your real Pages project name. Deploying is manual and
+  // deliberate: `npm run build && npx wrangler pages deploy` (see docs/DEPLOY.md).
+  // Note: once this file exists with `pages_build_output_dir`, it is the source
+  // of truth for the fields it sets; the dashboard shows them read-only.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "gradient-studio",
+  // Pin the runtime date; this is a static site with no Functions, so it only
+  // needs to be a valid date and never has to be bumped for behaviour.
+  "compatibility_date": "2026-11-16",
+  // `npm run build` emits to dist/ at the repo root (apps/web/vite.config.ts).
+  "pages_build_output_dir": "dist"
+}

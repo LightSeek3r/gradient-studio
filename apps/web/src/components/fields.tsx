@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { announce } from "../announce";
 import { readClipboardText, writeClipboardText } from "../clipboard";
 import { parseAnyColor } from "@opal42/gradient";
-import { looksLikeGradient } from "../import/parse-linear-gradient";
+import { looksLikeGradient } from "../import/adapter";
 import { Button, type ButtonSize, type ButtonVariant } from "./ui/Button";
 import type { IconName } from "./ui/Icon";
 

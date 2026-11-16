@@ -1,0 +1,34 @@
+# Cloudflare Pages response headers (https://developers.cloudflare.com/pages/configuration/headers/).
+# Pages joins values of the same header from every rule a URL matches, so each
+# header name below is set by exactly one rule for any given path: security
+# headers on /*, Cache-Control only on the narrower rules.
+#
+# The CSP matches what the built app really needs, verified by a browser run
+# with zero violations:
+#   script-src 'self'      one module bundle + the service worker; no inline script, no eval
+#   style-src 'self'       one extracted stylesheet; React sets style="" through the CSSOM, which CSP does not block
+#   font-src 'self' data:  Vite inlines the smallest @fontsource subsets as data: URLs
+#   img-src 'self' data:   icons plus the CSS dot-grid background (data: SVG)
+#   connect-src 'self'     only the service worker's precache fetches; the app makes no network calls
+#   worker-src 'self'      /sw.js
+#   frame-ancestors 'none' cannot be framed (clickjacking); form-action/base-uri locked
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self' data:; connect-src 'self'; manifest-src 'self'; worker-src 'self'; object-src 'none'; media-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; upgrade-insecure-requests
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: no-referrer
+  Cross-Origin-Opener-Policy: same-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
+  Strict-Transport-Security: max-age=31536000
+
+# Vite emits content-hashed names under /assets/: safe to cache forever.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# The worker and its manifest must always be revalidated, or updates never arrive.
+/sw.js
+  Cache-Control: no-cache
+
+/site.webmanifest
+  Content-Type: application/manifest+json
+  Cache-Control: no-cache

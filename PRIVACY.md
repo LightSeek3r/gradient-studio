@@ -15,7 +15,10 @@ these, because there is nothing to opt out of.
   sent anywhere. Fonts and assets are bundled with the app, not loaded from
   third-party hosts. Future features that remember state (URL hash, autosave)
   keep it on your device; a shareable link carries the gradient in the link
-  itself, and only you decide where it goes.
+  itself, and only you decide where it goes. Once loaded, the app keeps a copy of
+  its own files in your browser's cache (a service worker) so it works offline;
+  that cache holds only the app, never your gradients, and the worker makes no
+  requests to any other host.
 - The **hosting provider** (currently Cloudflare Pages) serves the static files
   and, as any web host does, sees request metadata such as IP addresses. We do
   not add analytics to it; whether the provider's own analytics are switched off

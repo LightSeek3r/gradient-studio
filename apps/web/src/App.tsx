@@ -53,8 +53,10 @@ import {
   looksLikeGradient,
   parseLinearGradient,
   type ImportedGradient,
-} from "./import/parse-linear-gradient";
+} from "./import/adapter";
 import { importedToDocument, importSummary } from "./import/to-document";
+import { wantsImportDialog, withoutLaunchAction } from "./import/launch";
+import { registerServiceWorker } from "./sw/register";
 import { candidateTicks, computeSuggestion, type Suggestion } from "./suggest/compare";
 import "./App.css";
 
@@ -88,12 +90,29 @@ export default function App() {
   const { doc, dispatch, commit, canUndo, canRedo } = store;
   const { toast, show: showToast, dismiss: dismissToast, setPaused: pauseToast } = useToast();
 
+  // Offline support: when a new version is waiting, offer it without interrupting.
+  useEffect(() => {
+    registerServiceWorker((update) =>
+      showToast({
+        message: "Update available - reload",
+        action: { label: "Reload", run: update.reload },
+        sticky: true,
+      }),
+    );
+  }, [showToast]);
+
   const tabbed = useMediaQuery(MOBILE_QUERY);
   const [tab, setTab] = useState<TabId>(DEFAULT_TAB);
   const [notation, setNotation] = useState<Notation>("hex");
   const [selectedStopId, setSelectedStopId] = useState<number | null>(null);
   const [compareState, setCompareState] = useState<CompareState | null>(null);
-  const [importDialog, setImportDialog] = useState<ImportDialogState | null>(null);
+  // The installed app's "Import CSS" shortcut launches with ?action=import.
+  const [importDialog, setImportDialog] = useState<ImportDialogState | null>(() =>
+    wantsImportDialog(window.location.search) ? { text: "", key: 1 } : null,
+  );
+  useEffect(() => {
+    if (wantsImportDialog(window.location.search)) window.history.replaceState(null, "", withoutLaunchAction(window.location.href));
+  }, []);
   // Explainability UI state: which ledger rows the user opened or closed, the
   // issue highlighted in both the lane and the ledger, and the fix on preview.
   const [ledgerOpen, setLedgerOpen] = useState<Record<string, boolean>>(() =>
@@ -760,6 +779,8 @@ export default function App() {
                 </div>
                 <pre
                   className="export-code"
+                  // A scrollable code block must be reachable by keyboard (axe: scrollable-region-focusable).
+                  // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
                   tabIndex={0}
                   aria-label={showingSuggested ? "Suggested CSS" : "Export CSS"}
                 >

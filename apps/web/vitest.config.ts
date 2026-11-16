@@ -6,9 +6,11 @@ import { defineConfig } from 'vitest/config'
 export default defineConfig({
   // Resolve workspace packages to their TypeScript source (see vite.config.ts).
   resolve: { conditions: ['source'] },
+  // Component tests (tests/a11y.test.tsx) use JSX without the React plugin.
+  esbuild: { jsx: 'automatic' },
   ssr: { resolve: { conditions: ['source'] } },
   test: {
     environment: 'node',
-    include: ['tests/**/*.test.ts'],
+    include: ['tests/**/*.test.{ts,tsx}'],
   },
 })

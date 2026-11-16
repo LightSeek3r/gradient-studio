@@ -52,6 +52,19 @@ export function Toast({
           Undo
         </Button>
       )}
+      {toast.action && (
+        <Button
+          variant="primary"
+          size="sm"
+          className="toast-action"
+          onClick={() => {
+            toast.action?.run();
+            onDismiss();
+          }}
+        >
+          {toast.action.label}
+        </Button>
+      )}
       <Button
         variant="icon"
         size="sm"
