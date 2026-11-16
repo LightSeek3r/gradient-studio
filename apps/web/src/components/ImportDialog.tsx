@@ -1,5 +1,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { buildGradientCSS } from "@opal42/gradient";
+import { useT } from "../i18n/context";
+import { renderRich } from "../i18n/rich";
 import { Button } from "./ui/Button";
 import { parseLinearGradient, type ImportedGradient } from "../import/adapter";
 
@@ -22,6 +24,7 @@ export function ImportDialog({
   onImport: (gradient: ImportedGradient, warnings: string[]) => void;
   onClose: () => void;
 }) {
+  const t = useT();
   const ref = useRef<HTMLDialogElement>(null);
   const [text, setText] = useState(initialText);
   const titleId = useId();
@@ -34,7 +37,7 @@ export function ImportDialog({
     if (!open && dialog.open) dialog.close();
   }, [open]);
 
-  const result = text.trim() ? parseLinearGradient(text) : null;
+  const result = text.trim() ? parseLinearGradient(text, t) : null;
 
   return (
     <dialog
@@ -52,11 +55,11 @@ export function ImportDialog({
         }}
       >
         <h2 id={titleId} className="import-title">
-          Import CSS
+          {t("import.title")}
         </h2>
         {intro && <p className="import-intro">{intro}</p>}
         <label className="import-label" htmlFor={`${titleId}-text`}>
-          Paste a <code>linear-gradient(…)</code> or a <code>background:</code> declaration
+          {renderRich(t("import.label"), { code: (c) => <code>{c}</code> })}
         </label>
         <textarea
           id={`${titleId}-text`}
@@ -84,7 +87,7 @@ export function ImportDialog({
                 }}
               />
               <p className="import-ok">
-                {result.gradient.stops.length} stops, {result.gradient.angle}°
+                {t("import.summary", { count: result.gradient.stops.length, angle: result.gradient.angle })}
               </p>
             </>
           )}
@@ -99,10 +102,10 @@ export function ImportDialog({
         </div>
         <div className="btn-row import-actions">
           <Button variant="ghost" onClick={onClose}>
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button type="submit" variant="primary" icon="import" disabled={!result?.ok}>
-            Import
+            {t("import.submit")}
           </Button>
         </div>
       </form>

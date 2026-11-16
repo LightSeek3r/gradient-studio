@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { scoreGradient } from "@opal42/gradient";
-import { candidateTicks, computeSuggestion } from "../src/suggest/compare";
+import { tEn } from "../src/i18n/translator";
+import { candidateTicks, computeSuggestion, declineReason } from "../src/suggest/compare";
 
 const rough = [
   { id: 1, color: "#ff0000", position: 0 },
@@ -35,6 +36,6 @@ describe("suggestion compare", () => {
     ];
     const s = computeSuggestion(hard);
     expect(s.useful).toBe(false);
-    expect(s.reason).toMatch(/hard stop/);
+    expect(declineReason(s.result, tEn)).toMatch(/hard stop/);
   });
 });

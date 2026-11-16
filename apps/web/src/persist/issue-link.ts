@@ -5,6 +5,7 @@
 // start with a version tag (`#v1;…`). Unknown codes are ignored.
 
 import { findExample } from "../examples";
+import type { Locale } from "../i18n/locale";
 
 export const ISSUE_PREFIX = "issue=";
 /** Longest fragment looked at (codes are ~30 characters). */
@@ -15,7 +16,10 @@ export function parseIssueHash(hash: unknown): string | null {
   if (typeof hash !== "string" || hash.length > MAX_LENGTH) return null;
   const text = hash.startsWith("#") ? hash.slice(1) : hash;
   if (!text.startsWith(ISSUE_PREFIX)) return null;
-  let code = text.slice(ISSUE_PREFIX.length);
+  // `#issue=<code>;lang=fr`: the language of the link is read by i18n/locale.
+  const [head, ...extra] = text.slice(ISSUE_PREFIX.length).split(";");
+  if (extra.length > 1 || (extra.length === 1 && !extra[0].startsWith("lang="))) return null;
+  let code = head;
   try {
     code = decodeURIComponent(code);
   } catch {
@@ -24,12 +28,16 @@ export function parseIssueHash(hash: unknown): string | null {
   return findExample(code)?.code ?? null;
 }
 
-/** `#issue=lightness/reversal` */
-export function issueHash(code: string): string {
-  return `#${ISSUE_PREFIX}${code}`;
+/** `#issue=lightness/reversal`, or `#issue=lightness/reversal;lang=fr` with a language. */
+export function issueHash(code: string, lang?: Locale | null): string {
+  return `#${ISSUE_PREFIX}${code}${lang ? `;lang=${lang}` : ""}`;
 }
 
 /** The shareable link to a rule. */
-export function issueLink(code: string, location: Pick<Location, "origin" | "pathname" | "search"> = window.location): string {
-  return `${location.origin}${location.pathname}${location.search}${issueHash(code)}`;
+export function issueLink(
+  code: string,
+  location: Pick<Location, "origin" | "pathname" | "search"> = window.location,
+  lang?: Locale | null,
+): string {
+  return `${location.origin}${location.pathname}${location.search}${issueHash(code, lang)}`;
 }

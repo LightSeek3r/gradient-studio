@@ -1,9 +1,10 @@
 import type { KeyboardEvent } from "react";
+import { useT } from "../i18n/context";
 import {
   TAB_IDS,
-  TAB_LABELS,
   badgeText,
   issueSuffix,
+  tabLabel,
   nextTab,
   panelId,
   tabId,
@@ -56,6 +57,7 @@ export function MobileTabBar({
   /** CSS colour of the Score badge (the live score band). */
   badgeColor: string;
 }) {
+  const t = useT();
   const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     const next = nextTab(active, e.key);
     if (!next) return;
@@ -65,24 +67,24 @@ export function MobileTabBar({
   };
 
   return (
-    <nav className="tabbar" aria-label="Panels">
+    <nav className="tabbar" aria-label={t("tabs.panels")}>
       {/* The tabs inside are the focusable elements (roving tabindex); this container only routes arrow keys, as in the APG tabs pattern. */}
       {/* eslint-disable-next-line jsx-a11y/interactive-supports-focus */}
-      <div className="tabbar-list" role="tablist" aria-label="Panels" onKeyDown={onKeyDown}>
-        {TAB_IDS.map((t) => {
-          const selected = t === active;
-          const badge = t === "score" ? issueCount : null;
+      <div className="tabbar-list" role="tablist" aria-label={t("tabs.panels")} onKeyDown={onKeyDown}>
+        {TAB_IDS.map((tab) => {
+          const selected = tab === active;
+          const badge = tab === "score" ? issueCount : null;
           return (
             <button
-              key={t}
-              id={tabId(t)}
+              key={tab}
+              id={tabId(tab)}
               type="button"
               role="tab"
               className={`tabbar-tab${selected ? " is-active" : ""}`}
               aria-selected={selected}
-              aria-controls={panelId(t)}
+              aria-controls={panelId(tab)}
               tabIndex={selected ? 0 : -1}
-              onClick={() => onChange(t)}
+              onClick={() => onChange(tab)}
             >
               <span className="tabbar-icon" aria-hidden="true">
                 <svg
@@ -96,7 +98,7 @@ export function MobileTabBar({
                   strokeLinejoin="round"
                   focusable="false"
                 >
-                  {TAB_ICONS[t]}
+                  {TAB_ICONS[tab]}
                 </svg>
                 {badge ? (
                   <span className="tabbar-badge" style={{ background: badgeColor }}>
@@ -104,9 +106,9 @@ export function MobileTabBar({
                   </span>
                 ) : null}
               </span>
-              <span className="tabbar-label">{TAB_LABELS[t]}</span>
+              <span className="tabbar-label">{tabLabel(tab, t)}</span>
               {/* Spoken after the label, so the tab's name starts with its visible text. */}
-              {badge ? <span className="sr-only">{issueSuffix(badge)}</span> : null}
+              {badge ? <span className="sr-only">{issueSuffix(badge, t)}</span> : null}
             </button>
           );
         })}

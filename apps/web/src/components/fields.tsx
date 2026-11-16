@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { announce } from "../announce";
 import { readClipboardText, writeClipboardText } from "../clipboard";
 import { parseAnyColor } from "@opal42/gradient";
+import { useT } from "../i18n/context";
 import { looksLikeGradient } from "../import/adapter";
 import { Button, type ButtonSize, type ButtonVariant } from "./ui/Button";
 import type { IconName } from "./ui/Icon";
@@ -24,10 +25,10 @@ export function FlashButton({
   variant,
   size,
   collapse,
-  okMessage = "Done",
-  errMessage = "Failed",
-  okLabel = "Done",
-  errLabel = "Failed",
+  okMessage,
+  errMessage,
+  okLabel,
+  errLabel,
 }: {
   icon: IconName;
   /** Visible text; without it the button is a square icon button named by `ariaLabel`/`title`. */
@@ -48,6 +49,7 @@ export function FlashButton({
   okLabel?: string;
   errLabel?: string;
 }) {
+  const t = useT();
   const [flash, setFlash] = useState<"ok" | "err" | null>(null);
 
   useEffect(() => {
@@ -58,7 +60,8 @@ export function FlashButton({
 
   const shownIcon: IconName = flash === "ok" ? "check" : flash === "err" ? "alert" : icon;
   const textual = label !== undefined;
-  const shownLabel = flash === "ok" ? okLabel : flash === "err" ? errLabel : label;
+  const shownLabel =
+    flash === "ok" ? (okLabel ?? t("common.done")) : flash === "err" ? (errLabel ?? t("common.failed")) : label;
 
   return (
     <Button
@@ -74,7 +77,7 @@ export function FlashButton({
         const ok = await onRun();
         if (ok === null) return;
         setFlash(ok ? "ok" : "err");
-        announce(ok ? okMessage : errMessage);
+        announce(ok ? (okMessage ?? t("common.done")) : (errMessage ?? t("common.failed")));
       }}
     >
       {textual ? shownLabel : undefined}
@@ -91,17 +94,18 @@ export function PasteButton({
   onColor: (hex: string) => void;
   /** Clipboard holds a whole gradient: offer to import it instead of failing. */
   onGradient?: (text: string) => void;
-  /** Which field this pastes into, e.g. "stop 2 hex" - makes the name unique. */
+  /** Which field this pastes into, e.g. "stop 2 hex" (already translated) - makes the name unique. */
   label: string;
 }) {
+  const t = useT();
   return (
     <FlashButton
       icon="paste"
-      title={`Paste a single color into ${label} (hex, rgb, hsl or name)`}
-      ariaLabel={`Paste into ${label}`}
+      title={t("paste.title", { label })}
+      ariaLabel={t("paste.aria", { label })}
       className="btn-paste"
-      okMessage={`Pasted into ${label}`}
-      errMessage={`Could not paste into ${label}: clipboard does not hold a single color`}
+      okMessage={t("paste.done", { label })}
+      errMessage={t("paste.failed", { label })}
       onRun={async () => {
         const text = await readClipboardText();
         if (!text) return false;
@@ -132,13 +136,15 @@ export function CopyButton({
   /** Short name used instead of `value` in the tooltip and announcement. */
   label?: string;
 }) {
+  const t = useT();
+  const what = label ?? value;
   return (
     <FlashButton
       icon="copy"
-      title={`Copy ${label ?? value}`}
+      title={t("copy.title", { label: what })}
       className="btn-copy"
-      okMessage={`Copied ${label ?? value}`}
-      errMessage="Copy failed"
+      okMessage={t("copy.done", { label: what })}
+      errMessage={t("common.copyFailed")}
       onRun={() => writeClipboardText(copyValue ?? value)}
     />
   );
@@ -216,8 +222,8 @@ export function ColorTextField({
 
 export interface TriplePart {
   label: string;
-  /** Spoken name, e.g. "red" - combined with the stop to label the input. */
-  name: string;
+  /** Accessible name of the input, e.g. "Stop 2 red". */
+  ariaLabel: string;
   min: number;
   max: number;
   suffix?: string;
@@ -232,12 +238,9 @@ export function NumericTriple({
   parts,
   values,
   onCommit,
-  labelPrefix,
   onDone,
 }: {
   onDone?: () => void;
-  /** Qualifies each input's accessible name, e.g. "Stop 2" -> "Stop 2 red". */
-  labelPrefix: string;
   parts: [TriplePart, TriplePart, TriplePart];
   values: [number, number, number];
   onCommit: (values: [number, number, number]) => void;
@@ -276,7 +279,7 @@ export function NumericTriple({
             min={part.min}
             max={part.max}
             value={shown[i] ?? ""}
-            aria-label={`${labelPrefix} ${part.name}`}
+            aria-label={part.ariaLabel}
             onBlur={() => {
               setDrafts(null);
               onDone?.();

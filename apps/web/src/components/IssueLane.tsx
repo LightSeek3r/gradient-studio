@@ -1,3 +1,4 @@
+import { useI18n } from "../i18n/context";
 import { layoutLane } from "../explain/lane";
 import { locationText, type LedgerRow } from "../explain/ledger";
 import { SeverityGlyph } from "./SeverityGlyph";
@@ -23,6 +24,8 @@ export interface IssueLaneProps {
  * focusing a marker highlights its ledger row, and the other way round.
  */
 export function IssueLane({ rows, positions, active, onActive, onOpen, interactive }: IssueLaneProps) {
+  const i18n = useI18n();
+  const { t } = i18n;
   const layout = layoutLane(rows, positions, interactive ? 4 : 3);
   const byCode = new Map(rows.map((r) => [r.code, r]));
   const empty = layout.marks.length === 0;
@@ -32,7 +35,7 @@ export function IssueLane({ rows, positions, active, onActive, onOpen, interacti
       className={`issue-lane${empty ? " is-empty" : ""}${interactive ? "" : " is-static"}`}
       data-testid="issue-lane"
       role={interactive && !empty ? "group" : undefined}
-      aria-label={interactive && !empty ? "Issues on the gradient" : undefined}
+      aria-label={interactive && !empty ? t("lane.group") : undefined}
       aria-hidden={interactive && !empty ? undefined : true}
       style={{ "--lane-rows": Math.max(1, layout.rows) } as React.CSSProperties}
     >
@@ -42,7 +45,7 @@ export function IssueLane({ rows, positions, active, onActive, onOpen, interacti
         const span = m.end - m.start;
         const cls = `lane-mark sev-${row.severity}${m.bracket ? " is-bracket" : ""}${span === 0 ? " is-point" : ""}${active === m.code ? " is-active" : ""}`;
         const style = { left: `${m.start}%`, width: `${span}%`, "--row": m.row } as React.CSSProperties;
-        const where = locationText(row);
+        const where = locationText(row, i18n);
         const content = (
           <>
             <span className="lane-line" />
@@ -67,8 +70,8 @@ export function IssueLane({ rows, positions, active, onActive, onOpen, interacti
             className={cls}
             style={style}
             data-code={m.code}
-            aria-label={`${row.name}: minus ${row.pointsLost} points${where ? `, ${where}` : ""}. Show in the score ledger`}
-            title={`${row.name} (−${row.pointsLost})${where ? ` · ${where}` : ""}`}
+            aria-label={t("lane.markAria", { name: row.name, points: row.pointsLost, where: where ? `, ${where}` : "" })}
+            title={t("lane.markTitle", { name: row.name, points: row.pointsLost, where: where ? ` · ${where}` : "" })}
             onPointerEnter={() => onActive(m.code)}
             onPointerLeave={() => onActive(null)}
             onFocus={() => onActive(m.code)}
@@ -80,7 +83,7 @@ export function IssueLane({ rows, positions, active, onActive, onOpen, interacti
         );
       })}
       {layout.overflow > 0 && (
-        <span className="lane-overflow mono" title={`${layout.overflow} more in the score ledger`}>
+        <span className="lane-overflow mono" title={t("lane.overflow", { count: layout.overflow })}>
           +{layout.overflow}
         </span>
       )}

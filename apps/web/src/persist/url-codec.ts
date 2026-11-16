@@ -3,6 +3,7 @@
 // docs/URL-FORMAT.md. `decodeDocument` never throws: anything malformed,
 // out of range or oversized yields null and the caller falls back.
 
+import { isLocale, type Locale } from "../i18n/locale";
 import { isBlendMode, MAX_DIRECTIONS, MAX_STOPS, MIN_STOPS, round2, sortTicks, type GradientDocument } from "../state/document";
 
 export const CODEC_VERSION = "v1";
@@ -16,15 +17,38 @@ function formatNumber(n: number): string {
   return String(round2(n));
 }
 
-/** `v1;s=101b45@0,9333ea@100;d=135:100:1;b=normal` (no leading `#`). */
-export function encodeDocument(doc: GradientDocument): string {
+/**
+ * `v1;s=101b45@0,9333ea@100;d=135:100:1;b=normal` (no leading `#`). With
+ * `lang`, `;lang=fr` is appended: the interface language of the link, which
+ * is not part of the document (docs/URL-FORMAT.md).
+ */
+export function encodeDocument(doc: GradientDocument, lang?: Locale | null): string {
   const stops = sortTicks(doc.ticks)
     .map((t) => `${t.color.replace(/^#/, "").toLowerCase()}@${formatNumber(t.position)}`)
     .join(",");
   const directions = doc.directions
     .map((d) => `${Math.round(d.angle)}:${Math.round(d.weight)}:${d.enabled ? 1 : 0}`)
     .join(",");
-  return `${CODEC_VERSION};s=${stops};d=${directions};b=${doc.blend}`;
+  const base = `${CODEC_VERSION};s=${stops};d=${directions};b=${doc.blend}`;
+  return lang ? `${base};lang=${lang}` : base;
+}
+
+/**
+ * The `lang=` of a document fragment, or null when absent, unsupported or
+ * when the fragment is not a document at all. Independent of `decodeDocument`:
+ * an unsupported language never invalidates the gradient.
+ */
+export function decodeLang(input: unknown): Locale | null {
+  if (typeof input !== "string") return null;
+  const text = input.startsWith("#") ? input.slice(1) : input;
+  if (text.length === 0 || text.length > MAX_ENCODED_LENGTH || !text.startsWith(`${CODEC_VERSION};`)) return null;
+  for (const seg of text.split(";").slice(1)) {
+    if (seg.startsWith("lang=")) {
+      const value = seg.slice(5).toLowerCase();
+      return isLocale(value) ? value : null;
+    }
+  }
+  return null;
 }
 
 /**
@@ -47,7 +71,7 @@ export function decodeDocument(input: unknown): GradientDocument | null {
       const eq = seg.indexOf("=");
       if (eq <= 0) return null;
       const key = seg.slice(0, eq);
-      if (!["s", "d", "b"].includes(key) || fields.has(key)) return null;
+      if (!["s", "d", "b", "lang"].includes(key) || fields.has(key)) return null;
       fields.set(key, seg.slice(eq + 1));
     }
 

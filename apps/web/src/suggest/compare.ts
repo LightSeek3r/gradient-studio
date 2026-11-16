@@ -2,7 +2,8 @@
 // Wraps core `refineGradient` for the UI: per-stop diffs, partial apply and
 // plain-language reasons when refine declines.
 
-import { refineGradient, scoreGradient, type GradientTick, type RefineResult } from "@opal42/gradient";
+import { refineGradient, type GradientTick, type RefineResult } from "@opal42/gradient";
+import type { Translate } from "../i18n/translator";
 import { sortTicks } from "../state/document";
 
 export interface StopDiff {
@@ -21,20 +22,19 @@ export interface Suggestion {
   diffs: StopDiff[];
   /** True when refine accepted AND at least one stop actually differs. */
   useful: boolean;
-  /** Why there is nothing to apply, in words (when !useful). */
-  reason?: string;
 }
 
-export function declineReason(result: RefineResult, ticks: GradientTick[]): string {
+/** Why there is nothing to apply, in the active language (computed at render time so it follows a language switch). */
+export function declineReason(result: RefineResult, t: Translate): string {
   switch (result.declined) {
     case "unscorable":
-      return `This gradient can't be scored (${scoreGradient(ticks).reason ?? "outside the scoring domain"}), so there is nothing to refine.`;
+      return t("suggest.decline.unscorable");
     case "single-position":
-      return "All stops sit at one position (a hard stop), so there is nothing to redistribute.";
+      return t("suggest.decline.singlePosition");
     case "would-lower-score":
-      return `No refinement scores higher than your gradient (${result.before}), so it is left as is.`;
+      return t("suggest.decline.wouldLower", { score: result.before });
     default:
-      return "Your stops are already where the refinement would put them.";
+      return t("suggest.decline.already");
   }
 }
 
@@ -57,7 +57,6 @@ export function computeSuggestion(ticks: GradientTick[]): Suggestion {
     result,
     diffs,
     useful,
-    reason: useful ? undefined : declineReason(result, ticks),
   };
 }
 

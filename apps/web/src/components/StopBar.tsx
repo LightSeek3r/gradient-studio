@@ -1,5 +1,6 @@
 import { useRef } from "react";
 import { buildGradientCSS, type GradientTick } from "@opal42/gradient";
+import { useT } from "../i18n/context";
 import { sortTicks } from "../state/document";
 
 /** Bar x-coordinate -> integer position 0..100. */
@@ -57,6 +58,7 @@ export function StopBar({
   badge,
   ghostKind = "suggestion",
 }: StopBarProps) {
+  const t = useT();
   const barRef = useRef<HTMLDivElement>(null);
   const handleRefs = useRef(new Map<number, HTMLDivElement>());
   const dragId = useRef<number | null>(null);
@@ -116,7 +118,7 @@ export function StopBar({
       ref={barRef}
       className="tick-bar"
       style={{ background: barCSS }}
-      title={canAdd ? "Click to add a stop" : undefined}
+      title={canAdd ? t("bar.addTitle") : undefined}
       onPointerDown={(e) => {
         // Only the bar itself: handles stop propagation.
         if (e.target !== barRef.current || e.button !== 0 || !canAdd) return;
@@ -146,11 +148,11 @@ export function StopBar({
           className={`tick-handle${tick.id === selectedId ? " is-selected" : ""}${flagged?.has(tick.id) ? " is-flagged" : ""}`}
           role="slider"
           tabIndex={0}
-          aria-label={`Stop ${i + 1}`}
+          aria-label={t("bar.handle", { n: i + 1 })}
           aria-valuemin={0}
           aria-valuemax={100}
           aria-valuenow={tick.position}
-          aria-valuetext={`Stop ${i + 1}, ${tick.position} percent, colour ${tick.color}`}
+          aria-valuetext={t("bar.handleValue", { n: i + 1, position: tick.position, color: tick.color })}
           data-stop-id={tick.id}
           style={{ left: `${tick.position}%`, "--c": tick.color } as React.CSSProperties}
           onFocus={() => onSelect(tick.id)}

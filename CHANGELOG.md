@@ -6,6 +6,28 @@ All notable changes to Gradient Studio are listed here. The format follows
 
 ## [Unreleased]
 
+### Added (web app: English and French)
+
+- Full EN/FR localisation of the web app with no new dependency: typed catalogues
+  (`apps/web/src/i18n/en.ts`, `fr.ts` typed `Record<keyof typeof en, string>`, so a missing
+  translation fails typecheck), an ICU-lite `t(key, params)` with plural and select through
+  `Intl.PluralRules`, `<I18nProvider>`, `useT()`, and an accessible EN | FR switcher in the header.
+- Language detection: `lang=fr|en` in the URL fragment, then the stored choice, then
+  `navigator.languages`. `<html lang>`, `<title>`, the description and the Open Graph/Twitter tags
+  follow the language at runtime (`index.html` stays English).
+- URL format: an optional `;lang=fr|en` segment on document links (`#v1;…;lang=fr`) and issue
+  permalinks (`#issue=<code>;lang=fr`). It is written only when the language was chosen, never
+  auto-detected, and links with or without it open the same gradient (`docs/URL-FORMAT.md`).
+- Everything user-visible is translated: toasts, the import dialog and its parser messages, stop
+  cards, directions, export notes, the score ledger, per-rule explanations and finding messages
+  (chosen by stable `code` and severity, falling back to core's English `message` only for unknown
+  codes), targeted-fix labels, curves, screen-reader strings and live regions, the footer theory
+  text and the PWA update toast. Core keeps English messages; the CLI stays English.
+- Checks: both catalogues must have the same keys and ICU placeholders, no empty values and no
+  untranslated or English-leftover text outside a technical allow-list; a scan of every `.tsx`
+  file fails on a hard-coded visible string; EN and FR components are axe-tested.
+- `docs/i18n.md` (how to add a locale) and `docs/i18n-glossary.md` (French terminology).
+
 ### Added (exports, phase 3)
 
 - Core subpath `@opal42/gradient/export`: `toTailwind` (arbitrary value, native `bg-linear-*` /

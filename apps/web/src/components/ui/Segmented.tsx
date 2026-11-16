@@ -6,6 +6,8 @@ export interface SegmentedOption<T extends string | number> {
   /** Accessible name when the visible label is terse (e.g. "1"). */
   ariaLabel?: string;
   title?: string;
+  /** Language of the label when it differs from the page's (a language switcher). */
+  lang?: string;
 }
 
 /**
@@ -84,6 +86,7 @@ export function Segmented<T extends string | number>({
             aria-pressed={mode === "buttons" ? active : undefined}
             aria-label={o.ariaLabel}
             title={o.title}
+            lang={o.lang}
             tabIndex={mode === "radio" ? (i === tabbable ? 0 : -1) : undefined}
             onClick={() => onChange(o.value)}
           >

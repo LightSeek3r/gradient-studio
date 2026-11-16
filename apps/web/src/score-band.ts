@@ -6,8 +6,10 @@
 // ("Excellent" … "Poor"), and their colours are steps of one cool hue rather
 // than a green/amber/red pass-fail signal.
 
+import type { Translate } from "./i18n/translator";
+
 export interface ScoreBand {
-  /** Neutral description: smooth / mostly smooth / uneven / rough. */
+  /** Neutral description in the active language: smooth / mostly smooth / uneven / rough. */
   label: string;
   /** CSS colour token for text, borders and fills. */
   color: string;
@@ -15,11 +17,11 @@ export interface ScoreBand {
   level: 1 | 2 | 3 | 4;
 }
 
-export function scoreBand(score: number): ScoreBand {
-  if (score >= 80) return { label: "smooth", color: "var(--band-1)", level: 1 };
-  if (score >= 65) return { label: "mostly smooth", color: "var(--band-2)", level: 2 };
-  if (score >= 45) return { label: "uneven", color: "var(--band-3)", level: 3 };
-  return { label: "rough", color: "var(--band-4)", level: 4 };
+export function scoreBand(score: number, t: Translate): ScoreBand {
+  if (score >= 80) return { label: t("band.smooth"), color: "var(--band-1)", level: 1 };
+  if (score >= 65) return { label: t("band.mostlySmooth"), color: "var(--band-2)", level: 2 };
+  if (score >= 45) return { label: t("band.uneven"), color: "var(--band-3)", level: 3 };
+  return { label: t("band.rough"), color: "var(--band-4)", level: 4 };
 }
 
 /** "+3", "−7" (a real minus sign), "±0". */
@@ -30,8 +32,8 @@ export function formatDelta(delta: number): string {
 }
 
 /** Spoken once when an edit gesture ends: "Score up 3, now 61". Empty when nothing changed. */
-export function deltaSentence(from: number, to: number): string {
+export function deltaSentence(from: number, to: number, t: Translate): string {
   const delta = to - from;
   if (delta === 0) return "";
-  return `Score ${delta > 0 ? "up" : "down"} ${Math.abs(delta)}, now ${to}`;
+  return t(delta > 0 ? "announce.scoreUp" : "announce.scoreDown", { delta: Math.abs(delta), score: to });
 }

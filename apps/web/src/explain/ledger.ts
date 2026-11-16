@@ -7,7 +7,8 @@
 // gives the points back, instead of pretending the subtraction works.
 
 import { V1_MODEL, type Finding } from "@opal42/gradient";
-import { DIMENSIONS, ruleText, type DimensionKey } from "./explain";
+import type { I18n, Translate } from "../i18n/translator";
+import { DIMENSIONS, findingMessage, ruleText, type DimensionKey } from "./explain";
 
 export const LEDGER_START = 100;
 
@@ -61,12 +62,12 @@ export interface Ledger {
   balanced: boolean;
 }
 
-export function buildLedger(findings: readonly Finding[], score: number): Ledger {
+export function buildLedger(findings: readonly Finding[], score: number, t: Translate): Ledger {
   const rows: LedgerRow[] = findings
     .map((f, order) => ({ f, order }))
     .sort((a, b) => b.f.pointsLost - a.f.pointsLost || a.order - b.order)
     .map(({ f }) => {
-      const text = ruleText(f.code);
+      const text = ruleText(f.code, t);
       const row: LedgerRow = {
         code: f.code,
         name: text.name,
@@ -74,7 +75,7 @@ export function buildLedger(findings: readonly Finding[], score: number): Ledger
         severity: f.severity,
         dimension: f.dimension,
         pointsLost: f.pointsLost,
-        message: f.message,
+        message: findingMessage(f, t),
       };
       if (f.stops) row.stops = [...f.stops];
       if (f.segment) row.segment = [f.segment[0], f.segment[1]];
@@ -84,7 +85,8 @@ export function buildLedger(findings: readonly Finding[], score: number): Ledger
   const weights = V1_MODEL.weights as Record<DimensionKey, number>;
   const floors: LedgerFloor[] = [];
   const dimensions: DimensionSummary[] = [];
-  for (const { key, label } of DIMENSIONS) {
+  for (const { key, label: labelKey } of DIMENSIONS) {
+    const label = t(labelKey);
     const weight = weights[key];
     const nominal = rows.reduce((sum, r) => (r.dimension === key ? sum + r.pointsLost : sum), 0);
     dimensions.push({ dimension: key, label, weight, kept: Math.max(0, weight - nominal) });
@@ -98,33 +100,30 @@ export function buildLedger(findings: readonly Finding[], score: number): Ledger
 }
 
 /** `100 − 20 − 12 + 2 (floor 0) = 58`, with real minus signs. */
-export function ledgerEquation(ledger: Ledger): string {
+export function ledgerEquation(ledger: Ledger, t: Translate): string {
   const parts = [String(ledger.start), ...ledger.rows.map((r) => `− ${r.pointsLost}`)];
-  for (const f of ledger.floors) parts.push(`+ ${f.absorbed} (${f.label.toLowerCase()} floor 0)`);
+  for (const f of ledger.floors) {
+    parts.push(t("ledger.equationFloor", { absorbed: f.absorbed, label: f.label.toLowerCase() }));
+  }
   return `${parts.join(" ")} = ${ledger.total}`;
 }
 
 /** The same sum in words, for assistive tech. */
-export function ledgerSentence(ledger: Ledger): string {
-  if (ledger.rows.length === 0) return `${ledger.start} points, no deductions.`;
-  const parts = ledger.rows.map((r) => `minus ${r.pointsLost} for ${r.name}`);
+export function ledgerSentence(ledger: Ledger, t: Translate): string {
+  if (ledger.rows.length === 0) return t("ledger.sentenceNone", { start: ledger.start });
+  const parts = ledger.rows.map((r) => t("ledger.sentenceMinus", { points: r.pointsLost, name: r.name }));
   for (const f of ledger.floors) {
-    parts.push(`plus ${f.absorbed} given back because ${f.label.toLowerCase()} cannot go below 0`);
+    parts.push(t("ledger.sentenceGiven", { absorbed: f.absorbed, label: f.label.toLowerCase() }));
   }
-  return `${ledger.start} ${parts.join(", ")}, equals ${ledger.total}.`;
-}
-
-function joinNumbers(numbers: number[]): string {
-  if (numbers.length <= 1) return numbers.join("");
-  return `${numbers.slice(0, -1).join(", ")} and ${numbers[numbers.length - 1]}`;
+  return t("ledger.sentence", { start: ledger.start, parts: parts.join(", "), total: ledger.total });
 }
 
 /** "stop 2" / "stops 1 and 3" / "0%–35%" / "stops 1 and 2, 0%–5%"; empty when unlocated. */
-export function locationText(row: Pick<LedgerRow, "stops" | "segment">): string {
+export function locationText(row: Pick<LedgerRow, "stops" | "segment">, i18n: I18n): string {
   const parts: string[] = [];
   if (row.stops && row.stops.length > 0) {
-    parts.push(`${row.stops.length === 1 ? "stop" : "stops"} ${joinNumbers(row.stops.map((i) => i + 1))}`);
+    parts.push(i18n.t("stops.ref", { count: row.stops.length, list: i18n.list(row.stops.map((i) => i + 1)) }));
   }
-  if (row.segment) parts.push(`${row.segment[0]}%–${row.segment[1]}%`);
+  if (row.segment) parts.push(`${i18n.percent(row.segment[0])}–${i18n.percent(row.segment[1])}`);
   return parts.join(", ");
 }

@@ -4,6 +4,8 @@ import {
   type GradientBlendMode,
   type GradientDirection,
 } from "@opal42/gradient";
+import { useT } from "../i18n/context";
+import type { Translate } from "../i18n/translator";
 import { Button } from "./ui/Button";
 import { Icon } from "./ui/Icon";
 import { Segmented } from "./ui/Segmented";
@@ -20,17 +22,25 @@ const DIRECTION_COLORS = [
   "#fb923c",
 ];
 
-const BLEND_MODES: { value: GradientBlendMode; label: string }[] = [
-  { value: "normal", label: "Average (weighted)" },
-  { value: "screen", label: "Screen — additive glow" },
-  { value: "multiply", label: "Multiply — deepen" },
-  { value: "overlay", label: "Overlay — contrast" },
-  { value: "soft-light", label: "Soft light — subtle" },
-  { value: "hard-light", label: "Hard light — punchy" },
-  { value: "lighten", label: "Lighten — max" },
-  { value: "darken", label: "Darken — min" },
-  { value: "difference", label: "Difference — invert" },
+const BLEND_VALUES: readonly GradientBlendMode[] = [
+  "normal",
+  "screen",
+  "multiply",
+  "overlay",
+  "soft-light",
+  "hard-light",
+  "lighten",
+  "darken",
+  "difference",
 ];
+
+function blendName(mode: GradientBlendMode, t: Translate): string {
+  return t(`blend.${mode}.name`);
+}
+
+function blendLabel(mode: GradientBlendMode, t: Translate): string {
+  return `${t(`blend.${mode}.name`)} — ${t(`blend.${mode}.hint`)}`;
+}
 
 const COMPASS_RADIUS = 62;
 
@@ -57,6 +67,7 @@ function Compass({
   onAngle: (id: number, angle: number) => void;
   onCommit: () => void;
 }) {
+  const t = useT();
   const svgRef = useRef<SVGSVGElement>(null);
   const [dragId, setDragId] = useState<number | null>(null);
 
@@ -105,7 +116,7 @@ function Compass({
       className="compass"
       viewBox="-74 -74 148 148"
       role="group"
-      aria-label="Gradient direction compass"
+      aria-label={t("directions.compass")}
     >
       <circle className="compass-ring" cx={0} cy={0} r={COMPASS_RADIUS} />
       <circle className="compass-ring compass-ring-inner" cx={0} cy={0} r={COMPASS_RADIUS / 2} />
@@ -151,11 +162,11 @@ function Compass({
               className="compass-handle"
               role="slider"
               tabIndex={0}
-              aria-label={`Direction ${i + 1} angle`}
+              aria-label={t("directions.angle", { n: i + 1 })}
               aria-valuemin={0}
               aria-valuemax={359}
               aria-valuenow={d.angle}
-              aria-valuetext={`${d.angle} degrees`}
+              aria-valuetext={t("directions.angleValue", { angle: d.angle })}
               data-direction-id={d.id}
               onKeyDown={(e) => onKeyDown(e, d)}
               onBlur={onCommit}
@@ -225,19 +236,15 @@ export interface DirectionsPanelProps {
 }
 
 /** One-line description of the layers: "Direction 135° · 1 layer". */
-function directionsSummary(directions: GradientDirection[], blend: GradientBlendMode): string {
-  if (directions.length === 1) return `Direction ${directions[0].angle}° · 1 layer`;
+function directionsSummary(directions: GradientDirection[], blend: GradientBlendMode, t: Translate): string {
+  if (directions.length === 1) return t("directions.summaryOne", { angle: directions[0].angle });
   const angles = directions.map((d) => `${d.angle}°`).join(", ");
-  const blendLabel = BLEND_MODES.find((m) => m.value === blend)?.label.split(" — ")[0] ?? blend;
-  return `${directions.length} directions · ${angles} · ${blendLabel.toLowerCase()}`;
+  return t("directions.summaryMany", {
+    count: directions.length,
+    angles,
+    blend: blendName(blend, t).toLowerCase(),
+  });
 }
-
-const SPREAD_OPTIONS = Array.from({ length: MAX_DIRECTIONS }, (_, i) => ({
-  value: i + 1,
-  label: String(i + 1),
-  ariaLabel: `Spread: ${i + 1} direction${i > 0 ? "s" : ""}`,
-  title: `Spread: ${i + 1} evenly-spaced direction${i > 0 ? "s" : ""}`,
-}));
 
 export function DirectionsPanel({
   directions,
@@ -253,19 +260,26 @@ export function DirectionsPanel({
   onBlend,
   onCommit,
 }: DirectionsPanelProps) {
+  const t = useT();
   const enabledCount = directions.filter((d) => d.enabled).length;
   // A single layer is the common case and needs no screen space; several do.
   const [open, setOpen] = useState(directions.length > 1);
   const expanded = tabbed || open;
   const bodyId = useId();
-  const summary = directionsSummary(directions, blend);
+  const summary = directionsSummary(directions, blend, t);
+  const spreadOptions = Array.from({ length: MAX_DIRECTIONS }, (_, i) => ({
+    value: i + 1,
+    label: String(i + 1),
+    ariaLabel: t("directions.spreadAria", { count: i + 1 }),
+    title: t("directions.spreadTitle", { count: i + 1 }),
+  }));
 
   return (
     <Surface as="section" pad="none" className="directions" aria-labelledby={`${bodyId}-h`}>
       <h2 className="panel-title" id={`${bodyId}-h`}>
         {tabbed ? (
           <span className="panel-title-static">
-            Directions
+            {t("directions.title")}
             <span className="panel-summary">{summary}</span>
           </span>
         ) : (
@@ -277,7 +291,7 @@ export function DirectionsPanel({
             onClick={() => setOpen(!open)}
           >
             <Icon name="chevron" size={14} className="disclosure-chevron" />
-            <span className="panel-title-text">Directions</span>
+            <span className="panel-title-text">{t("directions.title")}</span>
             <span className="panel-summary">{summary}</span>
           </button>
         )}
@@ -285,7 +299,7 @@ export function DirectionsPanel({
 
       <div id={bodyId} className="directions-content" hidden={!expanded}>
         <p className="panel-hint">
-          {directions.length}/{MAX_DIRECTIONS} layers. Drag the compass to aim. Directions and blend are not scored.
+          {t("directions.hint", { count: directions.length, max: MAX_DIRECTIONS })}
         </p>
         <div className="directions-body">
           <Compass directions={directions} onAngle={onAngle} onCommit={onCommit} />
@@ -304,13 +318,13 @@ export function DirectionsPanel({
                     style={{ background: d.enabled ? color : "transparent", borderColor: color }}
                     title={
                       lockEnabled
-                        ? "At least one direction must stay active"
+                        ? t("directions.keepOne")
                         : d.enabled
-                          ? "Mute this direction"
-                          : "Activate this direction"
+                          ? t("directions.mute")
+                          : t("directions.activate")
                     }
                     aria-pressed={d.enabled}
-                    aria-label={`Direction ${i + 1} active`}
+                    aria-label={t("directions.active", { n: i + 1 })}
                     disabled={lockEnabled}
                     onClick={() => onEnabled(d.id, !d.enabled)}
                   >
@@ -325,7 +339,7 @@ export function DirectionsPanel({
                       min={0}
                       max={360}
                       value={d.angle}
-                      aria-label={`Direction ${i + 1} angle`}
+                      aria-label={t("directions.angle", { n: i + 1 })}
                       onChange={(e) => {
                         const n = Number(e.target.value);
                         if (e.target.value.trim() !== "" && Number.isFinite(n)) onAngle(d.id, n);
@@ -341,7 +355,7 @@ export function DirectionsPanel({
                     min={0}
                     max={359}
                     value={d.angle}
-                    aria-label={`Direction ${i + 1} angle slider`}
+                    aria-label={t("directions.angleSlider", { n: i + 1 })}
                     onChange={(e) => onAngle(d.id, +e.target.value)}
                     onPointerUp={onCommit}
                     onBlur={onCommit}
@@ -352,21 +366,21 @@ export function DirectionsPanel({
                       variant="icon"
                       icon="x"
                       className="dir-remove"
-                      title="Remove this direction"
-                      aria-label={`Remove direction ${i + 1}`}
+                      title={t("directions.removeTitle")}
+                      aria-label={t("directions.remove", { n: i + 1 })}
                       onClick={() => onRemove(d.id)}
                     />
                   )}
 
                   <label className="dir-weight">
-                    <span className="unit">Weight</span>
+                    <span className="unit">{t("directions.weight")}</span>
                     <input
                       type="range"
                       className="dir-slider dir-slider-weight"
                       min={1}
                       max={100}
                       value={d.weight}
-                      aria-label={`Direction ${i + 1} weight`}
+                      aria-label={t("directions.weightAria", { n: i + 1 })}
                       onChange={(e) => onWeight(d.id, +e.target.value)}
                       onPointerUp={onCommit}
                       onBlur={onCommit}
@@ -379,20 +393,20 @@ export function DirectionsPanel({
 
             <div className="dir-actions">
               <Button variant="secondary" size="sm" icon="plus" onClick={onAdd} disabled={directions.length >= MAX_DIRECTIONS}>
-                Direction
+                {t("directions.add")}
               </Button>
               <Button variant="ghost" size="sm" icon="rotate" onClick={onSpread}>
-                Spread evenly
+                {t("directions.spreadEvenly")}
               </Button>
               <div className="dir-presets">
                 <span className="dir-presets-label" aria-hidden="true">
-                  Spread:
+                  {t("directions.spread")}
                 </span>
                 <Segmented
                   mode="buttons"
                   size="sm"
-                  label="Spread: number of evenly-spaced directions"
-                  options={SPREAD_OPTIONS}
+                  label={t("directions.spreadGroup")}
+                  options={spreadOptions}
                   value={directions.length}
                   onChange={onCount}
                 />
@@ -402,16 +416,16 @@ export function DirectionsPanel({
             {/* Blend only matters once there are layers to blend. */}
             {directions.length > 1 && (
               <label className="dir-blend">
-                <span className="unit">Blend</span>
+                <span className="unit">{t("directions.blend")}</span>
                 <select
                   className="field-input field-select"
                   value={blend}
-                  aria-label="Direction blend mode"
+                  aria-label={t("directions.blendAria")}
                   onChange={(e) => onBlend(e.target.value as GradientBlendMode)}
                 >
-                  {BLEND_MODES.map((m) => (
-                    <option key={m.value} value={m.value}>
-                      {m.label}
+                  {BLEND_VALUES.map((m) => (
+                    <option key={m} value={m}>
+                      {blendLabel(m, t)}
                     </option>
                   ))}
                 </select>

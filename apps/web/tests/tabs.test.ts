@@ -1,3 +1,4 @@
+import { tEn } from "../src/i18n/translator";
 import { describe, expect, it } from "vitest";
 import { TAB_IDS, badgeText, issueSuffix, nextTab, type TabId } from "../src/layout/tabs";
 
@@ -42,13 +43,13 @@ describe("nextTab", () => {
 
 describe("issueSuffix / badgeText", () => {
   it("is spoken after the visible label", () => {
-    expect(issueSuffix(3)).toBe(", 3 issues");
-    expect(issueSuffix(1)).toBe(", 1 issue");
+    expect(issueSuffix(3, tEn)).toBe(", 3 issues");
+    expect(issueSuffix(1, tEn)).toBe(", 1 issue");
   });
 
   it("is empty without a badge", () => {
-    expect(issueSuffix(null)).toBe("");
-    expect(issueSuffix(0)).toBe("");
+    expect(issueSuffix(null, tEn)).toBe("");
+    expect(issueSuffix(0, tEn)).toBe("");
   });
 
   it("caps long badges", () => {

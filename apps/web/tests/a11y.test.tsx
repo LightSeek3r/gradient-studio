@@ -10,6 +10,7 @@ import { proposeFixes, scoreGradient, type GradientTick } from "@opal42/gradient
 import { ImportDialog } from "../src/components/ImportDialog";
 import { ScoreLedger } from "../src/components/ScorePanel";
 import { StopChip } from "../src/components/StopChip";
+import { tEn } from "../src/i18n/translator";
 import { buildLedger } from "../src/explain/ledger";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -66,7 +67,7 @@ describe("axe: component structure", () => {
 
   it("score ledger rows (start, findings, floor, total) have no violations", async () => {
     const scored = scoreGradient(ticks);
-    const ledger = buildLedger(scored.findings, scored.score);
+    const ledger = buildLedger(scored.findings, scored.score, tEn);
     expect(ledger.rows.length).toBeGreaterThan(0); // the test would pass vacuously on an empty ledger
     const fixes = new Map(proposeFixes(ticks).map((f) => [f.code, { gain: f.gain, label: f.label }]));
     const el = await mount(

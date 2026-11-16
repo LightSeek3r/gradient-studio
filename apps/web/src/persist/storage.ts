@@ -2,9 +2,10 @@
 // Nothing here talks to a network. Every storage access is wrapped: private
 // windows, blocked site data and quota errors must never break the editor.
 
+import type { Locale } from "../i18n/locale";
 import { exampleDocument, findExample } from "../examples";
 import { defaultDocument, sameDocument, type GradientDocument } from "../state/document";
-import { parseIssueHash } from "./issue-link";
+import { issueHash, parseIssueHash } from "./issue-link";
 import { decodeDocument, encodeDocument } from "./url-codec";
 
 export const STORAGE_KEY = "gradient-studio:document";
@@ -59,23 +60,32 @@ export function loadInitialDocument(): { document: GradientDocument; source: Doc
   return { document: defaultDocument(), source: "default" };
 }
 
-/** Put the document in the address bar without adding a browser history entry. */
-export function writeHash(doc: GradientDocument): void {
+/**
+ * Put the document in the address bar without adding a browser history entry.
+ * `lang` is the interface language to carry in the fragment (`;lang=fr`), or
+ * null/undefined to leave it out: only a language that was asked for (by the
+ * link or the switcher) is written, never an auto-detected one.
+ */
+export function writeHash(doc: GradientDocument, lang?: Locale | null): void {
   try {
-    const hash = `#${encodeDocument(doc)}`;
+    const hash = `#${encodeDocument(doc, lang)}`;
     if (window.location.hash === hash) return;
     // An issue permalink stays in the address bar for as long as the document
-    // is still that rule's untouched example.
+    // is still that rule's untouched example (and in the language it names).
     const example = findExample(parseIssueHash(window.location.hash));
-    if (example && sameDocument(exampleDocument(example), doc)) return;
+    if (example && sameDocument(exampleDocument(example), doc)) {
+      const wanted = issueHash(example.code, lang);
+      if (window.location.hash !== wanted) window.history.replaceState(window.history.state, "", wanted);
+      return;
+    }
     window.history.replaceState(window.history.state, "", hash);
   } catch {
     // Sandboxed frames can refuse replaceState; the link button still works.
   }
 }
 
-/** The shareable link for a document. */
-export function documentLink(doc: GradientDocument): string {
+/** The shareable link for a document (with `;lang=` when a language is given). */
+export function documentLink(doc: GradientDocument, lang?: Locale | null): string {
   const { origin, pathname, search } = window.location;
-  return `${origin}${pathname}${search}#${encodeDocument(doc)}`;
+  return `${origin}${pathname}${search}#${encodeDocument(doc, lang)}`;
 }

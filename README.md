@@ -58,6 +58,8 @@ contribute to the code.
 - **Every colour format at once**: picker, hex, RGB, HSL and the nearest of 148 CSS colour names.
 - **Complementary colours** at matched lightness and chroma, one click to swap in.
 - **Up to 7 directions** blended as an exact weighted mean, or through 8 blend modes.
+- **English and French**: a visible EN | FR switch, chosen from the link, your last choice or the
+  browser language, with no translation library ([`docs/i18n.md`](docs/i18n.md)).
 - **Private by design**: a static page with no server, no analytics and no account.
 
 ## Features
@@ -134,6 +136,16 @@ spec: see [`docs/exports.md`](docs/exports.md). The generators are also a librar
   via Fontsource).
 - ESLint 9 with `typescript-eslint` and the React Hooks rules.
 
+### Languages
+
+The whole interface, including the score explanations, import messages, screen-reader
+announcements and the page title and description, is available in **English and French**. The
+language comes from `lang=fr|en` in the link, else your last choice (stored in this browser),
+else the browser's language list (`fr*` is French, anything else English). The CLI and the
+library's `message` strings stay English; the stable `code` of each finding is what the app
+translates. How to add a locale, the completeness checks and the French glossary:
+[`docs/i18n.md`](docs/i18n.md), [`docs/i18n-glossary.md`](docs/i18n-glossary.md).
+
 ## Project structure
 
 An npm-workspaces monorepo: a DOM-free engine package and the web app that uses it.
@@ -154,6 +166,7 @@ apps/web/                gradient-studio-web (private): the React app, built int
     StopCard.tsx           the per-stop editor (all formats, complement, swap)
     DirectionsPanel.tsx    the compass, direction rows, presets and blend mode
     fields.tsx             shared copy/paste buttons and format-aware inputs
+  src/i18n/                the hand-written EN/FR catalogues (en.ts, fr.ts), `t()`, provider, switcher
   src/App.tsx              top-level state and layout
   src/App.css, index.css   styles
   public/                  favicon, app icons, web manifest and the Open Graph image

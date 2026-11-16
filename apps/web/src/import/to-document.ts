@@ -1,3 +1,4 @@
+import type { Translate } from "../i18n/translator";
 import type { GradientDocument } from "../state/document";
 import type { ImportedGradient } from "./adapter";
 
@@ -14,6 +15,6 @@ export function importedToDocument(g: ImportedGradient): GradientDocument {
 }
 
 /** "Imported 3 stops, 135°" */
-export function importSummary(g: ImportedGradient): string {
-  return `Imported ${g.stops.length} stops, ${g.angle}°`;
+export function importSummary(g: ImportedGradient, t: Translate): string {
+  return t("import.done", { count: g.stops.length, angle: g.angle });
 }

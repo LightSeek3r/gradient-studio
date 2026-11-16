@@ -4,15 +4,16 @@
 // deliberately differs are in the "differences from the former parser" block.
 import { describe, expect, it } from "vitest";
 import { parseGradient } from "@opal42/gradient";
+import { tEn } from "../src/i18n/translator";
 import { looksLikeGradient, parseLinearGradient } from "../src/import/adapter";
 
 function ok(input: string) {
-  const r = parseLinearGradient(input);
+  const r = parseLinearGradient(input, tEn);
   if (!r.ok) throw new Error(`expected ok, got error: ${r.error}`);
   return r;
 }
 function err(input: string) {
-  const r = parseLinearGradient(input);
+  const r = parseLinearGradient(input, tEn);
   if (r.ok) throw new Error(`expected an error, got ${JSON.stringify(r.gradient)}`);
   return r;
 }
@@ -271,8 +272,8 @@ describe("parseLinearGradient: rejected input", () => {
 
   it("never throws, even on hostile input", () => {
     for (const s of ["(((((", ")))", "linear-gradient(" + "(".repeat(5000), "x".repeat(20000), "\u0000", "linear-gradient(,)"]) {
-      expect(() => parseLinearGradient(s)).not.toThrow();
-      expect(parseLinearGradient(s).ok).toBe(false);
+      expect(() => parseLinearGradient(s, tEn)).not.toThrow();
+      expect(parseLinearGradient(s, tEn).ok).toBe(false);
     }
   });
 });

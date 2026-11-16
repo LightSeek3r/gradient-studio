@@ -4,6 +4,7 @@
 // reversal is a visible dip and a muddy midpoint a visible chroma trough.
 
 import { hexToOklch, sampleGradient, V1_MODEL, type GradientTick } from "@opal42/gradient";
+import type { I18n, Translate } from "../i18n/translator";
 import { sortTicks } from "../state/document";
 
 export type CurveKey = "lightness" | "chroma" | "hue";
@@ -18,7 +19,7 @@ export interface Curve {
   max: number | null;
   /** The y-axis range the values are drawn in. */
   domain: [number, number];
-  /** "rises", "falls", "flat", "dips, then rises", … */
+  /** "rises", "falls", "flat", "dips, then rises", … in the active language. */
   trend: string;
   /** One sentence for assistive tech and tooltips. */
   summary: string;
@@ -55,9 +56,9 @@ export function unwrapHues(hues: readonly (number | null)[]): (number | null)[] 
 }
 
 /** Describes the shape of a series, ignoring wiggles smaller than `tolerance`. */
-export function describeTrend(values: readonly (number | null)[], tolerance: number): string {
+export function describeTrend(values: readonly (number | null)[], tolerance: number, t: Translate): string {
   const v = values.filter((x): x is number => x !== null);
-  if (v.length < 2) return "undefined";
+  if (v.length < 2) return t("trend.undefined");
   // Turning points with hysteresis: a direction only counts once it has moved by `tolerance`.
   const dirs: number[] = [];
   let anchor = v[0];
@@ -76,28 +77,41 @@ export function describeTrend(values: readonly (number | null)[], tolerance: num
     } else if (dir === 1 && x > anchor) anchor = x;
     else if (dir === -1 && x < anchor) anchor = x;
   }
-  if (dirs.length === 0) return "flat";
-  if (dirs.length === 1) return dirs[0] > 0 ? "rises" : "falls";
-  if (dirs.length === 2) return dirs[0] < 0 ? "dips, then rises" : "peaks, then falls";
-  return `changes direction ${dirs.length - 1} times`;
+  if (dirs.length === 0) return t("trend.flat");
+  if (dirs.length === 1) return t(dirs[0] > 0 ? "trend.rises" : "trend.falls");
+  if (dirs.length === 2) return t(dirs[0] < 0 ? "trend.dipsRises" : "trend.peaksFalls");
+  return t("trend.changes", { count: dirs.length - 1 });
 }
 
-const fmt = (n: number, digits: number) => n.toFixed(digits);
-
-function curve(key: CurveKey, label: string, values: (number | null)[], domain: [number, number], tolerance: number, digits: number, unit: string): Curve {
+function curve(
+  i18n: I18n,
+  key: CurveKey,
+  label: string,
+  values: (number | null)[],
+  domain: [number, number],
+  tolerance: number,
+  digits: number,
+  unit: string,
+): Curve {
+  const { t } = i18n;
   const defined = values.filter((x): x is number => x !== null);
   const min = defined.length ? Math.min(...defined) : null;
   const max = defined.length ? Math.max(...defined) : null;
-  const trend = describeTrend(values, tolerance);
+  const trend = describeTrend(values, tolerance, t);
   const summary =
     min === null || max === null
-      ? `${label}: undefined (every colour along the gradient is grey).`
-      : `${label}: ${trend}, from ${fmt(min, digits)}${unit} to ${fmt(max, digits)}${unit}.`;
+      ? t("curves.summaryUndefined", { label })
+      : t("curves.summary", {
+          label,
+          trend,
+          min: `${i18n.number(min, digits)}${unit}`,
+          max: `${i18n.number(max, digits)}${unit}`,
+        });
   return { key, label, values, min, max, domain, trend, summary };
 }
 
 /** The three curves of a gradient, or null when it cannot be sampled. */
-export function sampleCurves(ticks: readonly GradientTick[], samples = CURVE_SAMPLES): Curves | null {
+export function sampleCurves(ticks: readonly GradientTick[], i18n: I18n, samples = CURVE_SAMPLES): Curves | null {
   const sorted = sortTicks(ticks);
   if (sorted.length < 2 || samples < 2) return null;
   const doc = {
@@ -133,9 +147,9 @@ export function sampleCurves(ticks: readonly GradientTick[], samples = CURVE_SAM
   return {
     xs,
     curves: [
-      curve("lightness", "Lightness", L, [0, 1], 0.02, 2, ""),
-      curve("chroma", "Chroma", C, [0, Math.max(0.2, maxC * 1.1)], 0.01, 2, ""),
-      curve("hue", "Hue", hue, hueDomain, 5, 0, "°"),
+      curve(i18n, "lightness", i18n.t("curves.lightness"), L, [0, 1], 0.02, 2, ""),
+      curve(i18n, "chroma", i18n.t("curves.chroma"), C, [0, Math.max(0.2, maxC * 1.1)], 0.01, 2, ""),
+      curve(i18n, "hue", i18n.t("curves.hue"), hue, hueDomain, 5, 0, "°"),
     ],
   };
 }

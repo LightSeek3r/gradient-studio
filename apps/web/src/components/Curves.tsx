@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import type { GradientTick } from "@opal42/gradient";
 import { curvePath, sampleCurves, type CurveKey } from "../explain/curves";
 import type { LedgerRow } from "../explain/ledger";
+import { useI18n } from "../i18n/context";
 import { sortTicks } from "../state/document";
 import { Icon } from "./ui/Icon";
 
@@ -31,7 +32,9 @@ export interface CurvesProps {
  * OKLCH. Segments named by findings are shaded behind the matching curve.
  */
 export function Curves({ ticks, rows, active, open, onToggle, placement }: CurvesProps) {
-  const data = useMemo(() => sampleCurves(ticks), [ticks]);
+  const i18n = useI18n();
+  const { t } = i18n;
+  const data = useMemo(() => sampleCurves(ticks, i18n), [ticks, i18n]);
   const sorted = sortTicks(ticks);
   if (!data) return null;
   const x = (p: number) => (p / 100) * W;
@@ -40,8 +43,8 @@ export function Curves({ ticks, rows, active, open, onToggle, placement }: Curve
     <details className={`curves curves--${placement}`} open={open} onToggle={(e) => onToggle(e.currentTarget.open)}>
       <summary className="disclosure-summary curves-summary">
         <Icon name="chevron" size={14} className="disclosure-chevron" />
-        Curves
-        <span className="curves-hint">lightness, chroma and hue along the gradient</span>
+        {t("curves.title")}
+        <span className="curves-hint">{t("curves.hint")}</span>
       </summary>
       <div className="curves-body">
         {data.curves.map((c) => {
@@ -50,8 +53,8 @@ export function Curves({ ticks, rows, active, open, onToggle, placement }: Curve
             c.min === null || c.max === null
               ? "–"
               : c.key === "hue"
-                ? `${Math.round(c.max - c.min)}° span`
-                : `${c.min.toFixed(2)}–${c.max.toFixed(2)}`;
+                ? t("curves.hueSpan", { span: Math.round(c.max - c.min) })
+                : `${i18n.number(c.min)}–${i18n.number(c.max)}`;
           return (
             <figure key={c.key} className={`curve curve--${c.key}`}>
               <figcaption className="curve-caption">
@@ -99,10 +102,7 @@ export function Curves({ ticks, rows, active, open, onToggle, placement }: Curve
             </figure>
           );
         })}
-        <p className="curves-note">
-          As the exported CSS is painted (sRGB mixing between stops), measured in OKLCH. Thin lines are your stops; shaded
-          spans are the issues listed in the score.
-        </p>
+        <p className="curves-note">{t("curves.note")}</p>
       </div>
     </details>
   );

@@ -1,4 +1,5 @@
 import type { ToastData } from "../hooks/useToast";
+import { useT } from "../i18n/context";
 import { Button } from "./ui/Button";
 
 /**
@@ -16,11 +17,12 @@ export function Toast({
   onDismiss: () => void;
   onPause: (paused: boolean) => void;
 }) {
+  const t = useT();
   if (!toast) return null;
   return (
     <div
       role="region"
-      aria-label="Notification"
+      aria-label={t("toast.region")}
       className={`toast${toast.tone === "error" ? " is-error" : ""}`}
       onMouseEnter={() => onPause(true)}
       onMouseLeave={() => onPause(false)}
@@ -49,7 +51,7 @@ export function Toast({
             onDismiss();
           }}
         >
-          Undo
+          {t("toast.undo")}
         </Button>
       )}
       {toast.action && (
@@ -70,7 +72,7 @@ export function Toast({
         size="sm"
         icon="x"
         className="toast-close"
-        aria-label="Dismiss notification"
+        aria-label={t("toast.dismiss")}
         onClick={onDismiss}
       />
     </div>

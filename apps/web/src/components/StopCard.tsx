@@ -15,6 +15,7 @@ import {
   rgbToHex,
   type GradientTick,
 } from "@opal42/gradient";
+import { useT } from "../i18n/context";
 import { ColorTextField, CopyButton, FlashButton, NumericTriple, PasteButton } from "./fields";
 import { stopCardId, stopHexFieldId } from "./dom-ids";
 import { Button } from "./ui/Button";
@@ -51,12 +52,7 @@ function ComplementRow({
 /** Which colour notation the card shows at a time. */
 export type Notation = "hex" | "rgb" | "hsl" | "name";
 
-const NOTATIONS: { value: Notation; label: string }[] = [
-  { value: "hex", label: "HEX" },
-  { value: "rgb", label: "RGB" },
-  { value: "hsl", label: "HSL" },
-  { value: "name", label: "NAME" },
-];
+const NOTATION_VALUES: readonly Notation[] = ["hex", "rgb", "hsl", "name"];
 
 // ── Stop card ─────────────────────────────────────────────────────────────────
 
@@ -91,6 +87,7 @@ export function StopCard({
   /** A continuous edit ended (field blur). */
   onDone?: () => void;
 }) {
+  const t = useT();
   const rgb = hexToRgb(tick.color);
   const hsl = hexToHsl(tick.color);
   const complement = complementHex(tick.color);
@@ -125,14 +122,16 @@ export function StopCard({
     );
   };
 
-  const label = (what: string) => `stop ${n} ${what}`;
+  const channel = (c: "red" | "green" | "blue" | "hue" | "saturation" | "lightness") =>
+    t("stop.channelLabel", { n, channel: t(`channel.${c}`) });
+  const notations = NOTATION_VALUES.map((value) => ({ value, label: t(`notation.${value}`) }));
 
   return (
     <div
       id={stopCardId(tick.id)}
       className="stop-card"
       role="group"
-      aria-label={`Stop ${n}`}
+      aria-label={t("stop.group", { n })}
       tabIndex={-1}
       data-stop-id={tick.id}
       onFocus={onSelect}
@@ -143,11 +142,11 @@ export function StopCard({
           type="color"
           className="field-picker"
           value={tick.color}
-          aria-label={`Stop ${n} color picker`}
+          aria-label={t("stop.picker", { n })}
           onChange={(e) => onColor(e.target.value)}
           onBlur={onDone}
         />
-        <span className="stop-index">Stop {n}</span>
+        <span className="stop-index">{t("stop.heading", { n })}</span>
         <label className="stop-pos">
           <input
             ref={posRef}
@@ -157,7 +156,7 @@ export function StopCard({
             min={0}
             max={100}
             value={posDraft ?? tick.position}
-            aria-label={`Stop ${n} position`}
+            aria-label={t("stop.position", { n })}
             onChange={(e) => setPosDraft(e.target.value)}
             onBlur={commitPosition}
             onKeyDown={(e) => {
@@ -177,8 +176,8 @@ export function StopCard({
             variant="icon"
             icon="x"
             className="stop-remove"
-            title="Remove this stop"
-            aria-label={`Remove stop ${n}`}
+            title={t("stop.removeTitle")}
+            aria-label={t("stop.remove", { n })}
             onClick={onRemove}
           />
         )}
@@ -187,8 +186,8 @@ export function StopCard({
       {/* ── One notation at a time ── */}
       <div className="stop-color-row">
         <Segmented
-          label={`Stop ${n} color notation`}
-          options={NOTATIONS}
+          label={t("stop.notation", { n })}
+          options={notations}
           value={notation}
           onChange={onNotation}
           className="notation-switch"
@@ -200,57 +199,55 @@ export function StopCard({
           <>
             <label className="triple-cell">
               <span className="triple-label" aria-hidden="true">
-                Hex
+                {t("field.hex")}
               </span>
               <ColorTextField
                 value={formatHex(tick.color)}
                 parse={parseHex}
                 onCommit={onColor}
                 placeholder="#4F46E5"
-                ariaLabel={`Stop ${n} hex value`}
+                ariaLabel={t("stop.hexValue", { n })}
                 id={stopHexFieldId(tick.id)}
                 onGradientPaste={onGradientText}
                 onDone={onDone}
               />
             </label>
-            <CopyButton value={formatHex(tick.color)} label={label("hex")} />
-            <PasteButton onColor={onColor} onGradient={onGradientText} label={label("hex")} />
+            <CopyButton value={formatHex(tick.color)} label={t("target.hex", { n })} />
+            <PasteButton onColor={onColor} onGradient={onGradientText} label={t("target.hex", { n })} />
           </>
         )}
 
         {notation === "rgb" && (
           <>
             <NumericTriple
-              labelPrefix={`Stop ${n}`}
               parts={[
-                { label: "R", name: "red", min: 0, max: 255 },
-                { label: "G", name: "green", min: 0, max: 255 },
-                { label: "B", name: "blue", min: 0, max: 255 },
+                { label: "R", ariaLabel: channel("red"), min: 0, max: 255 },
+                { label: "G", ariaLabel: channel("green"), min: 0, max: 255 },
+                { label: "B", ariaLabel: channel("blue"), min: 0, max: 255 },
               ]}
               values={[rgb.r, rgb.g, rgb.b]}
               onCommit={([r, g, b]) => onColor(rgbToHex({ r, g, b }))}
               onDone={onDone}
             />
-            <CopyButton value={formatRgb(tick.color)} label={label("RGB")} />
-            <PasteButton onColor={onColor} onGradient={onGradientText} label={label("RGB")} />
+            <CopyButton value={formatRgb(tick.color)} label={t("target.rgb", { n })} />
+            <PasteButton onColor={onColor} onGradient={onGradientText} label={t("target.rgb", { n })} />
           </>
         )}
 
         {notation === "hsl" && (
           <>
             <NumericTriple
-              labelPrefix={`Stop ${n}`}
               parts={[
-                { label: "H", name: "hue", min: 0, max: 360, suffix: "°" },
-                { label: "S", name: "saturation", min: 0, max: 100, suffix: "%" },
-                { label: "L", name: "lightness", min: 0, max: 100, suffix: "%" },
+                { label: "H", ariaLabel: channel("hue"), min: 0, max: 360, suffix: "°" },
+                { label: "S", ariaLabel: channel("saturation"), min: 0, max: 100, suffix: "%" },
+                { label: "L", ariaLabel: channel("lightness"), min: 0, max: 100, suffix: "%" },
               ]}
               values={[hsl.h, hsl.s, hsl.l]}
               onCommit={commitHsl}
               onDone={onDone}
             />
-            <CopyButton value={formatHsl(tick.color)} label={label("HSL")} />
-            <PasteButton onColor={onColor} onGradient={onGradientText} label={label("HSL")} />
+            <CopyButton value={formatHsl(tick.color)} label={t("target.hsl", { n })} />
+            <PasteButton onColor={onColor} onGradient={onGradientText} label={t("target.hsl", { n })} />
           </>
         )}
 
@@ -258,7 +255,7 @@ export function StopCard({
           <>
             <label className="triple-cell">
               <span className="triple-label" aria-hidden="true">
-                Name
+                {t("field.name")}
               </span>
               <ColorTextField
                 value={formatNameDisplay(tick.color)}
@@ -266,7 +263,7 @@ export function StopCard({
                 onCommit={onColor}
                 listId={COLOR_NAME_LIST_ID}
                 placeholder="indigo"
-                ariaLabel={`Stop ${n} color name`}
+                ariaLabel={t("stop.colorName", { n })}
                 onGradientPaste={onGradientText}
                 onDone={onDone}
               />
@@ -274,9 +271,9 @@ export function StopCard({
             <CopyButton
               value={formatNameDisplay(tick.color)}
               copyValue={formatName(tick.color)}
-              label={label("name")}
+              label={t("target.name", { n })}
             />
-            <PasteButton onColor={onColor} onGradient={onGradientText} label={label("name")} />
+            <PasteButton onColor={onColor} onGradient={onGradientText} label={t("target.name", { n })} />
           </>
         )}
       </div>
@@ -286,32 +283,32 @@ export function StopCard({
         <summary className="disclosure-summary complement-summary">
           <Icon name="chevron" size={14} className="disclosure-chevron" />
           <span className="complement-swatch" style={{ background: complement }} aria-hidden="true" />
-          <span className="complement-title">Complement</span>
+          <span className="complement-title">{t("complement.title")}</span>
           <span className="complement-note">OKLCH +180°</span>
         </summary>
 
         <div className="complement-body">
           <FlashButton
             icon="swap"
-            label="Replace stop with complement"
-            ariaLabel={`Replace stop with complement (stop ${n})`}
-            title={`Replace stop ${n} with its complement`}
-            okMessage={`Stop ${n} replaced with its complement`}
-            okLabel="Replaced"
+            label={t("complement.replace")}
+            ariaLabel={t("complement.replaceAria", { n })}
+            title={t("complement.replaceTitle", { n })}
+            okMessage={t("toast.complementApplied", { n })}
+            okLabel={t("complement.replaced")}
             size="sm"
             onRun={() => {
               onComplement(complement);
               return true;
             }}
           />
-          <ComplementRow label="Hex" value={formatHex(complement)} copyLabel={label("complement hex")} />
-          <ComplementRow label="RGB" value={formatRgb(complement)} copyLabel={label("complement RGB")} />
-          <ComplementRow label="HSL" value={formatHsl(complement)} copyLabel={label("complement HSL")} />
+          <ComplementRow label={t("field.hex")} value={formatHex(complement)} copyLabel={t("target.complementHex", { n })} />
+          <ComplementRow label={t("field.rgb")} value={formatRgb(complement)} copyLabel={t("target.complementRgb", { n })} />
+          <ComplementRow label={t("field.hsl")} value={formatHsl(complement)} copyLabel={t("target.complementHsl", { n })} />
           <ComplementRow
-            label="Name"
+            label={t("field.name")}
             value={formatNameDisplay(complement)}
             copyValue={formatName(complement)}
-            copyLabel={label("complement name")}
+            copyLabel={t("target.complementName", { n })}
           />
         </div>
       </details>

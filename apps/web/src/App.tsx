@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   scoreGradient,
   proposeFixes,
@@ -57,11 +57,19 @@ import {
 import { importedToDocument, importSummary } from "./import/to-document";
 import { wantsImportDialog, withoutLaunchAction } from "./import/launch";
 import { registerServiceWorker } from "./sw/register";
-import { candidateTicks, computeSuggestion, type Suggestion } from "./suggest/compare";
+import { candidateTicks, computeSuggestion, declineReason, type Suggestion } from "./suggest/compare";
+import { useI18n } from "./i18n/context";
+import { LanguageSwitcher } from "./i18n/LanguageSwitcher";
+import { renderRich } from "./i18n/rich";
+import { fixLabel } from "./explain/fix-label";
+import { V1_MODEL } from "@opal42/gradient";
 import "./App.css";
 
 const GITHUB_URL = "https://github.com/LightSeek3r/gradient-studio";
-const GRADIENT_PASTE_PROMPT = "This looks like a full gradient - import it?";
+const GITHUB_LABEL = "GitHub";
+const version = `v${__APP_VERSION__}`;
+/** Emphasised words inside the footer sentences (`<accent>…</accent>` in the catalogue). */
+const accent = { accent: (c: string) => <span className="accent">{c}</span> };
 
 /** A suggestion, the document it was computed for, and the compare UI state. */
 interface CompareState {
@@ -85,21 +93,28 @@ interface ImportDialogState {
 // ── Main component ────────────────────────────────────────────────────────────
 
 export default function App() {
+  const i18n = useI18n();
+  const { t, linkLang } = i18n;
   const [initial] = useState(loadInitialDocument);
   const store = useGradientDocument(() => initial.document);
   const { doc, dispatch, commit, canUndo, canRedo } = store;
   const { toast, show: showToast, dismiss: dismissToast, setPaused: pauseToast } = useToast();
 
   // Offline support: when a new version is waiting, offer it without interrupting.
+  // Registered once; the toast is worded with the language that is active when the update arrives.
+  const latest = useRef({ showToast, t });
+  useEffect(() => {
+    latest.current = { showToast, t };
+  });
   useEffect(() => {
     registerServiceWorker((update) =>
-      showToast({
-        message: "Update available - reload",
-        action: { label: "Reload", run: update.reload },
+      latest.current.showToast({
+        message: latest.current.t("toast.updateAvailable"),
+        action: { label: latest.current.t("toast.reload"), run: update.reload },
         sticky: true,
       }),
     );
-  }, [showToast]);
+  }, []);
 
   const tabbed = useMediaQuery(MOBILE_QUERY);
   const [tab, setTab] = useState<TabId>(DEFAULT_TAB);
@@ -145,12 +160,12 @@ export default function App() {
 
   const scored = useMemo(() => scoreGradient(doc.ticks), [doc.ticks]);
   const { score, issues } = scored;
-  const ledger = useMemo(() => buildLedger(scored.findings, scored.score), [scored]);
+  const ledger = useMemo(() => buildLedger(scored.findings, scored.score, t), [scored, t]);
   // Targeted fixes, one per finding at most (core `proposeFixes`).
   const fixes = useMemo(() => proposeFixes(doc.ticks), [doc.ticks]);
   const fixOffers = useMemo(
-    () => new Map<string, FixOffer>(fixes.map((f) => [f.code, { gain: f.gain, label: f.label }])),
-    [fixes],
+    () => new Map<string, FixOffer>(fixes.map((f) => [f.code, { gain: f.gain, label: fixLabel(f, doc.ticks, i18n) }])),
+    [fixes, doc.ticks, i18n],
   );
   const fixPreview = fixPreviewState && fixPreviewState.doc === doc ? fixPreviewState : null;
   const previewFix = fixPreview ? (fixes.find((f) => f.code === fixPreview.code) ?? null) : null;
@@ -161,13 +176,13 @@ export default function App() {
   const gradientStyle = buildMultiGradientStyle(previewTicks, doc.directions, doc.blend);
   const selectedScore = candidate ? scoreGradient(candidate).score : null;
 
-  const band = scoreBand(score);
+  const band = scoreBand(score, t);
   const atStopCap = doc.ticks.length >= MAX_STOPS;
   const canRemoveStop = doc.ticks.length > MIN_STOPS;
 
   // Screen-reader summary of the live score, debounced so dragging a handle
   // doesn't produce a flood of announcements.
-  const scoreSummary = `Smoothness score ${score}, ${band.label}, ${issues.length} ${issues.length === 1 ? "issue" : "issues"}`;
+  const scoreSummary = t("announce.scoreSummary", { score, band: band.label, issues: issues.length });
   const [announcedScore, setAnnouncedScore] = useState(scoreSummary);
   useEffect(() => {
     const t = setTimeout(() => setAnnouncedScore(scoreSummary), 700);
@@ -179,14 +194,14 @@ export default function App() {
     if (!store.canUndo) return;
     store.undo();
     dismissToast(); // its Undo would now refer to a different step
-    announce("Undone");
-  }, [store, dismissToast]);
+    announce(t("toast.undone"));
+  }, [store, dismissToast, t]);
   const redo = useCallback(() => {
     if (!store.canRedo) return;
     store.redo();
     dismissToast();
-    announce("Redone");
-  }, [store, dismissToast]);
+    announce(t("toast.redone"));
+  }, [store, dismissToast, t]);
 
   /** Apply a destructive edit and offer Undo for it. */
   const destructive = (action: Parameters<typeof dispatch>[0], message: string, details?: string[]) => {
@@ -198,7 +213,7 @@ export default function App() {
   const importGradient = (gradient: ImportedGradient, warnings: string[]) => {
     destructive(
       { type: "import", document: importedToDocument(gradient) },
-      importSummary(gradient),
+      importSummary(gradient, t),
       warnings,
     );
     setImportDialog(null);
@@ -209,9 +224,9 @@ export default function App() {
     setImportDialog((prev) => ({ text, intro, key: (prev?.key ?? 0) + 1 }));
 
   const importText = (text: string) => {
-    const result = parseLinearGradient(text);
+    const result = parseLinearGradient(text, t);
     if (result.ok) importGradient(result.gradient, result.warnings);
-    else showToast({ message: `Not imported: ${result.error}`, details: result.warnings, tone: "error" });
+    else showToast({ message: t("toast.notImported", { error: result.error }), details: result.warnings, tone: "error" });
   };
 
   useGlobalShortcuts({
@@ -222,7 +237,7 @@ export default function App() {
       if (looksLikeGradient(text)) importText(text);
       else
         showToast({
-          message: "The clipboard doesn't hold a CSS gradient - paste a linear-gradient(…) to import it",
+          message: t("toast.clipboardNotGradient"),
           tone: "error",
         });
     },
@@ -266,14 +281,14 @@ export default function App() {
     if (!example) return;
     destructive(
       { type: "import", document: exampleDocument(example) },
-      `Loaded the example for “${ruleText(code).name}”`,
+      t("toast.exampleLoaded", { name: ruleText(code, t).name }),
     );
     setSelectedStopId(null);
     setLedgerOpen({ [code]: true });
     setAutoOpenWorst(false);
     if (opts.setHash) {
       try {
-        window.history.replaceState(window.history.state, "", issueHash(code));
+        window.history.replaceState(window.history.state, "", issueHash(code, linkLang));
       } catch {
         // Sandboxed frames can refuse replaceState; the example still loads.
       }
@@ -289,7 +304,7 @@ export default function App() {
     setActiveIssue(null);
     destructive(
       { type: "applySuggestion", ticks: fix.document },
-      `${fix.label} (score ${score} → ${fix.after.score})`,
+      t("toast.fixApplied", { label: fixLabel(fix, doc.ticks, i18n), before: score, after: fix.after.score }),
     );
     // The fixed row is gone; keep keyboard focus in the ledger.
     requestAnimationFrame(() => document.getElementById("score-ledger")?.focus({ preventScroll: true }));
@@ -298,9 +313,10 @@ export default function App() {
   usePersistence(
     doc,
     (linked) => {
-      destructive({ type: "import", document: linked }, "Loaded the gradient from the link");
+      destructive({ type: "import", document: linked }, t("toast.linkLoaded"));
     },
     (code) => loadExample(code),
+    linkLang,
   );
 
   // ── Stops ──
@@ -326,7 +342,7 @@ export default function App() {
       nextSelected = (sortedTicks[i + 1] ?? sortedTicks[i - 1])?.id ?? null;
       setSelectedStopId(nextSelected);
     }
-    destructive({ type: "removeStop", id }, `Removed stop ${stopNumber(id)}`);
+    destructive({ type: "removeStop", id }, t("toast.stopRemoved", { n: stopNumber(id) }));
     if (opts.focusCard) focusCard(nextSelected);
   };
 
@@ -365,8 +381,8 @@ export default function App() {
     });
     announce(
       s.useful
-        ? `Suggestion ready: score ${s.result.before} to ${s.result.after}. Showing the suggested gradient.`
-        : (s.reason ?? ""),
+        ? t("announce.suggestionReady", { before: s.result.before, after: s.result.after })
+        : declineReason(s.result, t),
     );
   };
 
@@ -377,7 +393,7 @@ export default function App() {
       : candidateTicks(compare.suggestion, compare.selected);
     setCompareState(null);
     const after = scoreGradient(ticks).score;
-    destructive({ type: "applySuggestion", ticks }, `Applied the suggestion (score ${score} → ${after})`);
+    destructive({ type: "applySuggestion", ticks }, t("toast.suggestionApplied", { before: score, after }));
   };
 
   const toggleSelected = (id: number) => {
@@ -398,7 +414,7 @@ export default function App() {
   return (
     <div className={`studio${tabbed ? " is-tabbed" : ""}`}>
       <a className="skip-link" href="#main">
-        Skip to main content
+        {t("app.skipToMain")}
       </a>
       <StatusRegion />
       <div className="sr-only" aria-live="polite" aria-atomic="true">
@@ -418,57 +434,58 @@ export default function App() {
         {/* Header */}
         <header className="studio-header">
           <div className="studio-heading">
-            <h1 className="studio-title">Gradient Studio</h1>
-            <p className="studio-subtitle">Perceptual smoothness score, targeted fixes &amp; one-click refinement</p>
+            <h1 className="studio-title">{t("app.name")}</h1>
+            <p className="studio-subtitle">{t("app.subtitle")}</p>
           </div>
-          <div className="header-actions" role="toolbar" aria-label="Document">
+          <LanguageSwitcher />
+          <div className="header-actions" role="toolbar" aria-label={t("header.toolbar")}>
             <Button
               icon="undo"
               collapse
               onClick={undo}
               disabled={!canUndo}
-              title="Undo (Ctrl/Cmd+Z)"
+              title={t("header.undoTitle")}
               aria-keyshortcuts="Control+Z Meta+Z"
             >
-              Undo
+              {t("header.undo")}
             </Button>
             <Button
               icon="redo"
               collapse
               onClick={redo}
               disabled={!canRedo}
-              title="Redo (Shift+Ctrl/Cmd+Z or Ctrl+Y)"
+              title={t("header.redoTitle")}
               aria-keyshortcuts="Control+Shift+Z Meta+Shift+Z Control+Y"
             >
-              Redo
+              {t("header.redo")}
             </Button>
             <Button
               icon="import"
               collapse
               onClick={() => openImport()}
               aria-haspopup="dialog"
-              title="Import a CSS linear-gradient (or paste one anywhere)"
+              title={t("header.importTitle")}
             >
-              Import CSS
+              {t("header.import")}
             </Button>
             <FlashButton
               icon="link"
-              label="Copy link"
+              label={t("header.copyLink")}
               collapse
-              title="Copy a link that reopens this gradient"
-              okLabel="Link copied"
-              errLabel="Copy failed"
-              okMessage="Link copied to clipboard"
-              errMessage="Copy failed"
-              onRun={() => writeClipboardText(documentLink(doc))}
+              title={t("header.copyLinkTitle")}
+              okLabel={t("header.linkCopied")}
+              errLabel={t("common.copyFailed")}
+              okMessage={t("header.linkCopiedSr")}
+              errMessage={t("common.copyFailed")}
+              onRun={() => writeClipboardText(documentLink(doc, linkLang))}
             />
             <Button
               icon="rotate"
               collapse
-              onClick={() => destructive({ type: "reset" }, "Reset to the starting gradient")}
-              title="Start over from the default gradient"
+              onClick={() => destructive({ type: "reset" }, t("toast.reset"))}
+              title={t("header.resetTitle")}
             >
-              Reset
+              {t("header.reset")}
             </Button>
           </div>
         </header>
@@ -496,16 +513,16 @@ export default function App() {
                       />
                       <span className="split-divider" aria-hidden="true" />
                       <span className="split-label split-label--now" aria-hidden="true">
-                        Now
+                        {t("stage.now")}
                       </span>
                       <span className="split-label split-label--fix" aria-hidden="true">
-                        With fix <span className="mono">+{previewFix.gain}</span>
+                        {t("stage.withFix")} <span className="mono">+{previewFix.gain}</span>
                       </span>
                     </>
                   )}
                   {showingSuggested && !previewFix && (
                     <span className="preview-badge" aria-hidden="true">
-                      Suggested preview
+                      {t("stage.suggestedPreview")}
                     </span>
                   )}
                   {!(tabbed && tab === "score") && (
@@ -513,17 +530,17 @@ export default function App() {
                       type="button"
                       className="score-chip"
                       style={{ "--band": band.color } as React.CSSProperties}
-                      title="Show score details"
+                      title={t("stage.scoreChipTitle")}
                       onClick={jumpToScore}
                     >
-                      <span className="sr-only">Score </span>
+                      <span className="sr-only">{t("stage.scoreWord")} </span>
                       <span className="score-chip-value mono">{score}</span>
                       <DeltaBadge delta={scoreDelta.delta} />
                       <span className="score-chip-label">{band.label}</span>
                     </button>
                   )}
                 </div>
-                <div className="stage-bar" role="group" aria-label="Color stops">
+                <div className="stage-bar" role="group" aria-label={t("stage.stopsGroup")}>
                   <StopBar
                     ticks={doc.ticks}
                     selectedId={selectedId}
@@ -593,7 +610,7 @@ export default function App() {
               <Surface as="section" aria-labelledby="stops-h" className="stops-panel">
                 <div className="panel-head">
                   <h2 className="panel-title" id="stops-h">
-                    Stops
+                    {t("stops.title")}
                     <span className="panel-count mono">
                       {doc.ticks.length}/{MAX_STOPS}
                     </span>
@@ -607,14 +624,12 @@ export default function App() {
                       if (id !== null) setSelectedStopId(id);
                     }}
                     disabled={atStopCap}
-                    title={
-                      atStopCap ? `Maximum of ${MAX_STOPS} stops reached` : "Add a stop in the widest gap"
-                    }
+                    title={atStopCap ? t("stops.maxTitle", { max: MAX_STOPS }) : t("stops.addTitle")}
                   >
-                    Add stop{atStopCap ? ` (max ${MAX_STOPS})` : ""}
+                    {atStopCap ? t("stops.addAtMax", { max: MAX_STOPS }) : t("stops.add")}
                   </Button>
                 </div>
-                <p className="panel-hint">Drag a handle to move it. Click or tap the bar to add a stop.</p>
+                <p className="panel-hint">{t("stops.hint")}</p>
                 <div className="stop-list">
                   {sortedTicks.map((tick, i) =>
                     tick.id === selectedId ? (
@@ -637,10 +652,10 @@ export default function App() {
                         onComplement={(color) =>
                           destructive(
                             { type: "setStopColor", id: tick.id, color },
-                            `Stop ${i + 1} replaced with its complement`,
+                            t("toast.complementApplied", { n: i + 1 }),
                           )
                         }
-                        onGradientText={(text) => openImport(text, GRADIENT_PASTE_PROMPT)}
+                        onGradientText={(text) => openImport(text, t("import.intro"))}
                         onDone={() => {
                           commit();
                           scoreDelta.end();
@@ -677,7 +692,7 @@ export default function App() {
                   if (count === doc.directions.length) return;
                   destructive(
                     { type: "setDirectionCount", count },
-                    `${count} direction${count > 1 ? "s" : ""}${count < doc.directions.length ? " (removed from the end)" : ""}`,
+                    t("toast.directionCount", { count, removed: count < doc.directions.length ? "yes" : "no" }),
                   );
                 }}
                 onBlend={(blend) => dispatch({ type: "setBlend", blend })}
@@ -692,12 +707,9 @@ export default function App() {
               <ScoreStrip score={score} band={band} delta={scoreDelta.delta} />
               <Surface as="section" id="score-details" aria-labelledby="score-h">
                 <h2 className="panel-title" id="score-h">
-                  Smoothness score
+                  {t("score.heading")}
                 </h2>
-                <p className="scope-note">
-                  How evenly your color stops flow, by this app&rsquo;s definition. It is not a verdict on
-                  quality. Directions and blend are not scored.
-                </p>
+                <p className="scope-note">{t("score.scope")}</p>
                 <ScoreLedger
                   ledger={ledger}
                   fixes={fixOffers}
@@ -718,7 +730,7 @@ export default function App() {
               </Surface>
 
               {tabbed && (
-                <Surface as="section" aria-label="Curves">
+                <Surface as="section" aria-label={t("curves.title")}>
                   <Curves
                     ticks={doc.ticks}
                     rows={ledger.rows}
@@ -732,12 +744,9 @@ export default function App() {
 
               <Surface as="section" aria-labelledby="refine-h">
                 <h2 className="panel-title" id="refine-h">
-                  Perceptual refinement
+                  {t("score.refineHeading")}
                 </h2>
-                <p className="panel-description">
-                  Smooths lightness flow, balances chroma and spaces stops evenly in OKLAB. Exported CSS stays
-                  standard sRGB.
-                </p>
+                <p className="panel-description">{t("score.refineDescription")}</p>
                 {compare && compare.suggestion.useful && (
                   <CompareToggle
                     view={compare.view}
@@ -773,49 +782,36 @@ export default function App() {
           <details className="theory-note">
             <summary className="disclosure-summary theory-summary">
               <Icon name="chevron" size={14} className="disclosure-chevron" />
-              How does this work?
+              {t("footer.theory")}
             </summary>
             <p>
-              <span className="accent-strong">Scoring: </span>
-              a smoothness score by this app&rsquo;s own definition, not a validated measure of quality.{" "}
-              Lightness flow (30pts) penalizes reversals, H-K brightness wobble &amp; uneven perceptual speed.
-              Hue arc (30pts) rewards arcs &lt;120° and consistent hue direction. Chroma balance (20pts)
-              penalizes saturation spikes, midpoint desaturation &amp; banding risk. Stop rhythm (20pts)
-              penalizes uneven clustering. Suggestion nudges colors toward perceptual harmony via{" "}
-              <span className="accent">OKLAB→LCH</span> smoothing.
+              <span className="accent-strong">{t("footer.scoringLabel")}</span>
+              {renderRich(t("footer.scoring", V1_MODEL.weights), accent)}
             </p>
             <p>
-              <span className="accent-strong">Multi-angle: </span>
-              up to {MAX_DIRECTIONS} directions project the same stops as stacked layers. In{" "}
-              <span className="accent">average</span> mode each layer&rsquo;s alpha is set to{" "}
-              <span className="accent">wₖ / (w₁+…+wₖ)</span>, so the result is the exact weighted mean of
-              every direction; other modes hand the layers to{" "}
-              <span className="accent">background-blend-mode</span> with alpha scaled against the heaviest
-              direction.
+              <span className="accent-strong">{t("footer.multiLabel")}</span>
+              {renderRich(t("footer.multi", { max: MAX_DIRECTIONS }), accent)}
             </p>
             <p>
-              <span className="accent-strong">Complements: </span>
-              the opposite <span className="accent">OKLCH</span> hue at matched lightness and chroma,
-              gamut-mapped by reducing chroma so the hue never drifts.
+              <span className="accent-strong">{t("footer.complementsLabel")}</span>
+              {renderRich(t("footer.complements"), accent)}
             </p>
             <p>
-              <span className="accent-strong">Your work: </span>
-              the gradient is kept in the page address (share it with Copy link) and autosaved in this
-              browser. Ctrl/Cmd+Z undoes, Shift+Ctrl/Cmd+Z or Ctrl+Y redoes (text fields keep their own undo).
-              Paste a CSS linear-gradient anywhere outside a text field to import it.
+              <span className="accent-strong">{t("footer.workLabel")}</span>
+              {t("footer.work")}
             </p>
           </details>
           <p className="footer-line">
-            Runs entirely in your browser. Nothing is uploaded.
+            {t("footer.local")}
             <span className="footer-sep" aria-hidden="true">
               ·
             </span>
-            v{__APP_VERSION__}
+            {version}
             <span className="footer-sep" aria-hidden="true">
               ·
             </span>
             <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer">
-              GitHub
+              {GITHUB_LABEL}
             </a>
           </p>
         </footer>

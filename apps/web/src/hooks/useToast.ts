@@ -4,6 +4,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { announce } from "../announce";
+import { useT } from "../i18n/context";
 
 export const TOAST_MS = 6000;
 
@@ -22,17 +23,21 @@ export interface ToastData {
 }
 
 export function useToast() {
+  const t = useT();
   const [toast, setToast] = useState<ToastData | null>(null);
   const [paused, setPaused] = useState(false);
   const counter = useRef(0);
 
-  const show = useCallback((t: Omit<ToastData, "id">) => {
-    counter.current += 1;
-    setToast({ ...t, id: counter.current });
-    const extra = t.details?.length ? ` ${t.details.join(" ")}` : "";
-    const end = /[.!?…]$/.test(t.message) ? "" : ".";
-    announce(`${t.message}${end}${extra}${t.undo ? " Press Control Z to undo." : ""}`);
-  }, []);
+  const show = useCallback(
+    (data: Omit<ToastData, "id">) => {
+      counter.current += 1;
+      setToast({ ...data, id: counter.current });
+      const extra = data.details?.length ? ` ${data.details.join(" ")}` : "";
+      const end = /[.!?…]$/.test(data.message) ? "" : ".";
+      announce(`${data.message}${end}${extra}${data.undo ? ` ${t("toast.undoHint")}` : ""}`);
+    },
+    [t],
+  );
 
   const dismiss = useCallback(() => setToast(null), []);
 

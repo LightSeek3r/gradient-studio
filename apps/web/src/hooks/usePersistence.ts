@@ -1,6 +1,7 @@
 // ── Keep the URL hash and autosave in step with the document ─────────────────
 
 import { useEffect, useRef } from "react";
+import type { Locale } from "../i18n/locale";
 import { sameDocument, type GradientDocument } from "../state/document";
 import { readHashDocument, readHashIssue, writeHash, writeStoredDocument } from "../persist/storage";
 
@@ -16,6 +17,8 @@ export function usePersistence(
   doc: GradientDocument,
   onLink: (doc: GradientDocument) => void,
   onIssue?: (code: string) => void,
+  /** The interface language to carry in the address bar (see `linkLang`), or null to leave it out. */
+  lang: Locale | null = null,
 ) {
   const latestDoc = useRef(doc);
   const latestOnLink = useRef(onLink);
@@ -28,11 +31,11 @@ export function usePersistence(
 
   useEffect(() => {
     const t = setTimeout(() => {
-      writeHash(doc);
+      writeHash(doc, lang);
       writeStoredDocument(doc);
     }, PERSIST_DEBOUNCE_MS);
     return () => clearTimeout(t);
-  }, [doc]);
+  }, [doc, lang]);
 
   useEffect(() => {
     const onHash = () => {

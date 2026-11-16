@@ -1,7 +1,8 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { V1_FINDING_CODES, V1_MODEL, scoreGradient, type Finding, type GradientTick } from "@opal42/gradient";
-import { DIMENSIONS, RULE_TEXT, ruleText } from "../src/explain/explain";
+import { DIMENSIONS, RULE_CODES, ruleText } from "../src/explain/explain";
+import { hasMessageKey, i18nEn, tEn } from "../src/i18n/translator";
 import { buildLedger, ledgerEquation, ledgerSentence, locationText } from "../src/explain/ledger";
 import { EXAMPLES, exampleDocument, exampleTicks, findExample } from "../src/examples";
 import { issueHash, issueLink, parseIssueHash } from "../src/persist/issue-link";
@@ -16,20 +17,20 @@ const ticks = (...stops: [string, number][]): GradientTick[] => stops.map(([colo
 
 describe("explain: one text per rule", () => {
   it("covers exactly the codes of the v1 model", () => {
-    expect(Object.keys(RULE_TEXT).sort()).toEqual(MODEL_CODES);
+    expect([...RULE_CODES].sort()).toEqual(MODEL_CODES);
   });
 
   it("covers every code that has a section in spec/scoring-v1.md", () => {
     const spec = readFileSync(new URL("../../../spec/scoring-v1.md", import.meta.url), "utf8");
     const specCodes = [...spec.matchAll(/^### `([a-z]+\/[a-z-]+)`/gm)].map((m) => m[1]).sort();
     expect(specCodes).toEqual(MODEL_CODES);
-    for (const code of specCodes) expect(RULE_TEXT[code], code).toBeDefined();
+    for (const code of specCodes) expect(hasMessageKey(`rule.${code}.name`) && hasMessageKey(`rule.${code}.measures`), code).toBe(true);
   });
 
   it("gives each rule a short name and one plain sentence, without verdict words", () => {
     const names = new Set<string>();
     for (const code of MODEL_CODES) {
-      const t = RULE_TEXT[code];
+      const t = ruleText(code, tEn);
       expect(t.name.length, code).toBeGreaterThan(3);
       expect(t.name.length, code).toBeLessThanOrEqual(28);
       expect(t.name, code).toBe(t.name.toLowerCase());
@@ -42,9 +43,9 @@ describe("explain: one text per rule", () => {
   });
 
   it("falls back safely for an unknown code", () => {
-    expect(ruleText("future/new-rule").name).toBe("new rule");
-    expect(ruleText("constructor").measures).toMatch(/deduction/);
-    expect(ruleText(undefined as never).name).toBe("deduction");
+    expect(ruleText("future/new-rule", tEn).name).toBe("new rule");
+    expect(ruleText("constructor", tEn).measures).toMatch(/deduction/);
+    expect(ruleText(undefined as never, tEn).name).toBe("deduction");
   });
 
   it("lists the four dimensions with the model's budgets", () => {
@@ -128,16 +129,16 @@ describe("issue links", () => {
 describe("ledger arithmetic", () => {
   it("is 100 with no deductions", () => {
     const s = scoreGradient(ticks(["#ffa500", 0], ["#800080", 100]));
-    const ledger = buildLedger(s.findings, s.score);
+    const ledger = buildLedger(s.findings, s.score, tEn);
     expect(ledger.rows).toEqual([]);
     expect(ledger.total).toBe(100);
-    expect(ledgerEquation(ledger)).toBe("100 = 100");
-    expect(ledgerSentence(ledger)).toBe("100 points, no deductions.");
+    expect(ledgerEquation(ledger, tEn)).toBe("100 = 100");
+    expect(ledgerSentence(ledger, tEn)).toBe("100 points, no deductions.");
   });
 
   it("sorts by loss and adds up without clamping (red, lime, blue = 58)", () => {
     const s = scoreGradient(ticks(["#ff0000", 0], ["#00ff00", 50], ["#0000ff", 100]));
-    const ledger = buildLedger(s.findings, s.score);
+    const ledger = buildLedger(s.findings, s.score, tEn);
     expect(ledger.rows.map((r) => [r.code, r.pointsLost])).toEqual([
       ["hue/wide-arc", 20],
       ["lightness/reversal", 12],
@@ -147,8 +148,8 @@ describe("ledger arithmetic", () => {
     expect(ledger.nominal).toBe(42);
     expect(ledger.total).toBe(58);
     expect(ledger.balanced).toBe(true);
-    expect(ledgerEquation(ledger)).toBe("100 − 20 − 12 − 10 = 58");
-    expect(ledgerSentence(ledger)).toBe(
+    expect(ledgerEquation(ledger, tEn)).toBe("100 − 20 − 12 − 10 = 58");
+    expect(ledgerSentence(ledger, tEn)).toBe(
       "100 minus 20 for wide hue arc, minus 12 for lightness reversal, minus 10 for muddy midpoint, equals 58.",
     );
   });
@@ -156,7 +157,7 @@ describe("ledger arithmetic", () => {
   it("shows the floor when a dimension's penalties exceed its budget", () => {
     // Three lightness reversals (36) in a 30-point dimension.
     const s = scoreGradient(ticks(["#ffffff", 0], ["#000000", 25], ["#ffffff", 50], ["#000000", 75], ["#ffffff", 100]));
-    const ledger = buildLedger(s.findings, s.score);
+    const ledger = buildLedger(s.findings, s.score, tEn);
     const lightness = ledger.floors.find((f) => f.dimension === "lightness");
     expect(lightness).toBeDefined();
     expect(lightness!.nominal).toBeGreaterThan(30);
@@ -165,9 +166,9 @@ describe("ledger arithmetic", () => {
     expect(ledger.absorbed).toBe(ledger.nominal - (100 - s.score));
     expect(ledger.total).toBe(s.score);
     expect(ledger.balanced).toBe(true);
-    expect(ledgerEquation(ledger)).toContain(`+ ${lightness!.absorbed} (lightness flow floor 0)`);
-    expect(ledgerEquation(ledger).endsWith(`= ${s.score}`)).toBe(true);
-    expect(ledgerSentence(ledger)).toContain("cannot go below 0");
+    expect(ledgerEquation(ledger, tEn)).toContain(`+ ${lightness!.absorbed} (lightness flow floor 0)`);
+    expect(ledgerEquation(ledger, tEn).endsWith(`= ${s.score}`)).toBe(true);
+    expect(ledgerSentence(ledger, tEn)).toContain("cannot go below 0");
   });
 
   it("balances for every corpus input, and the dimension summary matches the engine", () => {
@@ -178,7 +179,7 @@ describe("ledger arithmetic", () => {
     for (const c of corpus.cases) {
       const s = scoreGradient(c.stops);
       if (s.status !== "ok") continue;
-      const ledger = buildLedger(s.findings, s.score);
+      const ledger = buildLedger(s.findings, s.score, tEn);
       expect(ledger.balanced).toBe(true);
       if (ledger.floors.length) clamped++;
       const kept = Object.fromEntries(ledger.dimensions.map((d) => [d.dimension, d.kept]));
@@ -189,27 +190,27 @@ describe("ledger arithmetic", () => {
   });
 
   it("describes locations", () => {
-    expect(locationText({ stops: [1] })).toBe("stop 2");
-    expect(locationText({ stops: [0, 2] })).toBe("stops 1 and 3");
-    expect(locationText({ stops: [0, 1, 3] })).toBe("stops 1, 2 and 4");
-    expect(locationText({ segment: [0, 35] })).toBe("0%–35%");
-    expect(locationText({ stops: [0, 1], segment: [0, 5] })).toBe("stops 1 and 2, 0%–5%");
-    expect(locationText({})).toBe("");
+    expect(locationText({ stops: [1] }, i18nEn)).toBe("stop 2");
+    expect(locationText({ stops: [0, 2] }, i18nEn)).toBe("stops 1 and 3");
+    expect(locationText({ stops: [0, 1, 3] }, i18nEn)).toBe("stops 1, 2 and 4");
+    expect(locationText({ segment: [0, 35] }, i18nEn)).toBe("0%–35%");
+    expect(locationText({ stops: [0, 1], segment: [0, 5] }, i18nEn)).toBe("stops 1 and 2, 0%–5%");
+    expect(locationText({}, i18nEn)).toBe("");
   });
 
   it("names an unknown future code instead of failing", () => {
     const f: Finding = { code: "future/thing", severity: "info", dimension: "hue", pointsLost: 3, message: "m" };
-    expect(buildLedger([f], 97).rows[0].name).toBe("thing");
+    expect(buildLedger([f], 97, tEn).rows[0].name).toBe("thing");
   });
 });
 
 describe("score band and delta wording", () => {
   it("uses neutral descriptions, never verdicts", () => {
-    const labels = [100, 80, 79, 65, 64, 45, 44, 0].map((s) => scoreBand(s).label);
+    const labels = [100, 80, 79, 65, 64, 45, 44, 0].map((s) => scoreBand(s, tEn).label);
     expect(labels).toEqual(["smooth", "smooth", "mostly smooth", "mostly smooth", "uneven", "uneven", "rough", "rough"]);
     for (const s of [0, 50, 70, 100]) {
-      expect(scoreBand(s).label).not.toMatch(/excellent|good|fair|poor|bad|fail|pass/i);
-      expect(scoreBand(s).color).toMatch(/^var\(--band-[1-4]\)$/);
+      expect(scoreBand(s, tEn).label).not.toMatch(/excellent|good|fair|poor|bad|fail|pass/i);
+      expect(scoreBand(s, tEn).color).toMatch(/^var\(--band-[1-4]\)$/);
     }
   });
 
@@ -217,9 +218,9 @@ describe("score band and delta wording", () => {
     expect(formatDelta(3)).toBe("+3");
     expect(formatDelta(-7)).toBe("−7");
     expect(formatDelta(0)).toBe("±0");
-    expect(deltaSentence(58, 61)).toBe("Score up 3, now 61");
-    expect(deltaSentence(58, 51)).toBe("Score down 7, now 51");
-    expect(deltaSentence(58, 58)).toBe("");
+    expect(deltaSentence(58, 61, tEn)).toBe("Score up 3, now 61");
+    expect(deltaSentence(58, 51, tEn)).toBe("Score down 7, now 51");
+    expect(deltaSentence(58, 58, tEn)).toBe("");
   });
 });
 
@@ -231,19 +232,19 @@ describe("curves", () => {
   });
 
   it("describes trends, ignoring small wiggles", () => {
-    expect(describeTrend([0, 0.2, 0.5, 1], 0.02)).toBe("rises");
-    expect(describeTrend([1, 0.5, 0.2], 0.02)).toBe("falls");
-    expect(describeTrend([0.5, 0.505, 0.5], 0.02)).toBe("flat");
-    expect(describeTrend([0.9, 0.3, 0.8], 0.02)).toBe("dips, then rises");
-    expect(describeTrend([0.2, 0.9, 0.3], 0.02)).toBe("peaks, then falls");
-    expect(describeTrend([0, 1, 0, 1, 0], 0.02)).toBe("changes direction 3 times");
-    expect(describeTrend([null, null], 0.02)).toBe("undefined");
+    expect(describeTrend([0, 0.2, 0.5, 1], 0.02, tEn)).toBe("rises");
+    expect(describeTrend([1, 0.5, 0.2], 0.02, tEn)).toBe("falls");
+    expect(describeTrend([0.5, 0.505, 0.5], 0.02, tEn)).toBe("flat");
+    expect(describeTrend([0.9, 0.3, 0.8], 0.02, tEn)).toBe("dips, then rises");
+    expect(describeTrend([0.2, 0.9, 0.3], 0.02, tEn)).toBe("peaks, then falls");
+    expect(describeTrend([0, 1, 0, 1, 0], 0.02, tEn)).toBe("changes direction 3 times");
+    expect(describeTrend([null, null], 0.02, tEn)).toBe("undefined");
   });
 
   it("shows a lightness reversal as a dip and a muddy midpoint as a chroma trough", () => {
-    const dip = sampleCurves(ticks(["#e0e7ff", 0], ["#1e1b4b", 50], ["#c7d2fe", 100]))!;
+    const dip = sampleCurves(ticks(["#e0e7ff", 0], ["#1e1b4b", 50], ["#c7d2fe", 100]), i18nEn)!;
     expect(dip.curves[0].trend).toBe("dips, then rises");
-    const muddy = sampleCurves(ticks(["#00ff00", 0], ["#ff00ff", 100]))!;
+    const muddy = sampleCurves(ticks(["#00ff00", 0], ["#ff00ff", 100]), i18nEn)!;
     const chroma = muddy.curves[1];
     expect(chroma.trend).toBe("dips, then rises");
     expect(chroma.min!).toBeLessThan(0.05);
@@ -252,7 +253,7 @@ describe("curves", () => {
   });
 
   it("handles a fully grey gradient", () => {
-    const grey = sampleCurves(ticks(["#000000", 0], ["#ffffff", 100]))!;
+    const grey = sampleCurves(ticks(["#000000", 0], ["#ffffff", 100]), i18nEn)!;
     expect(grey.curves[2].min).toBeNull();
     expect(grey.curves[2].summary).toMatch(/grey/);
     expect(grey.curves[0].trend).toBe("rises");
@@ -261,9 +262,9 @@ describe("curves", () => {
   });
 
   it("returns null for unsampleable input", () => {
-    expect(sampleCurves([])).toBeNull();
-    expect(sampleCurves(ticks(["#000000", 0]))).toBeNull();
-    expect(sampleCurves(ticks(["nope", 0], ["#ffffff", 100]))).toBeNull();
+    expect(sampleCurves([], i18nEn)).toBeNull();
+    expect(sampleCurves(ticks(["#000000", 0]), i18nEn)).toBeNull();
+    expect(sampleCurves(ticks(["nope", 0], ["#ffffff", 100]), i18nEn)).toBeNull();
   });
 
   it("builds path data with gaps", () => {

@@ -5,6 +5,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { announce } from "../announce";
+import { useT } from "../i18n/context";
 import { deltaSentence } from "../score-band";
 
 /** A gesture with no explicit end is closed after this pause. */
@@ -20,6 +21,8 @@ interface Gesture {
 }
 
 export function useScoreDelta(score: number) {
+  const t = useT();
+  const tRef = useRef(t);
   const [gesture, setGesture] = useState<Gesture | null>(null);
   const live = useRef<{ base: number } | null>(null);
   const latest = useRef(score);
@@ -29,6 +32,7 @@ export function useScoreDelta(score: number) {
 
   useEffect(() => {
     latest.current = score;
+    tRef.current = t;
   });
 
   useEffect(
@@ -48,7 +52,7 @@ export function useScoreDelta(score: number) {
     live.current = null;
     // Read the score after the last edit of the gesture has rendered.
     speak.current = setTimeout(() => {
-      const sentence = deltaSentence(g.base, latest.current);
+      const sentence = deltaSentence(g.base, latest.current, tRef.current);
       if (sentence) announce(sentence);
     }, 80);
     linger.current = setTimeout(() => setGesture(null), DELTA_LINGER_MS);

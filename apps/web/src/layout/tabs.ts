@@ -3,15 +3,15 @@
 // automatic activation): which panels exist, which tab a key moves to, and
 // the spoken suffix of a tab that carries a badge.
 
+import type { Translate } from "../i18n/translator";
+
 export const TAB_IDS = ["stops", "score", "directions", "export"] as const;
 export type TabId = (typeof TAB_IDS)[number];
 
-export const TAB_LABELS: Record<TabId, string> = {
-  stops: "Stops",
-  score: "Score",
-  directions: "Directions",
-  export: "Export",
-};
+/** The visible name of a tab in the active language. */
+export function tabLabel(tab: TabId, t: Translate): string {
+  return t(`tabs.${tab}`);
+}
 
 export const DEFAULT_TAB: TabId = "stops";
 
@@ -43,9 +43,9 @@ export function nextTab(current: TabId, key: string, tabs: readonly TabId[] = TA
 }
 
 /** Spoken after the "Score" label, e.g. ", 2 issues" (empty without a badge). */
-export function issueSuffix(badge: number | null): string {
+export function issueSuffix(badge: number | null, t: Translate): string {
   if (badge === null || badge <= 0) return "";
-  return `, ${badge} ${badge === 1 ? "issue" : "issues"}`;
+  return t("tabs.issues", { count: badge });
 }
 
 /** The text of a tab badge: capped so it never outgrows its pill. */

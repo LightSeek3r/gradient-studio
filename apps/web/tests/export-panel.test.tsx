@@ -8,6 +8,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { axe } from "vitest-axe";
 import { buildMultiGradientStyle, type GradientBlendMode, type GradientDirection, type GradientTick } from "@opal42/gradient";
 import { EXPORT_FORMATS, type ExportKey } from "@opal42/gradient/export";
+import { tEn } from "../src/i18n/translator";
 import { ExportPanel } from "../src/components/ExportPanel";
 import { StatusRegion } from "../src/components/StatusRegion";
 import {
@@ -86,16 +87,16 @@ describe("export model", () => {
   it("no enabled direction falls back to 180 and the scope note says so", () => {
     const none: GradientDirection[] = [{ id: 1, angle: 40, weight: 100, enabled: false }];
     expect(baseDocument(ticks, none).angle).toBe(180);
-    expect(scopeNote(none, "normal")).toMatch(/flat colour/);
+    expect(scopeNote(none, "normal", tEn)).toMatch(/flat colour/);
   });
   it("the scope note appears only for more than one direction and names the blend", () => {
-    expect(scopeNote(one, "multiply")).toBeNull();
-    expect(scopeNote(two, "normal")).toMatch(/layers 2 directions\. Only the CSS tab/);
-    expect(scopeNote(two, "overlay")).toMatch(/overlay blend mode/);
+    expect(scopeNote(one, "multiply", tEn)).toBeNull();
+    expect(scopeNote(two, "normal", tEn)).toMatch(/layers 2 directions\. Only the CSS tab/);
+    expect(scopeNote(two, "overlay", tEn)).toMatch(/overlay blend mode/);
   });
   it("every tab has code for an ordinary gradient; CSS equals the app's own lines", () => {
     const style = buildMultiGradientStyle(ticks, two, "normal");
-    const views = buildExportViews(ticks, two, "normal", style);
+    const views = buildExportViews(ticks, two, "normal", style, tEn);
     for (const t of EXPORT_TABS) {
       expect(views[t.key].unsupported, t.key).toBeNull();
       expect(views[t.key].lines.length).toBeGreaterThan(0);
@@ -108,7 +109,7 @@ describe("export model", () => {
   });
   it("an unsupported export says why and has no lines", () => {
     const bad: GradientTick[] = [{ id: 1, color: "not-a-colour", position: 0 }, { id: 2, color: "#000000", position: 100 }];
-    const views = buildExportViews(bad, one, "normal", { background: "#ccc", backgroundBlendMode: "normal" });
+    const views = buildExportViews(bad, one, "normal", { background: "#ccc", backgroundBlendMode: "normal" }, tEn);
     expect(views.swiftui.unsupported).toMatch(/invalid colour/);
     expect(views.swiftui.lines).toEqual([]);
   });

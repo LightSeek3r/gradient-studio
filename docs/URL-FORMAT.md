@@ -11,7 +11,7 @@ Implementation: `apps/web/src/persist/url-codec.ts` (tests in
 ## Shape
 
 ```
-#v1;s=<stops>;d=<directions>;b=<blend>
+#v1;s=<stops>;d=<directions>;b=<blend>[;lang=<locale>]
 ```
 
 Example (the default gradient):
@@ -26,9 +26,34 @@ Example (the default gradient):
 | `s=` | yes | `rrggbb@pos` joined by `,` | 2–10 stops. Colour: exactly 6 hex digits, no `#`, any case (written lowercase). Position: percent 0–100, at most 2 decimals (`33.33`). Order does not matter. |
 | `d=` | no (default `135:100:1`) | `angle:weight:enabled` joined by `,` | 1–7 directions. Angle: integer 0–359 (CSS degrees, 0 = to top, clockwise). Weight: integer 1–100. Enabled: `1` or `0`. At least one must be enabled. |
 | `b=` | no (default `normal`) | keyword | One of `normal screen multiply overlay soft-light hard-light lighten darken difference`. |
+| `lang=` | no | `en` or `fr` | Interface language of the link (see below). Not part of the gradient. |
 
 Each key may appear at most once; unknown keys are rejected. The whole
 fragment is capped at 1024 characters (a maximal valid document is about 230).
+
+## Interface language: `lang=`
+
+`;lang=en` or `;lang=fr` may be appended to a document fragment (`#v1;…;lang=fr`) or an issue
+permalink (`#issue=lightness/reversal;lang=fr`). It is the first step of the language detection
+order: **`lang=` in the fragment, then the choice stored in `localStorage`
+(`gradient-studio:lang`), then `navigator.languages` (`fr*` is French, anything else English).**
+
+- It is **optional and compatible**: a link with and without `lang=` decodes to the same
+  gradient, and `lang` is never part of the document (selection, undo and "same document"
+  comparisons ignore it). Because it is a normal `key=value` segment, it may appear in any
+  position after the version tag, at most once like every other key.
+- An unsupported value (`lang=de`, `lang=`) is **ignored** rather than rejecting the link, so a
+  future locale never breaks a gradient in an older build. Other unknown keys are still rejected.
+- It is written to the address bar and to links made with **Copy link** (and "Copy link to this
+  rule") **only when the language was asked for**: it came from the fragment or from the
+  switcher. An auto-detected language is not written, so a link does not stamp the sharer's
+  browser language on its readers.
+- Changing the fragment of an open tab to one with a different `lang=` switches the interface.
+- Old builds (before localisation) reject a fragment with a `lang` key as an unknown key; a link
+  without it works everywhere.
+
+Implementation: `decodeLang` / `encodeDocument(doc, lang)` in `apps/web/src/persist/url-codec.ts`,
+`parseHashLang` in `apps/web/src/i18n/locale.ts`.
 
 ## Decoding rules
 
@@ -61,6 +86,7 @@ gradient:
 expands the rule's row in the points ledger. Every ledger row has a "Copy link
 to this rule" button, and the "Examples" list in the app is made of these links.
 
+- A language may follow: `#issue=<code>;lang=fr` (any other suffix makes the link invalid).
 - It cannot be mistaken for a document: document fragments start with the
   version tag (`v1;`), issue fragments with `issue=`. Each decoder rejects the
   other's shape.

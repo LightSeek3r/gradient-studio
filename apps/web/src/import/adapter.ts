@@ -4,7 +4,9 @@
 //
 //   * pick the first gradient in the pasted text (a declaration, a whole rule,
 //     a multi-layer shorthand) and say when other layers were left out;
-//   * turn core's skip codes into messages a person can act on;
+//   * turn core's skip codes into messages a person can act on, in the
+//     active language (core's `reason` strings are English: they are matched
+//     to catalogue keys, and an unknown reason is shown as core wrote it);
 //   * apply what the editor's document cannot express, always with a warning
 //     that says what changed: opaque stops only, 0-100% stop range, integer
 //     CSS-degree angle, sRGB interpolation, at most MAX_STOPS stops.
@@ -21,6 +23,7 @@ import {
   type ParsedGradient,
   type SkipCode,
 } from "@opal42/gradient";
+import type { Translate } from "../i18n/translator";
 import { MAX_STOPS } from "../state/document";
 
 export interface ImportedStop {
@@ -34,6 +37,7 @@ export interface ImportedGradient {
   angle: number;
 }
 
+/** Messages are produced through `t`, so errors and warnings read in the active language. */
 export type ParseResult =
   | { ok: true; gradient: ImportedGradient; warnings: string[] }
   | { ok: false; error: string; warnings: string[] };
@@ -60,54 +64,99 @@ const clean = (n: number): number => Math.round(n * 1e6) / 1e6;
 
 // ── Skip codes -> messages ────────────────────────────────────────────────────
 
-const PASTE_RESOLVED = "Paste the gradient with its computed values instead.";
-const PLAIN_COLOURS = "Use hex, rgb(), hsl(), oklab(), oklch() or a colour name instead.";
-
-/** "Stop 2 uses calc()" etc: core's reason, first letter capitalised. */
+/** "Stop 2 uses calc()" etc: core's reason, first letter capitalised (only for reasons we cannot place). */
 const sentence = (reason: string): string =>
   /^[a-z-]+\(/.test(reason) ? reason : reason.charAt(0).toUpperCase() + reason.slice(1);
 
-function skipMessage(g: ParsedGradient, code: SkipCode, reason: string): string {
+/**
+ * The reason core gives for a `syntax` skip, in the active language. Core's
+ * reasons are fixed English phrases (some with a value); an unknown one is
+ * returned unchanged.
+ */
+export function syntaxReason(reason: string, t: Translate): string {
+  const rules: [RegExp, (m: RegExpExecArray) => string][] = [
+    [/^the gradient direction is not an angle$/, () => t("import.reason.notAngle")],
+    [/^'to' must be followed by a side$/, () => t("import.reason.toSide")],
+    [/^'to (.+)' is not a corner$/, (m) => t("import.reason.notCorner", { sides: m[1] })],
+    [/^'in' must be followed by a colour space$/, () => t("import.reason.inSpace")],
+    [/^'(.+)' is not a colour space$/, (m) => t("import.reason.notSpace", { name: m[1] })],
+    [/^malformed hue interpolation method$/, () => t("import.reason.hueMethod")],
+    [/^malformed gradient direction$/, () => t("import.reason.direction")],
+    [/^malformed number$/, () => t("import.reason.number")],
+    [/^stop position (.+) has no unit$/, (m) => t("import.reason.noUnit", { value: m[1] })],
+    [/^'(.+)' is not a position unit$/, (m) => t("import.reason.badUnit", { unit: m[1] })],
+    [/^a gradient cannot contain another gradient$/, () => t("import.reason.nested")],
+    [/^empty argument$/, () => t("import.reason.emptyArg")],
+    [/^a colour hint must sit between two colour stops$/, () => t("import.reason.hintPlace")],
+    [/^a colour stop is a colour and at most two positions$/, () => t("import.reason.stopShape")],
+    [/^no colour stops$/, () => t("import.reason.noStops")],
+  ];
+  for (const [re, render] of rules) {
+    const m = re.exec(reason);
+    if (m) return render(m);
+  }
+  return reason;
+}
+
+/** Why a colour was not recognised, from core's `unknown-color` reason. */
+function unknownColorMessage(reason: string, t: Translate): string {
+  let m: RegExpExecArray | null;
+  if ((m = /^(.+) is not a colour$/.exec(reason))) return t("import.err.notColour", { what: m[1] });
+  if ((m = /^(#\w*) is not (?:a hex colour|a 3, 4, 6 or 8 digit hex colour)$/.exec(reason))) {
+    return t("import.err.badHex", { what: m[1] });
+  }
+  if ((m = /^malformed ([a-z-]+)\(\)$/.exec(reason))) return t("import.err.malformedFn", { fn: m[1] });
+  if ((m = /^([a-z-]+)\(\) is not (?:a supported colour function|supported)$/.exec(reason))) {
+    return t("import.err.unsupportedFn", { fn: m[1] });
+  }
+  return t("import.err.unknownColor", { reason: sentence(reason) });
+}
+
+function skipMessage(g: ParsedGradient, code: SkipCode, reason: string, t: Translate): string {
+  const pasteResolved = t("import.hint.pasteResolved");
+  const plainColours = t("import.hint.plainColours");
   switch (code) {
     case "legacy-syntax":
-      return "Vendor-prefixed gradients (-webkit-, -moz-, …) use an older angle convention. Paste the standard linear-gradient(…) form instead.";
+      return t("import.err.legacy");
     case "unsupported-kind":
-      return `${g.kind === "radial" ? "Radial" : "Conic"} gradients are not supported yet; only linear-gradient() can be imported.`;
+      return t(g.kind === "radial" ? "import.err.radial" : "import.err.conic");
     case "var":
-      return `var() can't be imported: its value isn't in the pasted text. ${PASTE_RESOLVED}`;
+      return `${t("import.err.var")} ${pasteResolved}`;
     case "calc":
-      return `calc(), min(), max() and clamp() can't be imported: the result depends on the element. ${PASTE_RESOLVED}`;
+      return `${t("import.err.calc")} ${pasteResolved}`;
     case "env":
-      return `env() can't be imported: its value comes from the device. ${PASTE_RESOLVED}`;
+      return `${t("import.err.env")} ${pasteResolved}`;
     case "currentColor":
-      return `currentColor depends on the page's text colour and can't be imported. ${PASTE_RESOLVED}`;
+      return `${t("import.err.currentColor")} ${pasteResolved}`;
     case "system-color":
-      return `${sentence(reason)}, so it can't be imported. ${PASTE_RESOLVED}`;
+      return `${t("import.err.systemColor", { name: /('[^']+')/.exec(reason)?.[1] ?? "?" })} ${pasteResolved}`;
     case "color-mix":
-      return `color-mix() colours are not supported yet. ${PLAIN_COLOURS}`;
+      return `${t("import.err.colorMix")} ${plainColours}`;
     case "relative-color":
-      return `Relative colours (rgb(from …)) are not supported yet. ${PLAIN_COLOURS}`;
+      return `${t("import.err.relativeColor")} ${plainColours}`;
     case "lab-lch":
     case "color-function":
-      return `${/^[a-z-]+/.exec(reason)?.[0] ?? "That"}() colours can't be judged in sRGB and are not supported yet. ${PLAIN_COLOURS}`;
+      return `${t("import.err.wideColour", { fn: /^[a-z-]+/.exec(reason)?.[0] ?? "color" })} ${plainColours}`;
     case "unknown-color":
-      return `${sentence(reason.replace(/ is not a colour$/, " is not a recognised colour"))}.`;
+      return unknownColorMessage(reason, t);
     case "length-position":
-      return `Only percentage stop positions are supported: ${/ in ([a-z]+)/i.exec(reason)?.[1] ?? "length"} positions depend on the element's size.`;
-    case "interpolation-space":
-      return `${sentence(reason)}.`;
+      return t("import.err.lengthPosition", { unit: / in ([a-z]+)/i.exec(reason)?.[1] ?? "length" });
+    case "interpolation-space": {
+      const space = /^interpolation in (.+) is not supported$/.exec(reason)?.[1];
+      return space ? t("import.err.interpolation", { space }) : `${sentence(reason)}.`;
+    }
     case "preprocessor":
-      return `Sass/Less variables and template expressions can't be imported. ${PASTE_RESOLVED}`;
+      return `${t("import.err.preprocessor")} ${pasteResolved}`;
     case "unbalanced":
-      return "The parentheses don't balance: the gradient is never closed.";
+      return t("import.err.unbalanced");
     case "too-deep":
-      return "That gradient is nested too deeply to import.";
+      return t("import.err.tooDeep");
     case "too-long":
-      return "That text is too long to be a single gradient.";
+      return t("import.err.tooLong");
     case "too-many-stops":
-      return `This gradient has too many stops; the editor supports up to ${MAX_STOPS}.`;
+      return t("import.err.tooManyStops", { max: MAX_STOPS });
     case "syntax":
-      return `This isn't a valid linear-gradient(): ${reason}.`;
+      return t("import.err.syntax", { reason: syntaxReason(reason, t) });
   }
 }
 
@@ -115,8 +164,8 @@ function skipMessage(g: ParsedGradient, code: SkipCode, reason: string): string 
 
 const INTERPOLATION_CLAUSE = /\bin\s+([a-z][a-z0-9-]*)(?:\s+(shorter|longer|increasing|decreasing)\s+hue)?/i;
 
-function interpolationWarning(space: string): string {
-  return `"in ${space}" interpolation was kept out: the editor exports standard sRGB interpolation and the score assumes it, so mid-tones may look different.`;
+function interpolationWarning(space: string, t: Translate): string {
+  return t("import.warn.interpolation", { space });
 }
 
 /**
@@ -141,25 +190,25 @@ function withoutUnsupportedSpace(css: string, g: ParsedGradient): { gradient: Pa
  * `linear-gradient()`, a `background:` declaration, a whole rule or a
  * multi-layer shorthand.
  */
-export function parseLinearGradient(input: string): ParseResult {
+export function parseLinearGradient(input: string, t: Translate): ParseResult {
   try {
-    return parse(input);
+    return parse(input, t);
   } catch {
-    return fail("This doesn't look like a CSS linear-gradient().");
+    return fail(t("import.err.noGradient"));
   }
 }
 
-function parse(input: string): ParseResult {
-  if (typeof input !== "string") return fail("Nothing to import.");
-  if (input.length > MAX_INPUT) return fail("That text is too long to be a single gradient.");
-  if (input.replace(/\/\*[\s\S]*?\*\//g, " ").replace(/[\s;]+/g, "") === "") return fail("Nothing to import.");
+function parse(input: string, t: Translate): ParseResult {
+  if (typeof input !== "string") return fail(t("import.err.nothing"));
+  if (input.length > MAX_INPUT) return fail(t("import.err.tooLong"));
+  if (input.replace(/\/\*[\s\S]*?\*\//g, " ").replace(/[\s;]+/g, "") === "") return fail(t("import.err.nothing"));
 
   const { gradients } = parseGradient(input, CORE_OPTIONS);
-  if (gradients.length === 0) return fail("Expected linear-gradient(…).");
+  if (gradients.length === 0) return fail(t("import.err.expected"));
 
   const warnings: string[] = [];
   if (gradients.length > 1) {
-    warnings.push(`Found ${gradients.length} background layers; imported only the first.`);
+    warnings.push(t("import.warn.layers", { count: gradients.length }));
   }
 
   let g = gradients[0];
@@ -172,40 +221,39 @@ function parse(input: string): ParseResult {
       keptOutSpace = rescued.space;
     }
   }
-  if (g.skipped?.code === "legacy-syntax") return fail(skipMessage(g, "legacy-syntax", g.skipped.reason), warnings);
-  if (g.repeating) {
-    return fail(
-      "repeating-*-gradient() is not supported: the score covers a single run of stops. Use a plain gradient instead.",
-      warnings,
-    );
-  }
-  if (g.skipped) return fail(skipMessage(g, g.skipped.code, g.skipped.reason), warnings);
+  if (g.skipped?.code === "legacy-syntax") return fail(skipMessage(g, "legacy-syntax", g.skipped.reason, t), warnings);
+  if (g.repeating) return fail(t("import.err.repeating"), warnings);
+  if (g.skipped) return fail(skipMessage(g, g.skipped.code, g.skipped.reason, t), warnings);
   const doc = g.document;
-  if (!doc) return fail("Expected linear-gradient(…).", warnings);
+  if (!doc) return fail(t("import.err.expected"), warnings);
 
-  return fromDocument(doc, g, keptOutSpace, warnings);
+  return fromDocument(doc, g, keptOutSpace, warnings, t);
 }
 
-function fromDocument(doc: GradientDocument, g: ParsedGradient, keptOutSpace: string | null, warnings: string[]): ParseResult {
+function fromDocument(
+  doc: GradientDocument,
+  g: ParsedGradient,
+  keptOutSpace: string | null,
+  warnings: string[],
+  t: Translate,
+): ParseResult {
   // ── Interpolation ──
   const interp = doc.interpolation;
-  if (keptOutSpace) warnings.push(interpolationWarning(keptOutSpace));
+  if (keptOutSpace) warnings.push(interpolationWarning(keptOutSpace, t));
   else if (interp && interp.space !== "srgb") {
-    warnings.push(interpolationWarning(interp.space === "oklch" && interp.hue ? `oklch ${interp.hue} hue` : interp.space));
+    warnings.push(interpolationWarning(interp.space === "oklch" && interp.hue ? `oklch ${interp.hue} hue` : interp.space, t));
   }
 
   // ── Angle: CSS degrees, integer, [0, 360) ──
   for (const w of g.warnings) {
     if (w.code !== "corner-angle") continue;
     const corner: Record<number, string> = { 45: "top right", 135: "bottom right", 225: "bottom left", 315: "top left" };
-    warnings.push(
-      `"to ${corner[doc.angle] ?? "corner"}" depends on the element's aspect ratio; imported as ${doc.angle}° (exact for a square box).`,
-    );
+    warnings.push(t("import.warn.corner", { corner: corner[doc.angle] ?? "corner", angle: doc.angle }));
   }
   const normalised = ((doc.angle % 360) + 360) % 360;
   let angle = Math.round(normalised) % 360;
   if (Math.abs(angle - normalised) >= 0.005 && Math.abs(angle + 360 - normalised) >= 0.005) {
-    warnings.push(`The angle ${round2(normalised)}° was rounded to ${angle}°.`);
+    warnings.push(t("import.warn.angleRounded", { from: round2(normalised), to: angle }));
   }
   if (Object.is(angle, -0)) angle = 0;
 
@@ -213,21 +261,25 @@ function fromDocument(doc: GradientDocument, g: ParsedGradient, keptOutSpace: st
   const stops = doc.stops;
   const hints = g.warnings.filter((w) => w.code === "color-hint-ignored").length;
   if (hints > 0) {
-    warnings.push(`Skipped ${hints} colour hint${hints > 1 ? "s" : ""} (transition midpoints); the transitions are now linear.`);
+    warnings.push(t("import.warn.hints", { count: hints }));
   }
-  if (stops.length < 2) return fail("A gradient needs at least two colour stops.", warnings);
+  if (stops.length < 2) return fail(t("import.err.twoStops"), warnings);
   if (stops.length > MAX_STOPS) {
-    return fail(`This gradient has ${stops.length} stops; the editor supports up to ${MAX_STOPS}.`, warnings);
+    return fail(t("import.err.stopCount", { count: stops.length, max: MAX_STOPS }), warnings);
   }
-  for (const w of g.warnings) if (w.code === "gamut-mapped") warnings.push(sentence(w.message) + ".");
+  for (const w of g.warnings) {
+    if (w.code !== "gamut-mapped") continue;
+    const m = /^(.+) is outside sRGB and was gamut-mapped to (#[0-9a-fA-F]+)$/.exec(w.message);
+    warnings.push(m ? t("import.warn.gamut", { color: m[1], hex: m[2] }) : `${sentence(w.message)}.`);
+  }
 
   // ── Alpha: the editor's stops are opaque ──
   const clear = (i: number): boolean => stops[i].alpha === 0;
   const dropped = stops.flatMap((s, i) => (s.alpha !== undefined && s.alpha > 0 && s.alpha < 1 ? [i + 1] : []));
   if (dropped.length > 0) {
-    warnings.push(`Transparency was dropped from stop${dropped.length > 1 ? "s" : ""} ${dropped.join(", ")}: the editor's stops are opaque.`);
+    warnings.push(t("import.warn.alpha", { count: dropped.length, list: dropped.join(", ") }));
   }
-  if (stops.every((_, i) => clear(i))) return fail("Every stop is transparent, so there is no colour to import.", warnings);
+  if (stops.every((_, i) => clear(i))) return fail(t("import.err.allTransparent"), warnings);
   const colors = stops.map((s) => s.color);
   for (let i = 0; i < stops.length; i++) {
     if (!clear(i)) continue;
@@ -241,7 +293,7 @@ function fromDocument(doc: GradientDocument, g: ParsedGradient, keptOutSpace: st
       j++;
     }
     colors[i] = replacement;
-    warnings.push(`Stop ${i + 1} was transparent; it now uses its neighbour's colour ${replacement} (stops are opaque).`);
+    warnings.push(t("import.warn.transparentStop", { n: i + 1, hex: replacement }));
   }
 
   // ── Positions: browsers raise a stop that precedes an earlier one ──
@@ -256,9 +308,7 @@ function fromDocument(doc: GradientDocument, g: ParsedGradient, keptOutSpace: st
     else max = p;
   });
   if (clamped.length > 0) {
-    warnings.push(
-      `Stop${clamped.length > 1 ? "s" : ""} ${clamped.join(", ")} came before an earlier stop and ${clamped.length > 1 ? "were" : "was"} moved up to it, as browsers do.`,
-    );
+    warnings.push(t("import.warn.reordered", { count: clamped.length, list: clamped.join(", ") }));
   }
   // Core resolves the rest exactly as CSS does (missing ends, even runs).
   let resolved: ImportedStop[] = resolveStops(doc).map((s, i) => ({ color: colors[i], position: clean(s.position * 100) }));
@@ -266,9 +316,9 @@ function fromDocument(doc: GradientDocument, g: ParsedGradient, keptOutSpace: st
   // ── Trim to the visible 0..100 range exactly (sRGB interpolation, as the CSS paints) ──
   if (resolved.some((s) => s.position < 0 || s.position > 100)) {
     resolved = trimToRange(resolved);
-    warnings.push("Stops outside 0–100% were trimmed to the visible range; the colours at the edges are kept.");
+    warnings.push(t("import.warn.trimmed"));
     if (resolved.length > MAX_STOPS) {
-      return fail(`After trimming to 0–100% this gradient has ${resolved.length} stops; the editor supports up to ${MAX_STOPS}.`, warnings);
+      return fail(t("import.err.trimmedStopCount", { count: resolved.length, max: MAX_STOPS }), warnings);
     }
   }
 

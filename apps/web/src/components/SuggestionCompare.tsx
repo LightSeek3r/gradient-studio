@@ -1,21 +1,22 @@
-import type { Suggestion } from "../suggest/compare";
+import { useI18n, useT } from "../i18n/context";
+import { declineReason, type Suggestion } from "../suggest/compare";
 import { Button } from "./ui/Button";
 import { Icon } from "./ui/Icon";
 import { Segmented } from "./ui/Segmented";
 
 export type CompareView = "original" | "suggested";
 
-const VIEW_OPTIONS = [
-  { value: "original" as const, label: "Original" },
-  { value: "suggested" as const, label: "Suggested" },
-];
-
 /** Original | Suggested segmented control: what the sticky preview and Export show. */
 export function CompareToggle({ view, onView }: { view: CompareView; onView: (v: CompareView) => void }) {
+  const t = useT();
+  const options = [
+    { value: "original" as const, label: t("suggest.original") },
+    { value: "suggested" as const, label: t("suggest.suggested") },
+  ];
   return (
     <Segmented
-      label="Preview"
-      options={VIEW_OPTIONS}
+      label={t("suggest.previewLabel")}
+      options={options}
       value={view}
       onChange={onView}
       className="compare-toggle"
@@ -50,11 +51,13 @@ export function SuggestionPanel({
   onApplySelected: () => void;
   onApplyAll: () => void;
 }) {
+  const i18n = useI18n();
+  const { t } = i18n;
   if (!suggestion) {
     return (
       <div className="btn-row">
         <Button variant="primary" icon="sparkles" block onClick={onSuggest}>
-          Suggest
+          {t("suggest.button")}
         </Button>
       </div>
     );
@@ -63,7 +66,7 @@ export function SuggestionPanel({
     return (
       <p className="suggest-note" role="note">
         <Icon name="info" size={14} />
-        <span>{suggestion.reason}</span>
+        <span>{declineReason(suggestion.result, t)}</span>
       </p>
     );
   }
@@ -71,18 +74,18 @@ export function SuggestionPanel({
   const { before, after } = suggestion.result;
   const changed = suggestion.diffs.filter((d) => d.changed);
   const selectedChanged = changed.filter((d) => selected.has(d.id)).length;
-  const fmt = (n: number) => `${Math.round(n * 100) / 100}%`;
+  const fmt = (n: number) => i18n.percent(Math.round(n * 100) / 100);
 
   return (
     <div className="suggestion">
       <p className="suggest-delta">
-        Score <span className="delta-before mono">{before}</span> → <span className="delta-after mono">{after}</span>
+        {t("suggest.score")} <span className="delta-before mono">{before}</span> → <span className="delta-after mono">{after}</span>
         <span className="delta-gain mono"> ({after - before >= 0 ? "+" : ""}{after - before})</span>
         {selectedScore !== null && selectedChanged < changed.length && (
-          <span className="delta-selected"> · selected only: {selectedScore}</span>
+          <span className="delta-selected">{t("suggest.selectedOnly", { score: selectedScore })}</span>
         )}
       </p>
-      <ul className="diff-list" aria-label="Suggested changes per stop">
+      <ul className="diff-list" aria-label={t("suggest.listLabel")}>
         {suggestion.diffs.map((d) => (
           <li key={d.id} className={`diff-row${d.changed ? "" : " is-same"}`}>
             <label className="diff-label">
@@ -91,9 +94,9 @@ export function SuggestionPanel({
                 checked={selected.has(d.id)}
                 disabled={!d.changed}
                 onChange={() => onToggle(d.id)}
-                aria-label={`Apply change to stop ${d.index}`}
+                aria-label={t("suggest.applyChange", { n: d.index })}
               />
-              <span className="diff-stop">Stop {d.index}</span>
+              <span className="diff-stop">{t("suggest.stop", { n: d.index })}</span>
               <Swatch color={d.before.color} />
               <span className="diff-arrow" aria-hidden="true">→</span>
               <Swatch color={d.after.color} />
@@ -103,7 +106,7 @@ export function SuggestionPanel({
                 {d.before.position === d.after.position
                   ? fmt(d.before.position)
                   : `${fmt(d.before.position)} → ${fmt(d.after.position)}`}
-                {!d.changed && " (unchanged)"}
+                {!d.changed && t("suggest.unchanged")}
               </span>
             </label>
           </li>
@@ -111,10 +114,10 @@ export function SuggestionPanel({
       </ul>
       <div className="btn-row">
         <Button variant="primary" icon="check" onClick={onApplySelected} disabled={selectedChanged === 0}>
-          Apply selected ({selectedChanged})
+          {t("suggest.applySelected", { count: selectedChanged })}
         </Button>
         <Button variant="secondary" onClick={onApplyAll}>
-          Apply all
+          {t("suggest.applyAll")}
         </Button>
       </div>
     </div>

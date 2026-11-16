@@ -6,7 +6,8 @@ import { writeClipboardText } from "../clipboard";
 import { FlashButton } from "./fields";
 import { ledgerToggleId } from "./dom-ids";
 import { SeverityGlyph } from "./SeverityGlyph";
-import { SEVERITY_LABEL } from "../explain/explain";
+import { severityLabel } from "../explain/explain";
+import { useI18n } from "../i18n/context";
 import { Button } from "./ui/Button";
 import { Icon } from "./ui/Icon";
 
@@ -76,6 +77,7 @@ function FixButton({
   onPreview: (preview: FixPreviewState | null) => void;
   onApplyFix: (code: string) => void;
 }) {
+  const { t } = useI18n();
   const lastPointer = useRef<string>("mouse");
   const mine = preview?.code === row.code;
   const pinned = mine && preview.sticky;
@@ -88,8 +90,8 @@ function FixButton({
         variant={pinned ? "primary" : "secondary"}
         size="sm"
         className={`fix-button${mine ? " is-previewing" : ""}`}
-        aria-label={`${pinned ? "Apply" : "Fix this"} (+${offer.gain}): ${offer.label}`}
-        title={`${offer.label} (score +${offer.gain}). Hover or focus to preview.`}
+        aria-label={t("fix.aria", { action: pinned ? t("fix.apply") : t("fix.button"), gain: offer.gain, label: offer.label })}
+        title={t("fix.title", { label: offer.label, gain: offer.gain })}
         data-code={row.code}
         onPointerDown={(e) => {
           lastPointer.current = e.pointerType || "mouse";
@@ -113,10 +115,10 @@ function FixButton({
           onApplyFix(row.code);
         }}
       >
-        {pinned ? "Apply" : "Fix this"} <span className="mono fix-gain">(+{offer.gain})</span>
+        {pinned ? t("fix.apply") : t("fix.button")} <span className="mono fix-gain">(+{offer.gain})</span>
       </Button>
       {pinned && (
-        <Button variant="icon" size="sm" icon="x" aria-label="Cancel the fix preview" title="Cancel preview" onClick={() => onPreview(null)} />
+        <Button variant="icon" size="sm" icon="x"  aria-label={t("fix.cancelAria")} title={t("fix.cancelTitle")} onClick={() => onPreview(null)} />
       )}
     </span>
   );
@@ -128,24 +130,26 @@ function FixButton({
  * exceed its budget, and the total. Rows expand to say what the rule measures.
  */
 export function ScoreLedger({ ledger, fixes, isOpen, onToggle, active, onActive, preview, onPreview, onApplyFix, previewStrip }: ScoreLedgerProps) {
+  const i18n = useI18n();
+  const { t, linkLang } = i18n;
   return (
     <div id="score-ledger" className="score-ledger" tabIndex={-1}>
       <p className="ledger-equation mono" aria-hidden="true" data-testid="ledger-equation">
-        {ledgerEquation(ledger)}
+        {ledgerEquation(ledger, t)}
       </p>
-      <p className="sr-only">{ledgerSentence(ledger)}</p>
+      <p className="sr-only">{ledgerSentence(ledger, t)}</p>
 
-      <ul className="ledger" aria-label="Where the points went">
+      <ul className="ledger" aria-label={t("ledger.label")}>
         <li className="ledger-row ledger-start">
           <span className="ledger-static">
-            <span className="ledger-name">Every gradient starts at</span>
+            <span className="ledger-name">{t("ledger.start")}</span>
             <span className="ledger-points mono">{ledger.start}</span>
           </span>
         </li>
         {ledger.rows.map((row) => {
           const open = isOpen(row.code);
           const offer = fixes.get(row.code);
-          const where = locationText(row);
+          const where = locationText(row, i18n);
           const toggleId = ledgerToggleId(row.code);
           return (
             <li
@@ -170,10 +174,10 @@ export function ScoreLedger({ ledger, fixes, isOpen, onToggle, active, onActive,
                   <SeverityGlyph severity={row.severity} />
                   <span className="ledger-name">
                     {row.name}
-                    <span className="sr-only">, {SEVERITY_LABEL[row.severity]}</span>
+                    <span className="sr-only">, {severityLabel(row.severity, t)}</span>
                   </span>
                   <span className="ledger-points mono">
-                    <span className="sr-only">minus </span>
+                    <span className="sr-only">{t("ledger.minusSr")} </span>
                     <span aria-hidden="true">−</span>
                     {row.pointsLost}
                   </span>
@@ -182,23 +186,23 @@ export function ScoreLedger({ ledger, fixes, isOpen, onToggle, active, onActive,
               </div>
               {offer && previewStrip && preview?.sticky && preview.code === row.code && (
                 <div className="fix-strip" data-testid="fix-strip">
-                  <span className="fix-strip-label">Now</span>
+                  <span className="fix-strip-label">{t("fix.stripNow")}</span>
                   <span className="fix-strip-bar" aria-hidden="true" style={{ background: previewStrip.now }} />
-                  <span className="fix-strip-label">With fix</span>
+                  <span className="fix-strip-label">{t("fix.stripFixed")}</span>
                   <span className="fix-strip-bar" aria-hidden="true" style={{ background: previewStrip.fixed }} />
-                  <span className="fix-strip-note">{offer.label}. Tap Apply to keep it.</span>
+                  <span className="fix-strip-note">{t("fix.stripNote", { label: offer.label })}</span>
                 </div>
               )}
               <div className="ledger-body" id={`${toggleId}-body`} hidden={!open}>
                 <p className="ledger-message">{row.message}</p>
                 <p className="ledger-measures">
-                  <span className="ledger-key">What it measures </span>
+                  <span className="ledger-key">{t("ledger.whatItMeasures")} </span>
                   {row.measures}
                 </p>
                 <p className="ledger-meta">
                   {where && (
                     <>
-                      <span className="ledger-key">Where </span>
+                      <span className="ledger-key">{t("ledger.where")} </span>
                       {where}
                       <span aria-hidden="true"> · </span>
                     </>
@@ -207,22 +211,22 @@ export function ScoreLedger({ ledger, fixes, isOpen, onToggle, active, onActive,
                 </p>
                 {offer && (
                   <p className="ledger-meta">
-                    <span className="ledger-key">Fix </span>
-                    {offer.label} (score +{offer.gain})
+                    <span className="ledger-key">{t("ledger.fix")} </span>
+                    {t("ledger.fixLine", { label: offer.label, gain: offer.gain })}
                   </p>
                 )}
                 <FlashButton
                   icon="link"
-                  label="Copy link to this rule"
+                  label={t("ledger.copyLink")}
                   variant="ghost"
                   size="sm"
                   className="ledger-link"
-                  title={`Copy a link that opens an example of “${row.name}”`}
-                  okLabel="Link copied"
-                  errLabel="Copy failed"
-                  okMessage="Rule link copied to clipboard"
-                  errMessage="Copy failed"
-                  onRun={() => writeClipboardText(issueLink(row.code))}
+                  title={t("ledger.copyLinkTitle", { name: row.name })}
+                  okLabel={t("header.linkCopied")}
+                  errLabel={t("common.copyFailed")}
+                  okMessage={t("ledger.linkCopiedSr")}
+                  errMessage={t("common.copyFailed")}
+                  onRun={() => writeClipboardText(issueLink(row.code, window.location, linkLang))}
                 />
               </div>
             </li>
@@ -232,13 +236,11 @@ export function ScoreLedger({ ledger, fixes, isOpen, onToggle, active, onActive,
           <li key={f.dimension} className="ledger-row ledger-floor" data-testid="ledger-floor">
             <span className="ledger-static">
               <span className="ledger-name">
-                {f.label}: floor 0
-                <span className="ledger-floor-note">
-                  {f.nominal} deducted from a budget of {f.weight}; a dimension cannot go below 0
-                </span>
+                {t("ledger.floor", { label: f.label })}
+                <span className="ledger-floor-note">{t("ledger.floorNote", { nominal: f.nominal, weight: f.weight })}</span>
               </span>
               <span className="ledger-points mono">
-                <span className="sr-only">plus </span>
+                <span className="sr-only">{t("ledger.plusSr")} </span>
                 <span aria-hidden="true">+</span>
                 {f.absorbed}
               </span>
@@ -247,7 +249,7 @@ export function ScoreLedger({ ledger, fixes, isOpen, onToggle, active, onActive,
         ))}
         <li className="ledger-row ledger-total">
           <span className="ledger-static">
-            <span className="ledger-name">Smoothness score</span>
+            <span className="ledger-name">{t("ledger.total")}</span>
             <span className="ledger-points mono">
               <span aria-hidden="true">= </span>
               {ledger.total}
@@ -255,14 +257,14 @@ export function ScoreLedger({ ledger, fixes, isOpen, onToggle, active, onActive,
           </span>
         </li>
       </ul>
-      {ledger.rows.length === 0 && <p className="ledger-empty">No deductions: none of the rules below found anything.</p>}
+      {ledger.rows.length === 0 && <p className="ledger-empty">{t("ledger.empty")}</p>}
 
-      <div className="dims" role="group" aria-label="Points kept per dimension">
+      <div className="dims" role="group" aria-label={t("ledger.dimsLabel")}>
         {ledger.dimensions.map((d) => (
           <div
             key={d.dimension}
             className="dim"
-            title={`${d.label}: ${d.kept} of ${d.weight} points kept. This dimension is ${d.weight}% of the score.`}
+            title={t("ledger.dimTitle", { label: d.label, kept: d.kept, weight: d.weight })}
           >
             <span className="dim-label">{d.label}</span>
             <span className="dim-value mono">
