@@ -120,3 +120,14 @@ All three run in CI after `npm run build:packages`, as does the CLI smoke test
 a stale or missing `dist`. The package metadata (`files`, `types`, `engines`,
 `publishConfig` with `access: public` and `provenance: true`, repository,
 license) is final apart from `private`.
+
+
+## Budget re-baseline (2026-11-16)
+
+`proposeFixes` (U2) was added to core after the first budgets were measured. Re-measured gzip sizes:
+whole core 23.0 kB (budget 25.3 kB), `parseGradient` alone 9.8 kB (budget 10.8 kB). Both budgets are
+the measurement plus about 10% headroom, as before.
+
+Open question: `parseGradient` on its own grew by about 0.7 kB when `proposeFixes` was added even though
+it does not use it. That suggests a small tree-shaking leak (a shared chunk or module-level work). It is
+worth investigating before 1.0; the budget was raised only so the check keeps catching *new* regressions.

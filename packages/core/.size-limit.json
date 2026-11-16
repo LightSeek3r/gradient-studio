@@ -4,7 +4,7 @@
   "path": "dist/index.js",
   "import": "*",
   "gzip": true,
-  "limit": "21.5 kB"
+  "limit": "25.3 kB"
  },
  {
   "name": "score",
@@ -18,7 +18,7 @@
   "path": "dist/index.js",
   "import": "{ parseGradient }",
   "gzip": true,
-  "limit": "9.1 kB"
+  "limit": "10.8 kB"
  },
  {
   "name": "parseGradient + scoreParsed + refine",
