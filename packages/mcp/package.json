@@ -1,0 +1,68 @@
+{
+  "name": "@opal42/mcp",
+  "version": "0.0.0",
+  "private": true,
+  "description": "MCP server (stdio) exposing the gradient smoothness score, refinement, complement and an SVG preview as tools. Stateless, local, no network, no telemetry. Working name.",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "gradient",
+    "css-gradient",
+    "oklab",
+    "oklch",
+    "linter"
+  ],
+  "license": "MIT",
+  "author": "LightSeek3r (https://github.com/LightSeek3r)",
+  "homepage": "https://github.com/LightSeek3r/gradient-studio/blob/master/docs/mcp.md",
+  "bugs": {
+    "url": "https://github.com/LightSeek3r/gradient-studio/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LightSeek3r/gradient-studio.git",
+    "directory": "packages/mcp"
+  },
+  "type": "module",
+  "bin": {
+    "opal42-mcp": "./dist/cli.js"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./handlers": {
+      "source": "./src/handlers.ts",
+      "types": "./dist/handlers.d.ts",
+      "default": "./dist/handlers.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "dependencies": {
+    "@modelcontextprotocol/server": "^2.4.0",
+    "@opal42/gradient": "^0.0.0"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "lint:package": "publint --strict",
+    "attw": "attw --pack . --profile esm-only",
+    "size": "size-limit",
+    "prepack": "npm run build"
+  }
+}

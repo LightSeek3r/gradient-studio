@@ -1,0 +1,30 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.LightSeek3r/opal42-mcp",
+  "title": "opal42 gradient smoothness",
+  "description": "DRAFT: score, refine and preview CSS gradients (smoothness score). Local, no network.",
+  "version": "0.1.0",
+  "websiteUrl": "https://github.com/LightSeek3r/gradient-studio/blob/master/docs/mcp.md",
+  "repository": {
+    "url": "https://github.com/LightSeek3r/gradient-studio",
+    "source": "github",
+    "subfolder": "packages/mcp"
+  },
+  "packages": [
+    {
+      "registryType": "npm",
+      "registryBaseUrl": "https://registry.npmjs.org",
+      "identifier": "@opal42/mcp",
+      "version": "0.1.0",
+      "runtimeHint": "npx",
+      "transport": { "type": "stdio" }
+    }
+  ],
+  "_meta": {
+    "io.modelcontextprotocol.registry/publisher-provided": {
+      "status": "DRAFT: not published; names are working names (docs/PLAN.md D1); the npm package does not exist yet",
+      "mcpSpecRevision": "2026-07-28",
+      "sdk": "@modelcontextprotocol/server 2.4.0"
+    }
+  }
+}

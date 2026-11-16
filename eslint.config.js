@@ -36,6 +36,7 @@ export default defineConfig([
       'packages/*/vitest.config.ts',
       'packages/*/tsdown.config.ts',
       'packages/cli/src/**/*.ts',
+      'packages/mcp/src/**/*.ts',
       'apps/web/vite.config.ts',
       'apps/web/vitest.config.ts',
       'apps/web/tests/**/*.ts',

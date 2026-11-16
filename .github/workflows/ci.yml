@@ -38,7 +38,7 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Build packages (core, CLI)
+      - name: Build packages (core, CLI, MCP)
         run: npm run build:packages
 
       - name: publint
@@ -52,6 +52,14 @@ jobs:
 
       - name: CLI smoke test
         run: node packages/cli/dist/cli.js score packages/cli/tests/fixtures
+
+      - name: MCP server smoke test
+        run: |
+          node packages/mcp/dist/cli.js --version
+          (echo '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'; sleep 1) | node packages/mcp/dist/cli.js | grep -q score_gradient
+
+      - name: Agent skill is valid
+        run: node skills/gradient-quality/scripts/validate-skill.mjs skills/gradient-quality
 
       - name: Vectors unchanged
         run: npm run vectors:diff
