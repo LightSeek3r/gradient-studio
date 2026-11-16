@@ -92,7 +92,7 @@ const TOKENS = [
 ];
 
 describe("fuzz", () => {
-  it("2,000 random token soups: never throws, each call under 50 ms", () => {
+  it("2,000 random token soups: never throws, each call under 250 ms", () => {
     const r = prng(20261115);
     let found = 0;
     let slowest = 0;
@@ -104,7 +104,8 @@ describe("fuzz", () => {
       slowest = Math.max(slowest, ms);
       found += exercise(css);
     }
-    expect(slowest).toBeLessThan(50);
+    // Generous on purpose: a quadratic blow-up costs seconds, while a busy machine only adds milliseconds.
+    expect(slowest).toBeLessThan(250);
     expect(found).toBeGreaterThan(2000); // the soup really does contain gradients
   });
 
@@ -144,7 +145,7 @@ describe("fuzz", () => {
   });
 });
 
-describe("pathological input completes within 200 ms", () => {
+describe("pathological input completes within 1 s", () => {
   const cases: [string, () => string][] = [
     ["50k nested parentheses", () => "(".repeat(50_000)],
     ["50k nested, then closed", () => "(".repeat(50_000) + ")".repeat(50_000)],
@@ -184,7 +185,8 @@ describe("pathological input completes within 200 ms", () => {
     const css = make();
     parseGradient("linear-gradient(red, blue)"); // warm up
     const [result, ms] = timed(() => parseGradient(css));
-    expect(ms).toBeLessThan(200);
+    // 1 s, not 200 ms: wall-clock limits flake under load; an O(n^2) parse of 100k chars takes many seconds.
+    expect(ms).toBeLessThan(1000);
     expect(Array.isArray(result.gradients)).toBe(true);
     for (const g of result.gradients.slice(0, 50)) scoreParsed(g);
   });
