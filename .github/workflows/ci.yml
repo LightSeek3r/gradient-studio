@@ -67,6 +67,9 @@ jobs:
       - name: VS Code extension bundles and packages
         run: npm run package -w gradient-score
 
+      - name: Figma plugin bundles (not run inside Figma)
+        run: npm run build:figma
+
       - name: Vectors unchanged
         run: npm run vectors:diff
 

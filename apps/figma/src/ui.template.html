@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Opal42 Gradient Score</title>
+<style>
+/* Colours come from Figma's theme variables (showUI themeColors: true) with
+   fallbacks, so the page also reads correctly outside Figma. The variable
+   names are from Figma's documentation as remembered; not verified here. */
+:root {
+  color-scheme: light dark;
+  --bg: var(--figma-color-bg, #ffffff);
+  --bg-2: var(--figma-color-bg-secondary, #f5f5f5);
+  --bg-hover: var(--figma-color-bg-hover, #eaeaea);
+  --fg: var(--figma-color-text, #1e1e1e);
+  --fg-2: var(--figma-color-text-secondary, #5c5c5c);
+  --line: var(--figma-color-border, #d9d9d9);
+  --accent: var(--figma-color-bg-brand, #0d6efd);
+  --on-accent: var(--figma-color-text-onbrand, #ffffff);
+  --warn: var(--figma-color-text-warning, #8a5a00);
+  --bad: var(--figma-color-text-danger, #b3261e);
+  --focus: var(--figma-color-border-selected, #0d6efd);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: var(--figma-color-bg, #2c2c2c);
+    --bg-2: var(--figma-color-bg-secondary, #383838);
+    --bg-hover: var(--figma-color-bg-hover, #444444);
+    --fg: var(--figma-color-text, #ffffff);
+    --fg-2: var(--figma-color-text-secondary, #b3b3b3);
+    --line: var(--figma-color-border, #4d4d4d);
+    --accent: var(--figma-color-bg-brand, #0d99ff);
+    --on-accent: var(--figma-color-text-onbrand, #ffffff);
+    --warn: var(--figma-color-text-warning, #f5c04a);
+    --bad: var(--figma-color-text-danger, #ff8a80);
+    --focus: var(--figma-color-border-selected, #0d99ff);
+  }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font: 12px/1.45 Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+#app { display: flex; flex-direction: column; min-height: 0; height: 100%; padding: 0 16px; }
+#main { flex: 1 1 auto; overflow: auto; min-height: 0; padding-bottom: 8px; }
+h1 { font-size: 13px; font-weight: 600; margin: 0; }
+p { margin: 0; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.top { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 12px 0 8px; }
+.top-actions { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); }
+.tab { background: none; border: 0; border-bottom: 2px solid transparent; color: var(--fg-2); padding: 6px 8px; font: inherit; cursor: pointer; }
+.tab[aria-selected="true"] { color: var(--fg); border-bottom-color: var(--accent); font-weight: 600; }
+.bake { display: grid; grid-template-columns: auto 1fr 2ch; align-items: center; gap: 4px 8px; padding: 8px 0 4px; }
+.bake .help { grid-column: 1 / -1; }
+.bake-value { font-variant-numeric: tabular-nums; text-align: right; }
+.help { color: var(--fg-2); font-size: 11px; }
+.status { min-height: 1.45em; padding: 4px 0; font-size: 11px; }
+.status.error, .error { color: var(--bad); }
+.status.ok, .ok { color: var(--fg); }
+.summary { color: var(--fg-2); padding: 8px 0; }
+.cards { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.card { border: 1px solid var(--line); border-radius: 6px; padding: 10px; background: var(--bg); }
+.note { color: var(--fg-2); font-size: 11px; }
+.head { display: flex; gap: 10px; align-items: center; }
+.swatch { flex: 0 0 auto; width: 44px; height: 44px; border-radius: 4px; border: 1px solid var(--line); overflow: hidden; display: block; position: relative;
+  background: repeating-conic-gradient(#bdbdbd 0 25%, #fff 0 50%) 0 0 / 10px 10px; }
+.swatch .swatch-fill { position: absolute; inset: 0; display: block; }
+.swatch.none { background: repeating-linear-gradient(45deg, var(--bg-2) 0 6px, var(--line) 6px 7px); }
+.meta { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; }
+.sub { color: var(--fg-2); font-size: 11px; }
+.link { background: none; border: 0; padding: 0; font: inherit; font-weight: 600; color: var(--fg); text-decoration: underline; text-underline-offset: 2px; cursor: pointer; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; }
+.score { flex: 0 0 auto; text-align: right; min-width: 58px; font-variant-numeric: tabular-nums; }
+.score strong { font-size: 20px; line-height: 1; }
+.score span { color: var(--fg-2); }
+.score.none span { font-size: 11px; }
+.bar { display: block; height: 3px; margin-top: 4px; background: var(--bg-2); border-radius: 2px; overflow: hidden; }
+.bar-fill { display: block; height: 100%; background: var(--fg-2); }
+.chips { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 8px; }
+.chip { border: 1px solid var(--line); border-radius: 10px; padding: 0 6px; font-size: 10px; color: var(--fg-2); }
+.reason { margin-top: 8px; color: var(--fg-2); }
+.warn { margin-top: 8px; color: var(--warn); font-size: 11px; }
+.why { margin-top: 8px; }
+.why summary { cursor: pointer; color: var(--fg); }
+.issues { list-style: none; margin: 6px 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.issues li { display: flex; flex-direction: column; gap: 1px; border-left: 2px solid var(--line); padding-left: 8px; }
+.pts { color: var(--fg-2); font-variant-numeric: tabular-nums; }
+.issue-measures { color: var(--fg-2); font-size: 11px; }
+.dims { margin-top: 6px; color: var(--fg-2); font-size: 11px; }
+.actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; align-items: center; }
+.copy-as { display: inline-flex; align-items: center; gap: 4px; }
+.copy-as label { color: var(--fg-2); }
+.btn { font: inherit; color: var(--fg); background: var(--bg-2); border: 1px solid var(--line); border-radius: 5px; padding: 4px 8px; cursor: pointer; text-align: left; }
+.btn:hover:not(:disabled) { background: var(--bg-hover); }
+.btn:disabled { opacity: 0.5; cursor: default; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.btn.primary:hover:not(:disabled) { filter: brightness(1.08); }
+select, input[type="range"], textarea { font: inherit; color: var(--fg); }
+select { background: var(--bg-2); border: 1px solid var(--line); border-radius: 5px; padding: 3px 4px; max-width: 120px; }
+textarea { width: 100%; background: var(--bg-2); border: 1px solid var(--line); border-radius: 5px; padding: 6px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 11px; resize: vertical; margin: 4px 0; }
+.panel label { display: block; margin-top: 8px; font-weight: 600; }
+.panel .btn { margin-top: 8px; }
+.css-result { margin-top: 8px; }
+.skips { margin: 6px 0 0; padding-left: 16px; color: var(--fg-2); font-size: 11px; }
+.manual { border: 1px solid var(--line); border-radius: 6px; padding: 8px; margin: 4px 0; }
+.manual[hidden] { display: none; }
+.foot { display: flex; align-items: flex-end; justify-content: space-between; gap: 8px; padding: 6px 0 8px; color: var(--fg-2); font-size: 10px; border-top: 1px solid var(--line); }
+.grip { flex: 0 0 auto; width: 16px; height: 16px; padding: 0; border: 0; cursor: nwse-resize; touch-action: none; background: linear-gradient(135deg, transparent 0 50%, var(--fg-2) 50% 56%, transparent 56% 66%, var(--fg-2) 66% 72%, transparent 72%); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>/*__SCRIPT__*/</script>
+</body>
+</html>

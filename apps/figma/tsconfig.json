@@ -1,0 +1,25 @@
+{
+  // Plugin sandbox code (src/code.ts, sandbox.ts: Figma's `figma` global from
+  // @figma/plugin-typings), pure modules, the UI iframe script (DOM) and tests.
+  "compilerOptions": {
+    "target": "ES2023",
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "types": ["node", "@figma/plugin-typings"],
+    "skipLibCheck": true,
+
+    "moduleResolution": "bundler",
+    "customConditions": ["source"],
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedSideEffectImports": true
+  },
+  "include": ["src", "tests", "scripts", "vitest.config.ts"]
+}

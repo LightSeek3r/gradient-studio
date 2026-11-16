@@ -1,0 +1,27 @@
+{
+  "name": "opal42-figma",
+  "displayName": "Opal42 Gradient Score",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A Figma plugin (Design Mode) that scores linear gradients on the selection for smoothness, explains the findings and writes refined gradients back. Local only: no network. Working name. NOT yet run inside Figma.",
+  "license": "MIT",
+  "author": "LightSeek3r (https://github.com/LightSeek3r)",
+  "homepage": "https://github.com/LightSeek3r/gradient-studio/blob/master/docs/figma.md",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LightSeek3r/gradient-studio.git",
+    "directory": "apps/figma"
+  },
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@figma/plugin-typings": "^1.142.0",
+    "@opal42/gradient": "*",
+    "esbuild": "^0.28.2",
+    "jsdom": "^31.0.1"
+  }
+}
