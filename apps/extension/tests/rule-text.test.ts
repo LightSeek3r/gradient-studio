@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { V1_FINDING_CODES } from "@opal42/gradient";
-import { RULE_TEXT as WEB_RULE_TEXT } from "../../web/src/explain/explain";
+import { RULE_CODES as WEB_RULE_CODES } from "../../web/src/explain/explain";
 import { REASON_TEXT, reasonText, warningText, WARNING_TEXT } from "../src/lib/reasons";
 import { RULE_TEXT, ruleText, SEVERITY_LABEL } from "../src/lib/rule-text";
 
@@ -14,7 +14,7 @@ describe("rule text", () => {
   });
 
   it("has the same codes as the web app's table (the two copies cannot silently diverge in coverage)", () => {
-    expect(Object.keys(RULE_TEXT).sort()).toEqual(Object.keys(WEB_RULE_TEXT).sort());
+    expect(Object.keys(RULE_TEXT).sort()).toEqual([...WEB_RULE_CODES].sort());
   });
 
   it("covers every code with a section in spec/scoring-v1.md", () => {
