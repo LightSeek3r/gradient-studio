@@ -7,7 +7,7 @@ import tseslint from 'typescript-eslint'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([
-  globalIgnores(['dist', '**/dist', '**/node_modules', '**/coverage', '.changeset']),
+  globalIgnores(['dist', '**/dist', '**/node_modules', '**/coverage', '.changeset', '**/.output', '**/.wxt', '**/playwright-report', '**/test-results']),
   {
     // Every workspace: base JS + TypeScript rules.
     files: ['**/*.{ts,tsx}'],
@@ -17,8 +17,8 @@ export default defineConfig([
     },
   },
   {
-    // The web app runs in the browser and is the only place React rules apply.
-    files: ['apps/web/**/*.{ts,tsx}'],
+    // The web app and the extension panel run in the browser and are the only places React rules apply.
+    files: ['apps/web/**/*.{ts,tsx}', 'apps/extension/**/*.{ts,tsx}'],
     extends: [reactHooks.configs.flat.recommended, reactRefresh.configs.vite, jsxA11y.flatConfigs.recommended],
     languageOptions: {
       globals: globals.browser,
@@ -41,6 +41,8 @@ export default defineConfig([
       'apps/web/vite.config.ts',
       'apps/web/vitest.config.ts',
       'apps/web/tests/**/*.ts',
+      'apps/extension/{tests,scripts,e2e}/**/*.{ts,tsx}',
+      'apps/extension/*.ts',
     ],
     languageOptions: {
       globals: globals.node,

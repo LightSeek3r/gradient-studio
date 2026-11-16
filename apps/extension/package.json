@@ -1,0 +1,38 @@
+{
+  "name": "@opal42/extension",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Opal42 Gradient Score: a DevTools panel that lists the CSS gradients on the inspected page with their smoothness score. Chrome, Edge and Firefox from one codebase. No permissions, no network, no telemetry.",
+  "license": "MIT",
+  "author": "LightSeek3r (https://github.com/LightSeek3r)",
+  "homepage": "https://github.com/LightSeek3r/gradient-studio/blob/master/docs/extension.md",
+  "type": "module",
+  "scripts": {
+    "dev": "wxt",
+    "build": "wxt build && wxt build -b firefox && vite-node scripts/check-manifest.ts",
+    "build:chrome": "wxt build",
+    "build:firefox": "wxt build -b firefox",
+    "check:manifest": "vite-node scripts/check-manifest.ts",
+    "zip": "npm run build && wxt zip && wxt zip -b firefox",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:e2e": "wxt build && playwright test",
+    "icons": "vite-node scripts/make-icons.ts"
+  },
+  "dependencies": {
+    "@opal42/gradient": "*",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.65.1",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "@wxt-dev/module-react": "^1.2.2",
+    "axe-core": "^4.14.0",
+    "jsdom": "^31.0.1",
+    "vite": "^7.3.1",
+    "vitest-axe": "^0.1.0",
+    "wxt": "^0.21.5"
+  }
+}

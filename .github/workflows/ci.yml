@@ -96,3 +96,31 @@ jobs:
         with:
           paths: apps/web/src/**/*.css
           cli-path: packages/cli/dist/cli.js
+
+  # Browser extension (apps/extension): typecheck, build both targets (the build
+  # also diffs the manifests against the permission allow-list), then the
+  # Playwright suite against the built Chrome build in real Chromium.
+  extension:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Type-check extension
+        run: npm run typecheck:extension
+
+      - name: Build extension (Chrome/Edge + Firefox) and check permissions
+        run: npm run build:extension
+
+      - name: Install Chromium for Playwright
+        run: npx playwright install --with-deps chromium
+
+      - name: Extension browser tests
+        run: npm run test:e2e:extension

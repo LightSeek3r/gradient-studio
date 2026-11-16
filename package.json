@@ -37,6 +37,10 @@
     "lint:package": "npm run lint:package -w @opal42/gradient -w opal42 -w @opal42/mcp -w @opal42/stylelint-plugin",
     "attw": "npm run attw -w @opal42/gradient -w opal42 -w @opal42/mcp -w @opal42/stylelint-plugin",
     "size": "npm run size -w @opal42/gradient -w opal42 -w @opal42/mcp -w @opal42/stylelint-plugin",
+    "typecheck:extension": "npm run typecheck -w @opal42/extension",
+    "build:extension": "npm run build -w @opal42/extension",
+    "zip:extension": "npm run zip -w @opal42/extension",
+    "test:e2e:extension": "npm run test:e2e -w @opal42/extension",
     "changeset": "changeset",
     "version-packages": "changeset version"
   },

@@ -19,6 +19,16 @@ these, because there is nothing to opt out of.
   its own files in your browser's cache (a service worker) so it works offline;
   that cache holds only the app, never your gradients, and the worker makes no
   requests to any other host.
+- The **browser extension** (DevTools panel "Gradients", `apps/extension`,
+  [`docs/extension.md`](docs/extension.md)) requests **no permissions** and
+  cannot reach the network (its content security policy is `connect-src 'none'`).
+  Only while you have DevTools open on a tab and its panel shown does it read the
+  styles of that tab, and the analysis runs on your device. It stores one optional
+  setting (the address of Gradient Studio) in its own local storage. The Firefox
+  build declares `data_collection_permissions: required: ["none"]`. "Open in
+  Gradient Studio" is an ordinary link you click; the gradient travels in the
+  link's `#` part, which browsers never send to a server. The permission list is
+  diffed against an allow-list in CI.
 - The **hosting provider** (currently Cloudflare Pages) serves the static files
   and, as any web host does, sees request metadata such as IP addresses. We do
   not add analytics to it; whether the provider's own analytics are switched off

@@ -1,0 +1,36 @@
+{
+  "$comment": "The complete set of permissions and capabilities the built manifests may declare. Changing this file is a security decision: review it as one (see docs/extension.md).",
+  "manifest_version": 3,
+  "permissions": [],
+  "optional_permissions": [],
+  "host_permissions": [],
+  "optional_host_permissions": [],
+  "topLevelKeys": [
+    "manifest_version",
+    "name",
+    "short_name",
+    "description",
+    "version",
+    "icons",
+    "minimum_chrome_version",
+    "content_security_policy",
+    "devtools_page",
+    "browser_specific_settings"
+  ],
+  "firefox": {
+    "gecko": {
+      "id": "{4f1a7c52-93d0-4b8e-a2c6-5d7e08b1f3a9}",
+      "strict_min_version": "142.0",
+      "data_collection_permissions": { "required": ["none"] }
+    }
+  },
+  "devtools_page": "devtools.html",
+  "files": [
+    "manifest.json",
+    "devtools.html",
+    "panel.html",
+    "icon/\\d+\\.png",
+    "chunks/[\\w.-]+\\.js",
+    "assets/[\\w.-]+\\.css"
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  // Standalone on purpose (no `extends: .wxt/tsconfig.json`): vitest and the
+  // linter read this file on a fresh checkout, before `wxt prepare` has run.
+  // The panel does not use WXT's auto-imports or its generated globals; the
+  // browser API it needs is typed by hand in src/lib/devtools-api.ts.
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "customConditions": ["source"],
+    "types": [],
+    "jsx": "react-jsx",
+    "skipLibCheck": true,
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "erasableSyntaxOnly": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedSideEffectImports": true,
+    // Playwright's test loader reads `paths` (not `customConditions`), so the workspace
+    // package is mapped to its source here as well.
+    "paths": { "@/*": ["./src/*"], "@opal42/gradient": ["../../packages/core/src/index.ts"] }
+  },
+  "include": ["src", "tests", "e2e", "manifest.ts", "wxt.config.ts", "vitest.config.ts", "playwright.config.ts", "scripts"]
+}
