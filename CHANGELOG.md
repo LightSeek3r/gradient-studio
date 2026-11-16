@@ -28,6 +28,10 @@ All notable changes to Gradient Studio are listed here. The format follows
   file fails on a hard-coded visible string; EN and FR components are axe-tested.
 - `docs/i18n.md` (how to add a locale) and `docs/i18n-glossary.md` (French terminology).
 
+### Added (GradientBench, phase 3)
+
+- `packages/bench` (`@opal42/bench`, private): GradientBench v0, an offline model-agnostic harness with 100 briefs, a gradient extractor (CSS, JSON, JSX, Tailwind), scoring with the v1 metric, a paired bootstrap / Wilcoxon comparison and deterministic JSON, Markdown and static HTML reports. Measures smoothness by our definition only; not validation of the metric (docs/bench.md). No leaderboard of real models is published.
+
 ### Added (exports, phase 3)
 
 - Core subpath `@opal42/gradient/export`: `toTailwind` (arbitrary value, native `bg-linear-*` /

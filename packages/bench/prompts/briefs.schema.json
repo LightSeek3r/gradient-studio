@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "briefs.schema.json",
+  "title": "GradientBench brief set",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "name", "version", "authoringPolicy", "briefs"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "name": { "type": "string", "minLength": 1, "maxLength": 100 },
+    "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "authoringPolicy": { "type": "string", "minLength": 20, "maxLength": 2000 },
+    "briefs": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1000,
+      "items": { "$ref": "#/$defs/brief" }
+    }
+  },
+  "$defs": {
+    "brief": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "category", "brief"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*-\\d{2,3}$", "description": "Unique; '<category>-<NN>'." },
+        "category": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
+        "brief": { "type": "string", "minLength": 20, "maxLength": 600 },
+        "constraints": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 4,
+          "items": { "type": "string", "minLength": 3, "maxLength": 200 }
+        },
+        "brandColors": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 4,
+          "items": { "type": "string", "pattern": "^#[0-9a-f]{6}$" }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GradientBench report</title>
+<style>
+:root{color-scheme:light dark;--bg:#ffffff;--fg:#1a1a1a;--muted:#4a4a4a;--border:#8a8a8a;--soft:#f3f4f6;--accent:#0b57d0;--bar:#2f5fb3;--bar2:#9a4d00;--warn-bg:#fff1c9;--warn-fg:#3b2800;--warn-border:#8a5a00}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121212;--fg:#ececec;--muted:#b8b8b8;--border:#7a7a7a;--soft:#1e1e1e;--accent:#8ab4f8;--bar:#8ab4f8;--bar2:#f0b266;--warn-bg:#3a2e10;--warn-fg:#ffe9ad;--warn-border:#d9a441}}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#121212;--fg:#ececec;--muted:#b8b8b8;--border:#7a7a7a;--soft:#1e1e1e;--accent:#8ab4f8;--bar:#8ab4f8;--bar2:#f0b266;--warn-bg:#3a2e10;--warn-fg:#ffe9ad;--warn-border:#d9a441}
+:root[data-theme="light"]{color-scheme:light}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+a{color:var(--accent)}
+.skip{position:absolute;left:-999px;top:0;background:var(--bg);color:var(--fg);padding:.5rem 1rem;border:2px solid var(--accent)}
+.skip:focus{left:8px;top:8px;z-index:10}
+header,main,footer{max-width:72rem;margin:0 auto;padding:0 1rem}
+header{display:flex;flex-wrap:wrap;gap:1rem;align-items:center;justify-content:space-between;padding-top:1rem}
+h1{font-size:1.6rem;margin:.5rem 0}
+h2{font-size:1.25rem;margin:2rem 0 .5rem}
+p,li{max-width:70ch}
+.caveat{background:var(--warn-bg);color:var(--warn-fg);border:2px solid var(--warn-border);border-radius:8px;padding:.25rem 1rem 1rem;margin:1rem 0}
+.caveat h2{margin-top:.75rem}
+.caveat p{font-size:1.05rem;font-weight:600;margin:.25rem 0}
+.synthetic{border-style:dashed}
+button{font:inherit;color:var(--fg);background:var(--soft);border:1px solid var(--border);border-radius:6px;padding:.3rem .7rem;cursor:pointer}
+button:focus-visible,a:focus-visible,th button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.scroll{overflow-x:auto;max-width:100%}
+table{border-collapse:collapse;width:100%;font-size:.95rem}
+caption{text-align:left;color:var(--muted);padding:.25rem 0 .5rem}
+th,td{border:1px solid var(--border);padding:.35rem .6rem;text-align:left;vertical-align:middle}
+th{background:var(--soft)}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+th button{all:unset;cursor:pointer;font-weight:700;text-decoration:underline dotted}
+dl{display:grid;grid-template-columns:max-content 1fr;gap:.25rem 1rem}
+dt{font-weight:700}
+dd{margin:0;overflow-wrap:anywhere}
+code{background:var(--soft);padding:0 .25rem;border-radius:4px}
+svg{display:block;max-width:100%}
+.bar{fill:var(--bar)}
+.axis{stroke:var(--muted);stroke-width:1}
+.ci{stroke:var(--bar);stroke-width:3}
+.pt{fill:var(--bar2)}
+.small{color:var(--muted);font-size:.9rem}
+footer{padding-bottom:2rem;color:var(--muted)}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the results</a>
+<header><h1>GradientBench report</h1><button id="theme" type="button" aria-pressed="false" hidden>Dark mode</button></header>
+<main id="main">
+<section class="caveat synthetic" aria-labelledby="caveat-h"><h2 id="caveat-h">Read this first</h2><p>Measures perceptual smoothness by the Opal42 v1 definition - not aesthetics, brand fit or human preference; the same metric drives the refine step, so with-skill gains are expected by construction and are not validation of the metric.</p><p>SYNTHETIC DATA: these records were written by hand to test the harness and demonstrate the format. They are not outputs of any model and must not be read as model results.</p></section>
+<section aria-labelledby="prov-h"><h2 id="prov-h">Provenance</h2><dl><dt>Bench version</dt><dd>0.0.0</dd><dt>Scoring model</dt><dd>v1</dd><dt>Core version (@opal42/gradient)</dt><dd>0.0.0</dd><dt>Brief set</dt><dd>GradientBench briefs 0.1.0 (100 briefs)</dd><dt>Brief-set hash</dt><dd><code>43fdc97bdcbded2f</code></dd><dt>Tailwind palette entries supplied</dt><dd>0</dd><dt>Bootstrap</dt><dd>2000 resamples, seed 659522, 95% percentile interval</dd><dt>Sources</dt><dd>synthetic-results.jsonl</dd></dl></section>
+<section aria-labelledby="res-h"><h2 id="res-h">Results by model and condition</h2><p class="small">Sorted by mean score, highest first. Unit: the per-brief mean score of the gradients found in one answer. Ranking by a smoothness metric ranks smoothness only. Column headers sort the table when scripts are enabled.</p><div class="scroll"><table data-sortable><caption>Per model and condition</caption><thead><tr><th scope="col">Model</th><th scope="col">Condition</th><th scope="col" class="num">Records</th><th scope="col" class="num">Any gradient found</th><th scope="col" class="num">Scorable</th><th scope="col" class="num">Mean score</th><th scope="col" class="num">Median</th><th scope="col" class="num">IQR</th><th scope="col" class="num">Mean of minimum</th><th scope="col">Distribution</th></tr></thead><tbody>
+<tr><th scope="row">synthetic-model-a</th><td>with-skill</td><td class="num">12</td><td class="num" data-v="0.9167">91.7%</td><td class="num" data-v="1">100.0%</td><td class="num" data-v="92.7273">92.7</td><td class="num" data-v="95">95.0</td><td class="num">95.0 to 98.0</td><td class="num" data-v="92.7273">92.7</td><td><svg width="120" height="36" viewBox="0 0 120 36" role="img" aria-labelledby="g0-t"><title id="g0-t">Distribution of per-brief mean scores for synthetic-model-a, with-skill, in ten bins of ten points (0-10: 0, 10-20: 0, 20-30: 0, 30-40: 0, 40-50: 0, 50-60: 0, 60-70: 1, 70-80: 0, 80-90: 1, 90-100: 9)</title><rect class="bar" x="0.5" y="36" width="11.0" height="0"/><rect class="bar" x="12.5" y="36" width="11.0" height="0"/><rect class="bar" x="24.5" y="36" width="11.0" height="0"/><rect class="bar" x="36.5" y="36" width="11.0" height="0"/><rect class="bar" x="48.5" y="36" width="11.0" height="0"/><rect class="bar" x="60.5" y="36" width="11.0" height="0"/><rect class="bar" x="72.5" y="32" width="11.0" height="4"/><rect class="bar" x="84.5" y="36" width="11.0" height="0"/><rect class="bar" x="96.5" y="32" width="11.0" height="4"/><rect class="bar" x="108.5" y="2" width="11.0" height="34"/><line class="axis" x1="0" y1="35.5" x2="120" y2="35.5"/></svg></td></tr>
+<tr><th scope="row">synthetic-model-b</th><td>with-skill</td><td class="num">7</td><td class="num" data-v="1">100.0%</td><td class="num" data-v="1">100.0%</td><td class="num" data-v="91">91.0</td><td class="num" data-v="92">92.0</td><td class="num">88.5 to 95.0</td><td class="num" data-v="91">91.0</td><td><svg width="120" height="36" viewBox="0 0 120 36" role="img" aria-labelledby="g1-t"><title id="g1-t">Distribution of per-brief mean scores for synthetic-model-b, with-skill, in ten bins of ten points (0-10: 0, 10-20: 0, 20-30: 0, 30-40: 0, 40-50: 0, 50-60: 0, 60-70: 0, 70-80: 1, 80-90: 2, 90-100: 4)</title><rect class="bar" x="0.5" y="36" width="11.0" height="0"/><rect class="bar" x="12.5" y="36" width="11.0" height="0"/><rect class="bar" x="24.5" y="36" width="11.0" height="0"/><rect class="bar" x="36.5" y="36" width="11.0" height="0"/><rect class="bar" x="48.5" y="36" width="11.0" height="0"/><rect class="bar" x="60.5" y="36" width="11.0" height="0"/><rect class="bar" x="72.5" y="36" width="11.0" height="0"/><rect class="bar" x="84.5" y="27" width="11.0" height="9"/><rect class="bar" x="96.5" y="19" width="11.0" height="17"/><rect class="bar" x="108.5" y="2" width="11.0" height="34"/><line class="axis" x1="0" y1="35.5" x2="120" y2="35.5"/></svg></td></tr>
+<tr><th scope="row">synthetic-model-b</th><td>baseline</td><td class="num">7</td><td class="num" data-v="0.8571">85.7%</td><td class="num" data-v="0.8571">85.7%</td><td class="num" data-v="84.1667">84.2</td><td class="num" data-v="85">85.0</td><td class="num">82.0 to 88.0</td><td class="num" data-v="84.1667">84.2</td><td><svg width="120" height="36" viewBox="0 0 120 36" role="img" aria-labelledby="g2-t"><title id="g2-t">Distribution of per-brief mean scores for synthetic-model-b, baseline, in ten bins of ten points (0-10: 0, 10-20: 0, 20-30: 0, 30-40: 0, 40-50: 0, 50-60: 0, 60-70: 1, 70-80: 0, 80-90: 4, 90-100: 1)</title><rect class="bar" x="0.5" y="36" width="11.0" height="0"/><rect class="bar" x="12.5" y="36" width="11.0" height="0"/><rect class="bar" x="24.5" y="36" width="11.0" height="0"/><rect class="bar" x="36.5" y="36" width="11.0" height="0"/><rect class="bar" x="48.5" y="36" width="11.0" height="0"/><rect class="bar" x="60.5" y="36" width="11.0" height="0"/><rect class="bar" x="72.5" y="27" width="11.0" height="9"/><rect class="bar" x="84.5" y="36" width="11.0" height="0"/><rect class="bar" x="96.5" y="2" width="11.0" height="34"/><rect class="bar" x="108.5" y="27" width="11.0" height="9"/><line class="axis" x1="0" y1="35.5" x2="120" y2="35.5"/></svg></td></tr>
+<tr><th scope="row">synthetic-model-a</th><td>baseline</td><td class="num">12</td><td class="num" data-v="0.9167">91.7%</td><td class="num" data-v="0.9167">91.7%</td><td class="num" data-v="80.1818">80.2</td><td class="num" data-v="85">85.0</td><td class="num">62.5 to 92.0</td><td class="num" data-v="80.1818">80.2</td><td><svg width="120" height="36" viewBox="0 0 120 36" role="img" aria-labelledby="g3-t"><title id="g3-t">Distribution of per-brief mean scores for synthetic-model-a, baseline, in ten bins of ten points (0-10: 0, 10-20: 0, 20-30: 0, 30-40: 0, 40-50: 0, 50-60: 2, 60-70: 2, 70-80: 0, 80-90: 2, 90-100: 5)</title><rect class="bar" x="0.5" y="36" width="11.0" height="0"/><rect class="bar" x="12.5" y="36" width="11.0" height="0"/><rect class="bar" x="24.5" y="36" width="11.0" height="0"/><rect class="bar" x="36.5" y="36" width="11.0" height="0"/><rect class="bar" x="48.5" y="36" width="11.0" height="0"/><rect class="bar" x="60.5" y="22" width="11.0" height="14"/><rect class="bar" x="72.5" y="22" width="11.0" height="14"/><rect class="bar" x="84.5" y="36" width="11.0" height="0"/><rect class="bar" x="96.5" y="22" width="11.0" height="14"/><rect class="bar" x="108.5" y="2" width="11.0" height="34"/><line class="axis" x1="0" y1="35.5" x2="120" y2="35.5"/></svg></td></tr>
+</tbody></table></div></section>
+<section aria-labelledby="cond-h"><h2 id="cond-h">By condition</h2><div class="scroll"><table data-sortable><caption>Pooled over models</caption><thead><tr><th scope="col">Model</th><th scope="col">Condition</th><th scope="col" class="num">Records</th><th scope="col" class="num">Any gradient found</th><th scope="col" class="num">Scorable</th><th scope="col" class="num">Mean score</th><th scope="col" class="num">Median</th><th scope="col" class="num">IQR</th><th scope="col" class="num">Mean of minimum</th></tr></thead><tbody>
+<tr><th scope="row">all models</th><td>with-skill</td><td class="num">19</td><td class="num" data-v="0.9474">94.7%</td><td class="num" data-v="1">100.0%</td><td class="num" data-v="92.0556">92.1</td><td class="num" data-v="95">95.0</td><td class="num">89.8 to 95.8</td><td class="num" data-v="92.0556">92.1</td></tr>
+<tr><th scope="row">all models</th><td>baseline</td><td class="num">19</td><td class="num" data-v="0.8947">89.5%</td><td class="num" data-v="0.8947">89.5%</td><td class="num" data-v="81.5882">81.6</td><td class="num" data-v="85">85.0</td><td class="num">65.0 to 92.0</td><td class="num" data-v="81.5882">81.6</td></tr>
+</tbody></table></div></section>
+<section aria-labelledby="model-h"><h2 id="model-h">By model</h2><div class="scroll"><table data-sortable><caption>Pooled over conditions</caption><thead><tr><th scope="col">Model</th><th scope="col">Condition</th><th scope="col" class="num">Records</th><th scope="col" class="num">Any gradient found</th><th scope="col" class="num">Scorable</th><th scope="col" class="num">Mean score</th><th scope="col" class="num">Median</th><th scope="col" class="num">IQR</th><th scope="col" class="num">Mean of minimum</th></tr></thead><tbody>
+<tr><th scope="row">synthetic-model-b</th><td>all conditions</td><td class="num">14</td><td class="num" data-v="0.9286">92.9%</td><td class="num" data-v="0.9286">92.9%</td><td class="num" data-v="87.8462">87.8</td><td class="num" data-v="88">88.0</td><td class="num">82.0 to 95.0</td><td class="num" data-v="87.8462">87.8</td></tr>
+<tr><th scope="row">synthetic-model-a</th><td>all conditions</td><td class="num">24</td><td class="num" data-v="0.9167">91.7%</td><td class="num" data-v="0.9565">95.7%</td><td class="num" data-v="86.4545">86.5</td><td class="num" data-v="93.5">93.5</td><td class="num">82.8 to 95.8</td><td class="num" data-v="86.4545">86.5</td></tr>
+</tbody></table></div></section>
+<section aria-labelledby="pair-h"><h2 id="pair-h">Paired comparison against the baseline condition</h2><p class="small">Pairs are briefs scored in both conditions. Difference = condition minus baseline, in score points. Interval: paired bootstrap percentile (2000 resamples, seed 659522). p: two-sided Wilcoxon signed-rank test. With-skill gains are expected by construction because the same metric drives refine.</p><svg width="560" height="82" viewBox="0 0 560 82" role="img" aria-labelledby="pairs-t"><title id="pairs-t">Mean paired difference in score points with 95 percent bootstrap interval, one row per table row below. synthetic-model-a with-skill: +12.5 (+3.5 to +22.7); synthetic-model-b with-skill: +6.7 (-0.8 to +16.7)</title><line class="axis" x1="62.1" y1="4" x2="62.1" y2="64"/><line class="ci" x1="130.9" y1="18" x2="514.5" y2="18"/><circle class="pt" cx="311.8" cy="18" r="4"/><line class="ci" x1="45.5" y1="44" x2="393.8" y2="44"/><circle class="pt" cx="194.8" cy="44" r="4"/><text x="62.1" y="78" text-anchor="middle" font-size="11" fill="currentColor">0</text><text x="8" y="78" font-size="11" fill="currentColor">-2.7</text><text x="552" y="78" text-anchor="end" font-size="11" fill="currentColor">+24.6</text></svg><div class="scroll"><table><caption>Condition against baseline, per model</caption><thead><tr><th scope="col">Model</th><th scope="col">Condition</th><th scope="col" class="num">Paired briefs</th><th scope="col" class="num">Unpaired</th><th scope="col" class="num">Mean baseline</th><th scope="col" class="num">Mean condition</th><th scope="col" class="num">Mean difference</th><th scope="col" class="num">95% interval</th><th scope="col" class="num">Wilcoxon p</th><th scope="col" class="num">Better / tied / worse</th></tr></thead><tbody>
+<tr><th scope="row">synthetic-model-a</th><td>with-skill</td><td class="num">11</td><td class="num">1</td><td class="num">80.2</td><td class="num">92.7</td><td class="num">+12.5</td><td class="num">+3.5 to +22.7</td><td class="num">0.0313 (exact, n=9)</td><td class="num">7 / 2 / 2</td></tr>
+<tr><th scope="row">synthetic-model-b</th><td>with-skill</td><td class="num">6</td><td class="num">1</td><td class="num">84.2</td><td class="num">90.8</td><td class="num">+6.7</td><td class="num">-0.8 to +16.7</td><td class="num">0.2500 (exact, n=4)</td><td class="num">3 / 2 / 1</td></tr>
+</tbody></table></div></section>
+<section aria-labelledby="codes-h"><h2 id="codes-h">Most frequent finding codes</h2><div class="scroll"><table><caption>Share of scored gradients carrying the code (top 5 per group)</caption><thead><tr><th scope="col">Model</th><th scope="col">Condition</th><th scope="col" class="num">Scored gradients</th><th scope="col">Codes (share)</th></tr></thead><tbody>
+<tr><th scope="row">synthetic-model-a</th><td>with-skill</td><td class="num">11</td><td><code>hue/narrow-arc</code> 36.4%; <code>chroma/banding</code> 9.1%; <code>chroma/dead-zone</code> 9.1%; <code>chroma/muddy-midpoint</code> 9.1%; <code>chroma/saturation-range</code> 9.1%</td></tr>
+<tr><th scope="row">synthetic-model-b</th><td>with-skill</td><td class="num">7</td><td><code>hue/narrow-arc</code> 42.9%; <code>chroma/banding</code> 14.3%; <code>chroma/dead-zone</code> 14.3%; <code>chroma/muddy-midpoint</code> 14.3%; <code>hue/wide-arc</code> 14.3%</td></tr>
+<tr><th scope="row">synthetic-model-b</th><td>baseline</td><td class="num">6</td><td><code>chroma/muddy-midpoint</code> 33.3%; <code>chroma/saturation-range</code> 33.3%; <code>hue/wide-arc</code> 33.3%; <code>lightness/reversal</code> 33.3%; <code>chroma/dead-zone</code> 16.7%</td></tr>
+<tr><th scope="row">synthetic-model-a</th><td>baseline</td><td class="num">11</td><td><code>chroma/saturation-range</code> 36.4%; <code>hue/wide-arc</code> 36.4%; <code>lightness/reversal</code> 36.4%; <code>hue/direction-reversal</code> 27.3%; <code>chroma/dead-zone</code> 18.2%</td></tr>
+</tbody></table></div></section>
+<section aria-labelledby="ref-h"><h2 id="ref-h">How much would refine change the colours</h2><p class="small">Mean OKLAB distance between original and refined stops (black to white is 1.0), over gradients whose colours refine would change. A change of 0.05 or more is counted as large; that cut is a reporting bucket, not a quality threshold.</p><div class="scroll"><table><caption>Refine change statistics</caption><thead><tr><th scope="col">Model</th><th scope="col">Condition</th><th scope="col" class="num">Scored gradients</th><th scope="col" class="num">Colours changed</th><th scope="col" class="num">Mean ΔE (changed)</th><th scope="col" class="num">Large (&gt;= 0.05)</th><th scope="col" class="num">Mean score gain per gradient</th></tr></thead><tbody>
+<tr><th scope="row">synthetic-model-a</th><td>with-skill</td><td class="num">11</td><td class="num">90.9%</td><td class="num">0.040</td><td class="num">20.0%</td><td class="num">+2.6</td></tr>
+<tr><th scope="row">synthetic-model-b</th><td>with-skill</td><td class="num">7</td><td class="num">100.0%</td><td class="num">0.037</td><td class="num">14.3%</td><td class="num">+4.9</td></tr>
+<tr><th scope="row">synthetic-model-b</th><td>baseline</td><td class="num">6</td><td class="num">100.0%</td><td class="num">0.107</td><td class="num">83.3%</td><td class="num">+9.2</td></tr>
+<tr><th scope="row">synthetic-model-a</th><td>baseline</td><td class="num">11</td><td class="num">90.9%</td><td class="num">0.111</td><td class="num">70.0%</td><td class="num">+9.0</td></tr>
+</tbody></table></div></section>
+<section aria-labelledby="lim-h"><h2 id="lim-h">Limits</h2><ul><li>Smoothness by the v1 definition only; not validated against human judgement (PLAN D5).</li><li>Unit of analysis is the brief. Gradients the extractor cannot parse or the scorer skips lower the scorable ratio and are not scored.</li><li>The brief set is small and written by one team; see docs/bench.md for prompt-set bias.</li></ul></section>
+</main>
+<footer><p>Opal42 bench 0.0.0, scoring model v1. Generated offline; this page loads nothing from the network.</p></footer>
+<script>
+(function(){
+var root=document.documentElement,btn=document.getElementById('theme');
+function sysDark(){return !!(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);}
+function isDark(){var cur=root.getAttribute('data-theme');return cur?cur==='dark':sysDark();}
+if(btn){btn.hidden=false;btn.setAttribute('aria-pressed',String(isDark()));
+btn.addEventListener('click',function(){var next=isDark()?'light':'dark';root.setAttribute('data-theme',next);btn.setAttribute('aria-pressed',String(next==='dark'));});}
+document.querySelectorAll('table[data-sortable]').forEach(function(t){
+var heads=t.querySelectorAll('thead th');
+heads.forEach(function(th,i){
+var label=th.textContent;th.textContent='';
+var b=document.createElement('button');b.type='button';b.textContent=label;
+b.setAttribute('aria-label','Sort by '+label);th.appendChild(b);
+b.addEventListener('click',function(){
+var body=t.tBodies[0],rows=Array.prototype.slice.call(body.rows);
+var asc=th.getAttribute('aria-sort')!=='ascending';
+rows.sort(function(a,c){
+var x=a.cells[i].getAttribute('data-v')||a.cells[i].textContent,y=c.cells[i].getAttribute('data-v')||c.cells[i].textContent;
+var nx=parseFloat(x),ny=parseFloat(y),r=(!isNaN(nx)&&!isNaN(ny))?nx-ny:(x<y?-1:x>y?1:0);
+return asc?r:-r;});
+rows.forEach(function(r){body.appendChild(r);});
+heads.forEach(function(h){h.removeAttribute('aria-sort');});
+th.setAttribute('aria-sort',asc?'ascending':'descending');});});});
+})();
+</script>
+</body>
+</html>

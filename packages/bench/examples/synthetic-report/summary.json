@@ -1,0 +1,2576 @@
+{
+  "schemaVersion": 1,
+  "caveat": "Measures perceptual smoothness by the Opal42 v1 definition - not aesthetics, brand fit or human preference; the same metric drives the refine step, so with-skill gains are expected by construction and are not validation of the metric.",
+  "provenance": {
+    "benchVersion": "0.0.0",
+    "scoringModel": "v1",
+    "coreVersion": "0.0.0",
+    "briefSet": {
+      "name": "GradientBench briefs",
+      "version": "0.1.0",
+      "hash": "43fdc97bdcbded2f",
+      "count": 100
+    },
+    "extraction": {
+      "tailwindPaletteEntries": 0
+    },
+    "bootstrap": {
+      "resamples": 2000,
+      "seed": 659522,
+      "level": 0.95
+    },
+    "sources": [
+      "synthetic-results.jsonl"
+    ],
+    "synthetic": true
+  },
+  "diagnostics": [],
+  "groups": [
+    {
+      "model": "synthetic-model-a",
+      "condition": "baseline",
+      "records": 12,
+      "briefs": 12,
+      "coverage": 0.12,
+      "syntheticRecords": 12,
+      "anyGradientRate": 0.9167,
+      "found": 12,
+      "scored": 11,
+      "scorableRatio": 0.9167,
+      "briefScore": {
+        "n": 11,
+        "mean": 80.1818,
+        "median": 85,
+        "sd": 16.7261,
+        "min": 58,
+        "q1": 62.5,
+        "q3": 92,
+        "max": 100
+      },
+      "meanMinScore": 80.1818,
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        2,
+        2,
+        0,
+        2,
+        5
+      ],
+      "findingCodes": [
+        {
+          "code": "chroma/saturation-range",
+          "gradients": 4,
+          "share": 0.3636
+        },
+        {
+          "code": "hue/wide-arc",
+          "gradients": 4,
+          "share": 0.3636
+        },
+        {
+          "code": "lightness/reversal",
+          "gradients": 4,
+          "share": 0.3636
+        },
+        {
+          "code": "hue/direction-reversal",
+          "gradients": 3,
+          "share": 0.2727
+        },
+        {
+          "code": "chroma/dead-zone",
+          "gradients": 2,
+          "share": 0.1818
+        },
+        {
+          "code": "chroma/muddy-midpoint",
+          "gradients": 2,
+          "share": 0.1818
+        },
+        {
+          "code": "hue/narrow-arc",
+          "gradients": 1,
+          "share": 0.0909
+        },
+        {
+          "code": "lightness/low-contrast",
+          "gradients": 1,
+          "share": 0.0909
+        }
+      ],
+      "refine": {
+        "scoredGradients": 11,
+        "refined": 11,
+        "colourChanged": 10,
+        "colourChangedRate": 0.9091,
+        "meanDeltaE": 0.1112,
+        "largeChange": 7,
+        "largeChangeRate": 0.7,
+        "meanScoreGain": 9
+      }
+    },
+    {
+      "model": "synthetic-model-a",
+      "condition": "with-skill",
+      "records": 12,
+      "briefs": 12,
+      "coverage": 0.12,
+      "syntheticRecords": 12,
+      "anyGradientRate": 0.9167,
+      "found": 11,
+      "scored": 11,
+      "scorableRatio": 1,
+      "briefScore": {
+        "n": 11,
+        "mean": 92.7273,
+        "median": 95,
+        "sd": 10.6027,
+        "min": 63,
+        "q1": 95,
+        "q3": 98,
+        "max": 100
+      },
+      "meanMinScore": 92.7273,
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        1,
+        9
+      ],
+      "findingCodes": [
+        {
+          "code": "hue/narrow-arc",
+          "gradients": 4,
+          "share": 0.3636
+        },
+        {
+          "code": "chroma/banding",
+          "gradients": 1,
+          "share": 0.0909
+        },
+        {
+          "code": "chroma/dead-zone",
+          "gradients": 1,
+          "share": 0.0909
+        },
+        {
+          "code": "chroma/muddy-midpoint",
+          "gradients": 1,
+          "share": 0.0909
+        },
+        {
+          "code": "chroma/saturation-range",
+          "gradients": 1,
+          "share": 0.0909
+        },
+        {
+          "code": "hue/wide-arc",
+          "gradients": 1,
+          "share": 0.0909
+        },
+        {
+          "code": "lightness/low-contrast",
+          "gradients": 1,
+          "share": 0.0909
+        },
+        {
+          "code": "lightness/reversal",
+          "gradients": 1,
+          "share": 0.0909
+        }
+      ],
+      "refine": {
+        "scoredGradients": 11,
+        "refined": 11,
+        "colourChanged": 10,
+        "colourChangedRate": 0.9091,
+        "meanDeltaE": 0.0401,
+        "largeChange": 2,
+        "largeChangeRate": 0.2,
+        "meanScoreGain": 2.6364
+      }
+    },
+    {
+      "model": "synthetic-model-b",
+      "condition": "baseline",
+      "records": 7,
+      "briefs": 7,
+      "coverage": 0.07,
+      "syntheticRecords": 7,
+      "anyGradientRate": 0.8571,
+      "found": 7,
+      "scored": 6,
+      "scorableRatio": 0.8571,
+      "briefScore": {
+        "n": 6,
+        "mean": 84.1667,
+        "median": 85,
+        "sd": 11.4615,
+        "min": 65,
+        "q1": 82,
+        "q3": 88,
+        "max": 100
+      },
+      "meanMinScore": 84.1667,
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        4,
+        1
+      ],
+      "findingCodes": [
+        {
+          "code": "chroma/muddy-midpoint",
+          "gradients": 2,
+          "share": 0.3333
+        },
+        {
+          "code": "chroma/saturation-range",
+          "gradients": 2,
+          "share": 0.3333
+        },
+        {
+          "code": "hue/wide-arc",
+          "gradients": 2,
+          "share": 0.3333
+        },
+        {
+          "code": "lightness/reversal",
+          "gradients": 2,
+          "share": 0.3333
+        },
+        {
+          "code": "chroma/dead-zone",
+          "gradients": 1,
+          "share": 0.1667
+        },
+        {
+          "code": "hue/narrow-arc",
+          "gradients": 1,
+          "share": 0.1667
+        }
+      ],
+      "refine": {
+        "scoredGradients": 6,
+        "refined": 6,
+        "colourChanged": 6,
+        "colourChangedRate": 1,
+        "meanDeltaE": 0.1074,
+        "largeChange": 5,
+        "largeChangeRate": 0.8333,
+        "meanScoreGain": 9.1667
+      }
+    },
+    {
+      "model": "synthetic-model-b",
+      "condition": "with-skill",
+      "records": 7,
+      "briefs": 7,
+      "coverage": 0.07,
+      "syntheticRecords": 7,
+      "anyGradientRate": 1,
+      "found": 7,
+      "scored": 7,
+      "scorableRatio": 1,
+      "briefScore": {
+        "n": 7,
+        "mean": 91,
+        "median": 92,
+        "sd": 7.0238,
+        "min": 78,
+        "q1": 88.5,
+        "q3": 95,
+        "max": 100
+      },
+      "meanMinScore": 91,
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        2,
+        4
+      ],
+      "findingCodes": [
+        {
+          "code": "hue/narrow-arc",
+          "gradients": 3,
+          "share": 0.4286
+        },
+        {
+          "code": "chroma/banding",
+          "gradients": 1,
+          "share": 0.1429
+        },
+        {
+          "code": "chroma/dead-zone",
+          "gradients": 1,
+          "share": 0.1429
+        },
+        {
+          "code": "chroma/muddy-midpoint",
+          "gradients": 1,
+          "share": 0.1429
+        },
+        {
+          "code": "hue/wide-arc",
+          "gradients": 1,
+          "share": 0.1429
+        },
+        {
+          "code": "lightness/reversal",
+          "gradients": 1,
+          "share": 0.1429
+        },
+        {
+          "code": "lightness/uneven-speed",
+          "gradients": 1,
+          "share": 0.1429
+        }
+      ],
+      "refine": {
+        "scoredGradients": 7,
+        "refined": 7,
+        "colourChanged": 7,
+        "colourChangedRate": 1,
+        "meanDeltaE": 0.0368,
+        "largeChange": 1,
+        "largeChangeRate": 0.1429,
+        "meanScoreGain": 4.8571
+      }
+    }
+  ],
+  "byModel": [
+    {
+      "model": "synthetic-model-a",
+      "condition": null,
+      "records": 24,
+      "briefs": 12,
+      "coverage": 0.12,
+      "syntheticRecords": 24,
+      "anyGradientRate": 0.9167,
+      "found": 23,
+      "scored": 22,
+      "scorableRatio": 0.9565,
+      "briefScore": {
+        "n": 22,
+        "mean": 86.4545,
+        "median": 93.5,
+        "sd": 15.0988,
+        "min": 58,
+        "q1": 82.75,
+        "q3": 95.75,
+        "max": 100
+      },
+      "meanMinScore": 86.4545,
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        2,
+        3,
+        0,
+        3,
+        14
+      ],
+      "findingCodes": [
+        {
+          "code": "chroma/saturation-range",
+          "gradients": 5,
+          "share": 0.2273
+        },
+        {
+          "code": "hue/narrow-arc",
+          "gradients": 5,
+          "share": 0.2273
+        },
+        {
+          "code": "hue/wide-arc",
+          "gradients": 5,
+          "share": 0.2273
+        },
+        {
+          "code": "lightness/reversal",
+          "gradients": 5,
+          "share": 0.2273
+        },
+        {
+          "code": "chroma/dead-zone",
+          "gradients": 3,
+          "share": 0.1364
+        },
+        {
+          "code": "chroma/muddy-midpoint",
+          "gradients": 3,
+          "share": 0.1364
+        },
+        {
+          "code": "hue/direction-reversal",
+          "gradients": 3,
+          "share": 0.1364
+        },
+        {
+          "code": "lightness/low-contrast",
+          "gradients": 2,
+          "share": 0.0909
+        },
+        {
+          "code": "chroma/banding",
+          "gradients": 1,
+          "share": 0.0455
+        }
+      ],
+      "refine": {
+        "scoredGradients": 22,
+        "refined": 22,
+        "colourChanged": 20,
+        "colourChangedRate": 0.9091,
+        "meanDeltaE": 0.0757,
+        "largeChange": 9,
+        "largeChangeRate": 0.45,
+        "meanScoreGain": 5.8182
+      }
+    },
+    {
+      "model": "synthetic-model-b",
+      "condition": null,
+      "records": 14,
+      "briefs": 7,
+      "coverage": 0.07,
+      "syntheticRecords": 14,
+      "anyGradientRate": 0.9286,
+      "found": 14,
+      "scored": 13,
+      "scorableRatio": 0.9286,
+      "briefScore": {
+        "n": 13,
+        "mean": 87.8462,
+        "median": 88,
+        "sd": 9.5903,
+        "min": 65,
+        "q1": 82,
+        "q3": 95,
+        "max": 100
+      },
+      "meanMinScore": 87.8462,
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        6,
+        5
+      ],
+      "findingCodes": [
+        {
+          "code": "hue/narrow-arc",
+          "gradients": 4,
+          "share": 0.3077
+        },
+        {
+          "code": "chroma/muddy-midpoint",
+          "gradients": 3,
+          "share": 0.2308
+        },
+        {
+          "code": "hue/wide-arc",
+          "gradients": 3,
+          "share": 0.2308
+        },
+        {
+          "code": "lightness/reversal",
+          "gradients": 3,
+          "share": 0.2308
+        },
+        {
+          "code": "chroma/dead-zone",
+          "gradients": 2,
+          "share": 0.1538
+        },
+        {
+          "code": "chroma/saturation-range",
+          "gradients": 2,
+          "share": 0.1538
+        },
+        {
+          "code": "chroma/banding",
+          "gradients": 1,
+          "share": 0.0769
+        },
+        {
+          "code": "lightness/uneven-speed",
+          "gradients": 1,
+          "share": 0.0769
+        }
+      ],
+      "refine": {
+        "scoredGradients": 13,
+        "refined": 13,
+        "colourChanged": 13,
+        "colourChangedRate": 1,
+        "meanDeltaE": 0.0694,
+        "largeChange": 6,
+        "largeChangeRate": 0.4615,
+        "meanScoreGain": 6.8462
+      }
+    }
+  ],
+  "byCondition": [
+    {
+      "model": null,
+      "condition": "baseline",
+      "records": 19,
+      "briefs": 12,
+      "coverage": 0.12,
+      "syntheticRecords": 19,
+      "anyGradientRate": 0.8947,
+      "found": 19,
+      "scored": 17,
+      "scorableRatio": 0.8947,
+      "briefScore": {
+        "n": 17,
+        "mean": 81.5882,
+        "median": 85,
+        "sd": 14.8242,
+        "min": 58,
+        "q1": 65,
+        "q3": 92,
+        "max": 100
+      },
+      "meanMinScore": 81.5882,
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        2,
+        3,
+        0,
+        6,
+        6
+      ],
+      "findingCodes": [
+        {
+          "code": "chroma/saturation-range",
+          "gradients": 6,
+          "share": 0.3529
+        },
+        {
+          "code": "hue/wide-arc",
+          "gradients": 6,
+          "share": 0.3529
+        },
+        {
+          "code": "lightness/reversal",
+          "gradients": 6,
+          "share": 0.3529
+        },
+        {
+          "code": "chroma/muddy-midpoint",
+          "gradients": 4,
+          "share": 0.2353
+        },
+        {
+          "code": "chroma/dead-zone",
+          "gradients": 3,
+          "share": 0.1765
+        },
+        {
+          "code": "hue/direction-reversal",
+          "gradients": 3,
+          "share": 0.1765
+        },
+        {
+          "code": "hue/narrow-arc",
+          "gradients": 2,
+          "share": 0.1176
+        },
+        {
+          "code": "lightness/low-contrast",
+          "gradients": 1,
+          "share": 0.0588
+        }
+      ],
+      "refine": {
+        "scoredGradients": 17,
+        "refined": 17,
+        "colourChanged": 16,
+        "colourChangedRate": 0.9412,
+        "meanDeltaE": 0.1098,
+        "largeChange": 12,
+        "largeChangeRate": 0.75,
+        "meanScoreGain": 9.0588
+      }
+    },
+    {
+      "model": null,
+      "condition": "with-skill",
+      "records": 19,
+      "briefs": 12,
+      "coverage": 0.12,
+      "syntheticRecords": 19,
+      "anyGradientRate": 0.9474,
+      "found": 18,
+      "scored": 18,
+      "scorableRatio": 1,
+      "briefScore": {
+        "n": 18,
+        "mean": 92.0556,
+        "median": 95,
+        "sd": 9.181,
+        "min": 63,
+        "q1": 89.75,
+        "q3": 95.75,
+        "max": 100
+      },
+      "meanMinScore": 92.0556,
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        3,
+        13
+      ],
+      "findingCodes": [
+        {
+          "code": "hue/narrow-arc",
+          "gradients": 7,
+          "share": 0.3889
+        },
+        {
+          "code": "chroma/banding",
+          "gradients": 2,
+          "share": 0.1111
+        },
+        {
+          "code": "chroma/dead-zone",
+          "gradients": 2,
+          "share": 0.1111
+        },
+        {
+          "code": "chroma/muddy-midpoint",
+          "gradients": 2,
+          "share": 0.1111
+        },
+        {
+          "code": "hue/wide-arc",
+          "gradients": 2,
+          "share": 0.1111
+        },
+        {
+          "code": "lightness/reversal",
+          "gradients": 2,
+          "share": 0.1111
+        },
+        {
+          "code": "chroma/saturation-range",
+          "gradients": 1,
+          "share": 0.0556
+        },
+        {
+          "code": "lightness/low-contrast",
+          "gradients": 1,
+          "share": 0.0556
+        },
+        {
+          "code": "lightness/uneven-speed",
+          "gradients": 1,
+          "share": 0.0556
+        }
+      ],
+      "refine": {
+        "scoredGradients": 18,
+        "refined": 18,
+        "colourChanged": 17,
+        "colourChangedRate": 0.9444,
+        "meanDeltaE": 0.0388,
+        "largeChange": 3,
+        "largeChangeRate": 0.1765,
+        "meanScoreGain": 3.5
+      }
+    }
+  ],
+  "pairs": [
+    {
+      "model": "synthetic-model-a",
+      "baseline": "baseline",
+      "condition": "with-skill",
+      "pairedBriefs": 11,
+      "unpairedBriefs": 1,
+      "meanBaseline": 80.1818,
+      "meanCondition": 92.7273,
+      "meanDelta": 12.5455,
+      "ci": {
+        "lo": 3.4545,
+        "hi": 22.7295,
+        "level": 0.95,
+        "resamples": 2000,
+        "seed": 659522
+      },
+      "wilcoxon": {
+        "n": 9,
+        "wPlus": 40.5,
+        "wMinus": 4.5,
+        "p": 0.03125,
+        "method": "exact"
+      },
+      "better": 7,
+      "tied": 2,
+      "worse": 2
+    },
+    {
+      "model": "synthetic-model-b",
+      "baseline": "baseline",
+      "condition": "with-skill",
+      "pairedBriefs": 6,
+      "unpairedBriefs": 1,
+      "meanBaseline": 84.1667,
+      "meanCondition": 90.8333,
+      "meanDelta": 6.6667,
+      "ci": {
+        "lo": -0.8333,
+        "hi": 16.6667,
+        "level": 0.95,
+        "resamples": 2000,
+        "seed": 659522
+      },
+      "wilcoxon": {
+        "n": 4,
+        "wPlus": 9,
+        "wMinus": 1,
+        "p": 0.25,
+        "method": "exact"
+      },
+      "better": 3,
+      "tied": 2,
+      "worse": 1
+    }
+  ],
+  "records": [
+    {
+      "briefId": "brand-constrained-01",
+      "category": "brand-constrained",
+      "model": "synthetic-model-a",
+      "condition": "baseline",
+      "sample": 0,
+      "synthetic": true,
+      "outputChars": 104,
+      "found": 1,
+      "scored": 1,
+      "anyGradientFound": true,
+      "scorableRatio": 1,
+      "minScore": 82,
+      "meanScore": 82,
+      "findingCodes": {
+        "chroma/muddy-midpoint": 1,
+        "hue/wide-arc": 1
+      },
+      "colourChangedCount": 1,
+      "meanRefineDeltaE": 0.1097,
+      "duplicatesDropped": 0,
+      "notes": [],
+      "gradients": [
+        {
+          "form": "css",
+          "css": "linear-gradient(135deg, #0b3d91 0%, #f2b705 100%)",
+          "findingCodes": [
+            "chroma/muddy-midpoint",
+            "hue/wide-arc"
+          ],
+          "status": "scored",
+          "score": 82,
+          "dimensions": {
+            "lightness": 30,
+            "chroma": 10,
+            "hue": 22,
+            "spacing": 20
+          },
+          "hasHardStops": false,
+          "stops": 2,
+          "refine": {
+            "refined": true,
+            "colourChanged": true,
+            "scoreAfter": 100,
+            "meanDeltaE": 0.1097,
+            "maxDeltaE": 0.1305
+          }
+        }
+      ]
+    },
+    {
+      "briefId": "dark-mode-button-01",
+      "category": "dark-mode-button",
+      "model": "synthetic-model-a",
+      "condition": "baseline",
+      "sample": 0,
+      "synthetic": true,
+      "outputChars": 194,
+      "found": 2,
+      "scored": 1,
+      "anyGradientFound": true,
+      "scorableRatio": 0.5,
+      "minScore": 100,
+      "meanScore": 100,
+      "findingCodes": {},
+      "colourChangedCount": 1,
+      "meanRefineDeltaE": 0.0108,
+      "duplicatesDropped": 0,
+      "notes": [
+        "substituted:--a",
+        "substituted:--b"
+      ],
+      "gradients": [
+        {
+          "form": "css",
+          "css": "linear-gradient(#6a11cb, #2575fc)",
+          "findingCodes": [],
+          "status": "scored",
+          "score": 100,
+          "dimensions": {
+            "lightness": 30,
+            "chroma": 20,
+            "hue": 30,
+            "spacing": 20
+          },
+          "hasHardStops": false,
+          "stops": 2,
+          "refine": {
+            "refined": true,
+            "colourChanged": true,
+            "scoreAfter": 100,
+            "meanDeltaE": 0.0108,
+            "maxDeltaE": 0.013
+          }
+        },
+        {
+          "form": "css",
+          "css": "linear-gradient(to right, rgba(106,17,203,.8), transparent)",
+          "findingCodes": [],
+          "status": "unscorable",
+          "code": "alpha",
+          "stops": 2
+        }
+      ]
+    },
+    {
+      "briefId": "dashboard-card-01",
+      "category": "dashboard-card",
+      "model": "synthetic-model-a",
+      "condition": "baseline",
+      "sample": 0,
+      "synthetic": true,
+      "outputChars": 104,
+      "found": 1,
+      "scored": 1,
+      "anyGradientFound": true,
+      "scorableRatio": 1,
+      "minScore": 92,
+      "meanScore": 92,
+      "findingCodes": {
+        "lightness/low-contrast": 1
+      },
+      "colourChangedCount": 0,
+      "meanRefineDeltaE": null,
+      "duplicatesDropped": 0,
+      "notes": [],
+      "gradients": [
+        {
+          "form": "css",
+          "css": "linear-gradient(180deg, #ffffff 0%, #eef2ff 100%)",
+          "findingCodes": [
+            "lightness/low-contrast"
+          ],
+          "status": "scored",
+          "score": 92,
+          "dimensions": {
+            "lightness": 22,
+            "chroma": 20,
+            "hue": 30,
+            "spacing": 20
+          },
+          "hasHardStops": false,
+          "stops": 2,
+          "refine": {
+            "refined": true,
+            "colourChanged": false,
+            "scoreAfter": 92,
+            "meanDeltaE": 0,
+            "maxDeltaE": 0
+          }
+        }
+      ]
+    },
+    {
+      "briefId": "dashboard-card-05",
+      "category": "dashboard-card",
+      "model": "synthetic-model-a",
+      "condition": "baseline",
+      "sample": 0,
+      "synthetic": true,
+      "outputChars": 104,
+      "found": 1,
+      "scored": 1,
+      "anyGradientFound": true,
+      "scorableRatio": 1,
+      "minScore": 100,
+      "meanScore": 100,
+      "findingCodes": {},
+      "colourChangedCount": 1,
+      "meanRefineDeltaE": 0.0084,
+      "duplicatesDropped": 0,
+      "notes": [],
+      "gradients": [
+        {
+          "form": "css",
+          "css": "linear-gradient(120deg, #ffcc00 0%, #ff6600 100%)",
+          "findingCodes": [],
+          "status": "scored",
+          "score": 100,
+          "dimensions": {
+            "lightness": 30,
+            "chroma": 20,
+            "hue": 30,
+            "spacing": 20
+          },
+          "hasHardStops": false,
+          "stops": 2,
+          "refine": {
+            "refined": true,
+            "colourChanged": true,
+            "scoreAfter": 100,
+            "meanDeltaE": 0.0084,
+            "maxDeltaE": 0.0143
+          }
+        }
+      ]
+    },
+    {
+      "briefId": "dataviz-heat-strip-01",
+      "category": "dataviz-heat-strip",
+      "model": "synthetic-model-a",
+      "condition": "baseline",
+      "sample": 0,
+      "synthetic": true,
+      "outputChars": 115,
+      "found": 1,
+      "scored": 1,
+      "anyGradientFound": true,
+      "scorableRatio": 1,
+      "minScore": 63,
+      "meanScore": 63,
+      "findingCodes": {
+        "chroma/saturation-range": 1,
+        "hue/wide-arc": 1,
+        "lightness/reversal": 1
+      },
+      "colourChangedCount": 1,
+      "meanRefineDeltaE": 0.2744,
+      "duplicatesDropped": 0,
+      "notes": [],
+      "gradients": [
+        {
+          "form": "css",
+          "css": "linear-gradient(90deg, #0000ff, #00ffff, #ffff00, #ff0000)",
+          "findingCodes": [
+            "chroma/saturation-range",
+            "hue/wide-arc",
+            "lightness/reversal"
+          ],
+          "status": "scored",
+          "score": 63,
+          "dimensions": {
+            "lightness": 18,
+            "chroma": 15,
+            "hue": 10,
+            "spacing": 20
+          },
+          "hasHardStops": false,
+          "stops": 4,
+          "refine": {
+            "refined": true,
+            "colourChanged": true,
+            "scoreAfter": 83,
+            "meanDeltaE": 0.2744,
+            "maxDeltaE": 0.2929
+          }
+        }
+      ]
+    },
+    {
+      "briefId": "ecommerce-banner-01",
+      "category": "ecommerce-banner",
+      "model": "synthetic-model-a",
+      "condition": "baseline",
+      "sample": 0,
+      "synthetic": true,
+      "outputChars": 131,
+      "found": 1,
+      "scored": 1,
+      "anyGradientFound": true,
+      "scorableRatio": 1,
+      "minScore": 58,
+      "meanScore": 58,
+      "findingCodes": {
+        "chroma/dead-zone": 1,
+        "hue/direction-reversal": 1,
+        "lightness/reversal": 1
+      },
+      "colourChangedCount": 1,
+      "meanRefineDeltaE": 0.113,
+      "duplicatesDropped": 0,
+      "notes": [],
+      "gradients": [
+        {
+          "form": "css",
+          "css": "linear-gradient(90deg, #8b4513 0%, #f5deb3 30%, #8b4513 60%, #fffaf0 100%)",
+          "findingCodes": [
+            "chroma/dead-zone",
+            "hue/direction-reversal",
+            "lightness/reversal"
+          ],
+          "status": "scored",
+          "score": 58,
+          "dimensions": {
+            "lightness": 6,
+            "chroma": 12,
+            "hue": 20,
+            "spacing": 20
+          },
+          "hasHardStops": false,
+          "stops": 4,
+          "refine": {
+            "refined": true,
+            "colourChanged": true,
+            "scoreAfter": 58,
+            "meanDeltaE": 0.113,
+            "maxDeltaE": 0.241
+          }
+        }
+      ]
+    },
+    {
+      "briefId": "ecommerce-banner-02",
+      "category": "ecommerce-banner",
+      "model": "synthetic-model-a",
+      "condition": "baseline",
+      "sample": 0,
+      "synthetic": true,
+      "outputChars": 72,
+      "found": 0,
+      "scored": 0,
+      "anyGradientFound": false,
+      "scorableRatio": null,
+      "minScore": null,
+      "meanScore": null,
+      "findingCodes": {},
+      "colourChangedCount": 0,
+      "meanRefineDeltaE": null,
+      "duplicatesDropped": 0,
+      "notes": [],
+      "gradients": []
+    },
+    {
+      "briefId": "game-ui-01",
+      "category": "game-ui",
+      "model": "synthetic-model-a",
+      "condition": "baseline",
+      "sample": 0,
+      "synthetic": true,
+      "outputChars": 109,
+      "found": 1,
+      "scored": 1,
+      "anyGradientFound": true,
+      "scorableRatio": 1,
+      "minScore": 90,
+      "meanScore": 90,
+      "findingCodes": {
+        "chroma/saturation-range": 1,
+        "hue/narrow-arc": 1
+      },
+      "colourChangedCount": 1,
+      "meanRefineDeltaE": 0.0542,
+      "duplicatesDropped": 0,
+      "notes": [
+        "substituted:$hp-a",
+        "substituted:$hp-b"
+      ],
+      "gradients": [
+        {
+          "form": "css",
+          "css": "linear-gradient(to right, #ff0000, #660000)",
+          "findingCodes": [
+            "chroma/saturation-range",
+            "hue/narrow-arc"
+          ],
+          "status": "scored",
+          "score": 90,
+          "dimensions": {
+            "lightness": 30,
+            "chroma": 15,
+            "hue": 25,
+            "spacing": 20
+          },
+          "hasHardStops": false,
+          "stops": 2,
+          "refine": {
+            "refined": true,
+            "colourChanged": true,
+            "scoreAfter": 95,
+            "meanDeltaE": 0.0542,
+            "maxDeltaE": 0.0636
+          }
+        }
+      ]
+    },
+    {
+      "briefId": "mobile-splash-01",
+      "category": "mobile-splash",
+      "model": "synthetic-model-a",
+      "condition": "baseline",
+      "sample": 0,
+      "synthetic": true,
+      "outputChars": 111,
+      "found": 1,
+      "scored": 1,
+      "anyGradientFound": true,
+      "scorableRatio": 1,
+      "minScore": 92,
+      "meanScore": 92,
+      "findingCodes": {
+        "hue/wide-arc": 1
+      },
+      "colourChangedCount": 1,
+      "meanRefineDeltaE": 0.0882,
+      "duplicatesDropped": 0,
+      "notes": [
+        "json"
+      ],
+      "gradients": [
+        {
+          "form": "css",
+          "css": "linear-gradient(180deg, #1a0033 0%, #ff4d4d 60%, #ffd700 100%)",
+          "findingCodes": [
+            "hue/wide-arc"
+          ],
+          "status": "scored",
+          "score": 92,
+          "dimensions": {
+            "lightness": 30,
+            "chroma": 20,
+            "hue": 22,
+            "spacing": 20
+          },
+          "hasHardStops": false,
+          "stops": 3,
+          "refine": {
+            "refined": true,
+            "colourChanged": true,
+            "scoreAfter": 100,
+            "meanDeltaE": 0.0882,
+            "maxDeltaE": 0.0988
+          }
+        }
+      ]
+    },
+    {
+      "briefId": "saas-hero-01",
+      "category": "saas-hero",
+      "model": "synthetic-model-a",
+      "condition": "baseline",
+      "sample": 0,
+      "synthetic": true,
+      "outputChars": 156,
+      "found": 1,
+      "scored": 1,
+      "anyGradientFound": true,
+      "scorableRatio": 1,
+      "minScore": 85,
+      "meanScore": 85,
+      "findingCodes": {
+        "chroma/saturation-range": 1,
+        "hue/direction-reversal": 1
+      },
+      "colourChangedCount": 1,
+      "meanRefineDeltaE": 0.0215,
+      "duplicatesDropped": 0,
+      "notes": [],
+      "gradients": [
+        {
+          "form": "css",
+          "css": "linear-gradient(135deg, #7f00ff 0%, #e100ff 50%, #00c6ff 100%)",
+          "findingCodes": [
+            "chroma/saturation-range",
+            "hue/direction-reversal"
+          ],
+          "status": "scored",
+          "score": 85,
+          "dimensions": {
+            "lightness": 30,
+            "chroma": 15,
+            "hue": 20,
+            "spacing": 20
+          },
+          "hasHardStops": false,
+          "stops": 3,
+          "refine": {
+            "refined": true,
+            "colourChanged": true,
+            "scoreAfter": 85,
+            "meanDeltaE": 0.0215,
+            "maxDeltaE": 0.0412
+          }
+        }
+      ]
+    },
+    {
+      "briefId": "saas-hero-02",
+      "category": "saas-hero",
+      "model": "synthetic-model-a",
+      "condition": "baseline",
+      "sample": 0,
+      "synthetic": true,
+      "outputChars": 107,
+      "found": 1,
+      "scored": 1,
+      "anyGradientFound": true,
+      "scorableRatio": 1,
+      "minScore": 58,
+      "meanScore": 58,
+      "findingCodes": {
+        "chroma/muddy-midpoint": 1,
+        "hue/wide-arc": 1,
+        "lightness/reversal": 1
+      },
+      "colourChangedCount": 1,
+      "meanRefineDeltaE": 0.3002,
+      "duplicatesDropped": 0,
+      "notes": [],
+      "gradients": [
+        {
+          "form": "css",
+          "css": "linear-gradient(to right, #ff0000, #00ff00, #0000ff)",
+          "findingCodes": [
+            "chroma/muddy-midpoint",
+            "hue/wide-arc",
+            "lightness/reversal"
+          ],
+          "status": "scored",
+          "score": 58,
+          "dimensions": {
+            "lightness": 18,
+            "chroma": 10,
+            "hue": 10,
+            "spacing": 20
+          },
+          "hasHardStops": false,
+          "stops": 3,
+          "refine": {
+            "refined": true,
+            "colourChanged": true,
+            "scoreAfter": 90,
+            "meanDeltaE": 0.3002,
+            "maxDeltaE": 0.5198
+          }
+        }
+      ]
+    },
+    {
+      "briefId": "saas-hero-03",
+      "category": "saas-hero",
+      "model": "synthetic-model-a",
+      "condition": "baseline",
+      "sample": 0,
+      "synthetic": true,
+      "outputChars": 99,
+      "found": 1,
+      "scored": 1,
+      "anyGradientFound": true,
+      "scorableRatio": 1,
+      "minScore": 62,
+      "meanScore": 62,
+      "findingCodes": {
+        "chroma/dead-zone": 1,
+        "chroma/saturation-range": 1,
+        "hue/direction-reversal": 1,
+        "lightness/reversal": 1
+      },
+      "colourChangedCount": 1,
+      "meanRefineDeltaE": 0.1316,
+      "duplicatesDropped": 0,
+      "notes": [],
+      "gradients": [
+        {
+          "form": "tailwind-arbitrary",
+          "css": "linear-gradient(to bottom,#0f172a,#7c3aed 40%,#0f172a)",
+          "findingCodes": [
+            "chroma/dead-zone",
+            "chroma/saturation-range",
+            "hue/direction-reversal",
+            "lightness/reversal"
+          ],
+          "status": "scored",
+          "score": 62,
+          "dimensions": {
+            "lightness": 18,
+            "chroma": 4,
+            "hue": 20,
+            "spacing": 20
+          },
+          "hasHardStops": false,
+          "stops": 3,
+          "refine": {
+            "refined": true,
+            "colourChanged": true,
+            "scoreAfter": 78,
+            "meanDeltaE": 0.1316,
+            "maxDeltaE": 0.257
+          }
+        }
+      ]
+    },
+    {
+      "briefId": "brand-constrained-01",
+      "category": "brand-constrained",
+      "model": "synthetic-model-a",
+      "condition": "with-skill",
+      "sample": 0,
+      "synthetic": true,
+      "outputChars": 189,
+      "found": 1,
+      "scored": 1,
+      "anyGradientFound": true,
+      "scorableRatio": 1,
+      "minScore": 95,
+      "meanScore": 95,
+      "findingCodes": {
+        "hue/narrow-arc": 1
+      },
+      "colourChangedCount": 1,
+      "meanRefineDeltaE": 0.0351,
+      "duplicatesDropped": 0,
+      "notes": [],
+      "gradients": [
+        {
+          "form": "css",
+          "css": "linear-gradient(135deg, #0b3d91 0%, #3d6bb8 50%, #8fa8d4 100%)",
+          "findingCodes": [
+            "hue/narrow-arc"
+          ],
+          "status": "scored",
+          "score": 95,
+          "dimensions": {
+            "lightness": 30,
+            "chroma": 20,
+            "hue": 25,
+            "spacing": 20
+          },
+          "hasHardStops": false,
+          "stops": 3,
+          "refine": {
+            "refined": true,
+            "colourChanged": true,
+            "scoreAfter": 95,
+            "meanDeltaE": 0.0351,
+            "maxDeltaE": 0.0471
+          }
+        }
+      ]
+    },
+    {
+      "briefId": "dark-mode-button-01",
+      "category": "dark-mode-button",
+      "model": "synthetic-model-a",
+      "condition": "with-skill",
+      "sample": 0,
+      "synthetic": true,
+      "outputChars": 106,
+      "found": 1,
+      "scored": 1,
+      "anyGradientFound": true,
+      "scorableRatio": 1,
+      "minScore": 95,
+      "meanScore": 95,
+      "findingCodes": {
+        "hue/narrow-arc": 1
+      },
+      "colourChangedCount": 1,
+      "meanRefineDeltaE": 0.0038,
+      "duplicatesDropped": 0,
+      "notes": [
+        "substituted:--a",
+        "substituted:--b"
+      ],
+      "gradients": [
+        {
+          "form": "css",
+          "css": "linear-gradient(#3b3f8f, #4a5fb5)",
+          "findingCodes": [
+            "hue/narrow-arc"
+          ],
+          "status": "scored",
+          "score": 95,
+          "dimensions": {
+            "lightness": 30,
+            "chroma": 20,
+            "hue": 25,
+            "spacing": 20
+          },
+          "hasHardStops": false,
+          "stops": 2,
+          "refine": {
+            "refined": true,
+            "colourChanged": true,
+            "scoreAfter": 95,
+            "meanDeltaE": 0.0038,
+            "maxDeltaE": 0.0043
+          }
+        }
+      ]
+    },
+    {
+      "briefId": "dashboard-card-01",
+      "category": "dashboard-card",
+      "model": "synthetic-model-a",
+      "condition": "with-skill",
+      "sample": 0,
+      "synthetic": true,
+      "outputChars": 104,
+      "found": 1,
+      "scored": 1,
+      "anyGradientFound": true,
+      "scorableRatio": 1,
+      "minScore": 86,
+      "meanScore": 86,
+      "findingCodes": {
+        "chroma/banding": 1,
+        "lightness/low-contrast": 1
+      },
+      "colourChangedCount": 0,
+      "meanRefineDeltaE": null,
+      "duplicatesDropped": 0,
+      "notes": [],
+      "gradients": [
+        {
+          "form": "css",
+          "css": "linear-gradient(180deg, #ffffff 0%, #f1f5fd 100%)",
+          "findingCodes": [
+            "chroma/banding",
+            "lightness/low-contrast"
+          ],
+          "status": "scored",
+          "score": 86,
+          "dimensions": {
+            "lightness": 22,
+            "chroma": 14,
+            "hue": 30,
+            "spacing": 20
+          },
+          "hasHardStops": false,
+          "stops": 2,
+          "refine": {
+            "refined": true,
+            "colourChanged": false,
+            "scoreAfter": 86,
+            "meanDeltaE": 0,
+            "maxDeltaE": 0
+          }
+        }
+      ]
+    },
+    {
+      "briefId": "dashboard-card-05",
+      "category": "dashboard-card",
+      "model": "synthetic-model-a",
+      "condition": "with-skill",
+      "sample": 0,
+      "synthetic": true,
+      "outputChars": 104,
+      "found": 1,
+      "scored": 1,
+      "anyGradientFound": true,
+      "scorableRatio": 1,
+      "minScore": 100,
+      "meanScore": 100,
+      "findingCodes": {},
+      "colourChangedCount": 1,
+      "meanRefineDeltaE": 0.0033,
+      "duplicatesDropped": 0,
+      "notes": [],
+      "gradients": [
+        {
+          "form": "css",
+          "css": "linear-gradient(120deg, #f6d365 0%, #f4a24b 100%)",
+          "findingCodes": [],
+          "status": "scored",
+          "score": 100,
+          "dimensions": {
+            "lightness": 30,
+            "chroma": 20,
+            "hue": 30,
+            "spacing": 20
+          },
+          "hasHardStops": false,
+          "stops": 2,
+          "refine": {
+            "refined": true,
+            "colourChanged": true,
+            "scoreAfter": 100,
+            "meanDeltaE": 0.0033,
+            "maxDeltaE": 0.0036
+          }
+        }
+      ]
+    },
+    {
+      "briefId": "dataviz-heat-strip-01",
+      "category": "dataviz-heat-strip",
+      "model": "synthetic-model-a",
+      "condition": "with-skill",
+      "sample": 0,
+      "synthetic": true,
+      "outputChars": 124,
+      "found": 1,
+      "scored": 1,
+      "anyGradientFound": true,
+      "scorableRatio": 1,
+      "minScore": 63,
+      "meanScore": 63,
+      "findingCodes": {
+        "chroma/muddy-midpoint": 1,
+        "hue/wide-arc": 1,
+        "lightness/reversal": 1
+      },
+      "colourChangedCount": 1,
+      "meanRefineDeltaE": 0.1733,
+      "duplicatesDropped": 0,
+      "notes": [],
+      "gradients": [
+        {
+          "form": "css",
+          "css": "linear-gradient(in oklab 90deg, #2c3e9e, #3f9ec6, #e8d56a, #c4472f)",
+          "findingCodes": [
+            "chroma/muddy-midpoint",
+            "hue/wide-arc",
+            "lightness/reversal"
+          ],
+          "status": "scored",
+          "score": 63,
+          "dimensions": {
+            "lightness": 18,
+            "chroma": 15,
+            "hue": 10,
+            "spacing": 20
+          },
+          "hasHardStops": false,
+          "stops": 4,
+          "refine": {
+            "refined": true,
+            "colourChanged": true,
+            "scoreAfter": 78,
+            "meanDeltaE": 0.1733,
+            "maxDeltaE": 0.3146
+          }
+        }
+      ]
+    },
+    {
+      "briefId": "ecommerce-banner-01",
+      "category": "ecommerce-banner",
+      "model": "synthetic-model-a",
+      "condition": "with-skill",
+      "sample": 0,
+      "synthetic": true,
+      "outputChars": 118,
+      "found": 1,
+      "scored": 1,
+      "anyGradientFound": true,
+      "scorableRatio": 1,
+      "minScore": 100,
+      "meanScore": 100,
+      "findingCodes": {},
+      "colourChangedCount": 1,
+      "meanRefineDeltaE": 0.0152,
+      "duplicatesDropped": 0,
+      "notes": [],
+      "gradients": [
+        {
+          "form": "css",
+          "css": "linear-gradient(90deg, #7a4a2b 0%, #b07a4f 45%, #e8cfa6 100%)",
+          "findingCodes": [],
+          "status": "scored",
+          "score": 100,
+          "dimensions": {
+            "lightness": 30,
+            "chroma": 20,
+            "hue": 30,
+            "spacing": 20
+          },
+          "hasHardStops": false,
+          "stops": 3,
+          "refine": {
+            "refined": true,
+            "colourChanged": true,
+            "scoreAfter": 100,
+            "meanDeltaE": 0.0152,
+            "maxDeltaE": 0.0273
+          }
+        }
+      ]
+    },
+    {
+      "briefId": "ecommerce-banner-02",
+      "category": "ecommerce-banner",
+      "model": "synthetic-model-a",
+      "condition": "with-skill",
+      "sample": 0,
+      "synthetic": true,
+      "outputChars": 72,
+      "found": 0,
+      "scored": 0,
+      "anyGradientFound": false,
+      "scorableRatio": null,
+      "minScore": null,
+      "meanScore": null,
+      "findingCodes": {},
+      "colourChangedCount": 0,
+      "meanRefineDeltaE": null,
+      "duplicatesDropped": 0,
+      "notes": [],
+      "gradients": []
+    },
+    {
+      "briefId": "game-ui-01",
+      "category": "game-ui",
+      "model": "synthetic-model-a",
+      "condition": "with-skill",
+      "sample": 0,
+      "synthetic": true,
+      "outputChars": 109,
+      "found": 1,
+      "scored": 1,
+      "anyGradientFound": true,
+      "scorableRatio": 1,
+      "minScore": 95,
+      "meanScore": 95,
+      "findingCodes": {
+        "hue/narrow-arc": 1
+      },
+      "colourChangedCount": 1,
+      "meanRefineDeltaE": 0.0267,
+      "duplicatesDropped": 0,
+      "notes": [
+        "substituted:$hp-a",
+        "substituted:$hp-b"
+      ],
+      "gradients": [
+        {
+          "form": "css",
+          "css": "linear-gradient(to right, #e4572e, #8c2f1b)",
+          "findingCodes": [
+            "hue/narrow-arc"
+          ],
+          "status": "scored",
+          "score": 95,
+          "dimensions": {
+            "lightness": 30,
+            "chroma": 20,
+            "hue": 25,
+            "spacing": 20
+          },
+          "hasHardStops": false,
+          "stops": 2,
+          "refine": {
+            "refined": true,
+            "colourChanged": true,
+            "scoreAfter": 95,
+            "meanDeltaE": 0.0267,
+            "maxDeltaE": 0.027
+          }
+        }
+      ]
+    },
+    {
+      "briefId": "mobile-splash-01",
+      "category": "mobile-splash",
+      "model": "synthetic-model-a",
+      "condition": "with-skill",
+      "sample": 0,
+      "synthetic": true,
+      "outputChars": 111,
+      "found": 1,
+      "scored": 1,
+      "anyGradientFound": true,
+      "scorableRatio": 1,
+      "minScore": 100,
+      "meanScore": 100,
+      "findingCodes": {},
+      "colourChangedCount": 1,
+      "meanRefineDeltaE": 0.0167,
+      "duplicatesDropped": 0,
+      "notes": [
+        "json"
+      ],
+      "gradients": [
+        {
+          "form": "css",
+          "css": "linear-gradient(180deg, #2a1b4d 0%, #6b3f7f 55%, #c9707a 100%)",
+          "findingCodes": [],
+          "status": "scored",
+          "score": 100,
+          "dimensions": {
+            "lightness": 30,
+            "chroma": 20,
+            "hue": 30,
+            "spacing": 20
+          },
+          "hasHardStops": false,
+          "stops": 3,
+          "refine": {
+            "refined": true,
+            "colourChanged": true,
+            "scoreAfter": 100,
+            "meanDeltaE": 0.0167,
+            "maxDeltaE": 0.0247
+          }
+        }
+      ]
+    },
+    {
+      "briefId": "saas-hero-01",
+      "category": "saas-hero",
+      "model": "synthetic-model-a",
+      "condition": "with-skill",
+      "sample": 0,
+      "synthetic": true,
+      "outputChars": 161,
+      "found": 1,
+      "scored": 1,
+      "anyGradientFound": true,
+      "scorableRatio": 1,
+      "minScore": 95,
+      "meanScore": 95,
+      "findingCodes": {
+        "chroma/saturation-range": 1
+      },
+      "colourChangedCount": 1,
+      "meanRefineDeltaE": 0.0526,
+      "duplicatesDropped": 0,
+      "notes": [],
+      "gradients": [
+        {
+          "form": "css",
+          "css": "linear-gradient(135deg, #4f46e5 0%, #4f8ae5 55%, #5ec3e8 100%)",
+          "findingCodes": [
+            "chroma/saturation-range"
+          ],
+          "status": "scored",
+          "score": 95,
+          "dimensions": {
+            "lightness": 30,
+            "chroma": 15,
+            "hue": 30,
+            "spacing": 20
+          },
+          "hasHardStops": false,
+          "stops": 3,
+          "refine": {
+            "refined": true,
+            "colourChanged": true,
+            "scoreAfter": 100,
+            "meanDeltaE": 0.0526,
+            "maxDeltaE": 0.0672
+          }
+        }
+      ]
+    },
+    {
+      "briefId": "saas-hero-02",
+      "category": "saas-hero",
+      "model": "synthetic-model-a",
+      "condition": "with-skill",
+      "sample": 0,
+      "synthetic": true,
+      "outputChars": 107,
+      "found": 1,
+      "scored": 1,
+      "anyGradientFound": true,
+      "scorableRatio": 1,
+      "minScore": 95,
+      "meanScore": 95,
+      "findingCodes": {
+        "hue/narrow-arc": 1
+      },
+      "colourChangedCount": 1,
+      "meanRefineDeltaE": 0.0318,
+      "duplicatesDropped": 0,
+      "notes": [],
+      "gradients": [
+        {
+          "form": "css",
+          "css": "linear-gradient(to right, #3b82f6, #60a5fa, #93c5fd)",
+          "findingCodes": [
+            "hue/narrow-arc"
+          ],
+          "status": "scored",
+          "score": 95,
+          "dimensions": {
+            "lightness": 30,
+            "chroma": 20,
+            "hue": 25,
+            "spacing": 20
+          },
+          "hasHardStops": false,
+          "stops": 3,
+          "refine": {
+            "refined": true,
+            "colourChanged": true,
+            "scoreAfter": 100,
+            "meanDeltaE": 0.0318,
+            "maxDeltaE": 0.0457
+          }
+        }
+      ]
+    },
+    {
+      "briefId": "saas-hero-03",
+      "category": "saas-hero",
+      "model": "synthetic-model-a",
+      "condition": "with-skill",
+      "sample": 0,
+      "synthetic": true,
+      "outputChars": 99,
+      "found": 1,
+      "scored": 1,
+      "anyGradientFound": true,
+      "scorableRatio": 1,
+      "minScore": 96,
+      "meanScore": 96,
+      "findingCodes": {
+        "chroma/dead-zone": 1
+      },
+      "colourChangedCount": 1,
+      "meanRefineDeltaE": 0.0428,
+      "duplicatesDropped": 0,
+      "notes": [],
+      "gradients": [
+        {
+          "form": "tailwind-arbitrary",
+          "css": "linear-gradient(to bottom,#0f172a,#1e1b4b 45%,#312e81)",
+          "findingCodes": [
+            "chroma/dead-zone"
+          ],
+          "status": "scored",
+          "score": 96,
+          "dimensions": {
+            "lightness": 30,
+            "chroma": 16,
+            "hue": 30,
+            "spacing": 20
+          },
+          "hasHardStops": false,
+          "stops": 3,
+          "refine": {
+            "refined": true,
+            "colourChanged": true,
+            "scoreAfter": 100,
+            "meanDeltaE": 0.0428,
+            "maxDeltaE": 0.0485
+          }
+        }
+      ]
+    },
+    {
+      "briefId": "brand-constrained-01",
+      "category": "brand-constrained",
+      "model": "synthetic-model-b",
+      "condition": "baseline",
+      "sample": 0,
+      "synthetic": true,
+      "outputChars": 96,
+      "found": 1,
+      "scored": 1,
+      "anyGradientFound": true,
+      "scorableRatio": 1,
+      "minScore": 82,
+      "meanScore": 82,
+      "findingCodes": {
+        "chroma/muddy-midpoint": 1,
+        "hue/wide-arc": 1
+      },
+      "colourChangedCount": 1,
+      "meanRefineDeltaE": 0.1097,
+      "duplicatesDropped": 0,
+      "notes": [],
+      "gradients": [
+        {
+          "form": "css",
+          "css": "linear-gradient(135deg, #0b3d91, #f2b705)",
+          "findingCodes": [
+            "chroma/muddy-midpoint",
+            "hue/wide-arc"
+          ],
+          "status": "scored",
+          "score": 82,
+          "dimensions": {
+            "lightness": 30,
+            "chroma": 10,
+            "hue": 22,
+            "spacing": 20
+          },
+          "hasHardStops": false,
+          "stops": 2,
+          "refine": {
+            "refined": true,
+            "colourChanged": true,
+            "scoreAfter": 100,
+            "meanDeltaE": 0.1097,
+            "maxDeltaE": 0.1305
+          }
+        }
+      ]
+    },
+    {
+      "briefId": "dashboard-card-01",
+      "category": "dashboard-card",
+      "model": "synthetic-model-b",
+      "condition": "baseline",
+      "sample": 0,
+      "synthetic": true,
+      "outputChars": 98,
+      "found": 1,
+      "scored": 1,
+      "anyGradientFound": true,
+      "scorableRatio": 1,
+      "minScore": 82,
+      "meanScore": 82,
+      "findingCodes": {
+        "chroma/dead-zone": 1,
+        "chroma/saturation-range": 1,
+        "hue/narrow-arc": 1
+      },
+      "colourChangedCount": 1,
+      "meanRefineDeltaE": 0.0503,
+      "duplicatesDropped": 0,
+      "notes": [],
+      "gradients": [
+        {
+          "form": "css",
+          "css": "linear-gradient(#fff, #e0e7ff 40%, #818cf8)",
+          "findingCodes": [
+            "chroma/dead-zone",
+            "chroma/saturation-range",
+            "hue/narrow-arc"
+          ],
+          "status": "scored",
+          "score": 82,
+          "dimensions": {
+            "lightness": 30,
+            "chroma": 7,
+            "hue": 25,
+            "spacing": 20
+          },
+          "hasHardStops": false,
+          "stops": 3,
+          "refine": {
+            "refined": true,
+            "colourChanged": true,
+            "scoreAfter": 87,
+            "meanDeltaE": 0.0503,
+            "maxDeltaE": 0.0878
+          }
+        }
+      ]
+    },
+    {
+      "briefId": "dataviz-heat-strip-01",
+      "category": "dataviz-heat-strip",
+      "model": "synthetic-model-b",
+      "condition": "baseline",
+      "sample": 0,
+      "synthetic": true,
+      "outputChars": 61,
+      "found": 0,
+      "scored": 0,
+      "anyGradientFound": false,
+      "scorableRatio": null,
+      "minScore": null,
+      "meanScore": null,
+      "findingCodes": {},
+      "colourChangedCount": 0,
+      "meanRefineDeltaE": null,
+      "duplicatesDropped": 0,
+      "notes": [],
+      "gradients": []
+    },
+    {
+      "briefId": "game-ui-01",
+      "category": "game-ui",
+      "model": "synthetic-model-b",
+      "condition": "baseline",
+      "sample": 0,
+      "synthetic": true,
+      "outputChars": 122,
+      "found": 1,
+      "scored": 1,
+      "anyGradientFound": true,
+      "scorableRatio": 1,
+      "minScore": 88,
+      "meanScore": 88,
+      "findingCodes": {
+        "lightness/reversal": 1
+      },
+      "colourChangedCount": 1,
+      "meanRefineDeltaE": 0.0891,
+      "duplicatesDropped": 0,
+      "notes": [],
+      "gradients": [
+        {
+          "form": "css",
+          "css": "linear-gradient(to right, #00ff00 0%, #ffff00 50%, #ff0000 100%)",
+          "findingCodes": [
+            "lightness/reversal"
+          ],
+          "status": "scored",
+          "score": 88,
+          "dimensions": {
+            "lightness": 18,
+            "chroma": 20,
+            "hue": 30,
+            "spacing": 20
+          },
+          "hasHardStops": false,
+          "stops": 3,
+          "refine": {
+            "refined": true,
+            "colourChanged": true,
+            "scoreAfter": 100,
+            "meanDeltaE": 0.0891,
+            "maxDeltaE": 0.1545
+          }
+        }
+      ]
+    },
+    {
+      "briefId": "mobile-splash-01",
+      "category": "mobile-splash",
+      "model": "synthetic-model-b",
+      "condition": "baseline",
+      "sample": 0,
+      "synthetic": true,
+      "outputChars": 117,
+      "found": 1,
+      "scored": 1,
+      "anyGradientFound": true,
+      "scorableRatio": 1,
+      "minScore": 88,
+      "meanScore": 88,
+      "findingCodes": {
+        "lightness/reversal": 1
+      },
+      "colourChangedCount": 1,
+      "meanRefineDeltaE": 0.2329,
+      "duplicatesDropped": 0,
+      "notes": [],
+      "gradients": [
+        {
+          "form": "css",
+          "css": "linear-gradient(0deg, #000000 0%, #ffffff 50%, #000000 100%)",
+          "findingCodes": [
+            "lightness/reversal"
+          ],
+          "status": "scored",
+          "score": 88,
+          "dimensions": {
+            "lightness": 18,
+            "chroma": 20,
+            "hue": 30,
+            "spacing": 20
+          },
+          "hasHardStops": false,
+          "stops": 3,
+          "refine": {
+            "refined": true,
+            "colourChanged": true,
+            "scoreAfter": 88,
+            "meanDeltaE": 0.2329,
+            "maxDeltaE": 0.6988
+          }
+        }
+      ]
+    },
+    {
+      "briefId": "saas-hero-01",
+      "category": "saas-hero",
+      "model": "synthetic-model-b",
+      "condition": "baseline",
+      "sample": 0,
+      "synthetic": true,
+      "outputChars": 82,
+      "found": 1,
+      "scored": 1,
+      "anyGradientFound": true,
+      "scorableRatio": 1,
+      "minScore": 65,
+      "meanScore": 65,
+      "findingCodes": {
+        "chroma/muddy-midpoint": 1,
+        "chroma/saturation-range": 1,
+        "hue/wide-arc": 1
+      },
+      "colourChangedCount": 1,
+      "meanRefineDeltaE": 0.1525,
+      "duplicatesDropped": 0,
+      "notes": [],
+      "gradients": [
+        {
+          "form": "tailwind-utility",
+          "css": "linear-gradient(to right, #ff00ff, #00ff00, #00ffff)",
+          "findingCodes": [
+            "chroma/muddy-midpoint",
+            "chroma/saturation-range",
+            "hue/wide-arc"
+          ],
+          "status": "scored",
+          "score": 65,
+          "dimensions": {
+            "lightness": 30,
+            "chroma": 5,
+            "hue": 10,
+            "spacing": 20
+          },
+          "hasHardStops": false,
+          "stops": 3,
+          "refine": {
+            "refined": true,
+            "colourChanged": true,
+            "scoreAfter": 85,
+            "meanDeltaE": 0.1525,
+            "maxDeltaE": 0.3452
+          }
+        }
+      ]
+    },
+    {
+      "briefId": "saas-hero-02",
+      "category": "saas-hero",
+      "model": "synthetic-model-b",
+      "condition": "baseline",
+      "sample": 0,
+      "synthetic": true,
+      "outputChars": 224,
+      "found": 2,
+      "scored": 1,
+      "anyGradientFound": true,
+      "scorableRatio": 0.5,
+      "minScore": 100,
+      "meanScore": 100,
+      "findingCodes": {},
+      "colourChangedCount": 1,
+      "meanRefineDeltaE": 0.0101,
+      "duplicatesDropped": 0,
+      "notes": [],
+      "gradients": [
+        {
+          "form": "css",
+          "css": "linear-gradient(to bottom right, #f093fb 0%, #f5576c 100%)",
+          "findingCodes": [],
+          "status": "scored",
+          "score": 100,
+          "dimensions": {
+            "lightness": 30,
+            "chroma": 20,
+            "hue": 30,
+            "spacing": 20
+          },
+          "hasHardStops": false,
+          "stops": 2,
+          "refine": {
+            "refined": true,
+            "colourChanged": true,
+            "scoreAfter": 100,
+            "meanDeltaE": 0.0101,
+            "maxDeltaE": 0.0105
+          }
+        },
+        {
+          "form": "css",
+          "css": "linear-gradient(rgba(0,0,0,0), rgba(0,0,0,.4))",
+          "findingCodes": [],
+          "status": "unscorable",
+          "code": "alpha",
+          "stops": 2
+        }
+      ]
+    },
+    {
+      "briefId": "brand-constrained-01",
+      "category": "brand-constrained",
+      "model": "synthetic-model-b",
+      "condition": "with-skill",
+      "sample": 0,
+      "synthetic": true,
+      "outputChars": 109,
+      "found": 1,
+      "scored": 1,
+      "anyGradientFound": true,
+      "scorableRatio": 1,
+      "minScore": 78,
+      "meanScore": 78,
+      "findingCodes": {
+        "chroma/muddy-midpoint": 1,
+        "hue/wide-arc": 1,
+        "lightness/uneven-speed": 1
+      },
+      "colourChangedCount": 1,
+      "meanRefineDeltaE": 0.1098,
+      "duplicatesDropped": 0,
+      "notes": [],
+      "gradients": [
+        {
+          "form": "css",
+          "css": "linear-gradient(135deg, #0b3d91, #2b5cb0 60%, #f2b705)",
+          "findingCodes": [
+            "chroma/muddy-midpoint",
+            "hue/wide-arc",
+            "lightness/uneven-speed"
+          ],
+          "status": "scored",
+          "score": 78,
+          "dimensions": {
+            "lightness": 26,
+            "chroma": 10,
+            "hue": 22,
+            "spacing": 20
+          },
+          "hasHardStops": false,
+          "stops": 3,
+          "refine": {
+            "refined": true,
+            "colourChanged": true,
+            "scoreAfter": 100,
+            "meanDeltaE": 0.1098,
+            "maxDeltaE": 0.2291
+          }
+        }
+      ]
+    },
+    {
+      "briefId": "dashboard-card-01",
+      "category": "dashboard-card",
+      "model": "synthetic-model-b",
+      "condition": "with-skill",
+      "sample": 0,
+      "synthetic": true,
+      "outputChars": 101,
+      "found": 1,
+      "scored": 1,
+      "anyGradientFound": true,
+      "scorableRatio": 1,
+      "minScore": 89,
+      "meanScore": 89,
+      "findingCodes": {
+        "chroma/banding": 1,
+        "hue/narrow-arc": 1
+      },
+      "colourChangedCount": 1,
+      "meanRefineDeltaE": 0.0027,
+      "duplicatesDropped": 0,
+      "notes": [],
+      "gradients": [
+        {
+          "form": "css",
+          "css": "linear-gradient(#ffffff, #eef0ff 60%, #dfe3fb)",
+          "findingCodes": [
+            "chroma/banding",
+            "hue/narrow-arc"
+          ],
+          "status": "scored",
+          "score": 89,
+          "dimensions": {
+            "lightness": 30,
+            "chroma": 14,
+            "hue": 25,
+            "spacing": 20
+          },
+          "hasHardStops": false,
+          "stops": 3,
+          "refine": {
+            "refined": true,
+            "colourChanged": true,
+            "scoreAfter": 89,
+            "meanDeltaE": 0.0027,
+            "maxDeltaE": 0.0056
+          }
+        }
+      ]
+    },
+    {
+      "briefId": "dataviz-heat-strip-01",
+      "category": "dataviz-heat-strip",
+      "model": "synthetic-model-b",
+      "condition": "with-skill",
+      "sample": 0,
+      "synthetic": true,
+      "outputChars": 115,
+      "found": 1,
+      "scored": 1,
+      "anyGradientFound": true,
+      "scorableRatio": 1,
+      "minScore": 92,
+      "meanScore": 92,
+      "findingCodes": {
+        "chroma/dead-zone": 1
+      },
+      "colourChangedCount": 1,
+      "meanRefineDeltaE": 0.0297,
+      "duplicatesDropped": 0,
+      "notes": [],
+      "gradients": [
+        {
+          "form": "css",
+          "css": "linear-gradient(90deg, #f7fbff, #9ecae1, #3182bd, #08306b)",
+          "findingCodes": [
+            "chroma/dead-zone"
+          ],
+          "status": "scored",
+          "score": 92,
+          "dimensions": {
+            "lightness": 30,
+            "chroma": 12,
+            "hue": 30,
+            "spacing": 20
+          },
+          "hasHardStops": false,
+          "stops": 4,
+          "refine": {
+            "refined": true,
+            "colourChanged": true,
+            "scoreAfter": 92,
+            "meanDeltaE": 0.0297,
+            "maxDeltaE": 0.0733
+          }
+        }
+      ]
+    },
+    {
+      "briefId": "game-ui-01",
+      "category": "game-ui",
+      "model": "synthetic-model-b",
+      "condition": "with-skill",
+      "sample": 0,
+      "synthetic": true,
+      "outputChars": 122,
+      "found": 1,
+      "scored": 1,
+      "anyGradientFound": true,
+      "scorableRatio": 1,
+      "minScore": 88,
+      "meanScore": 88,
+      "findingCodes": {
+        "lightness/reversal": 1
+      },
+      "colourChangedCount": 1,
+      "meanRefineDeltaE": 0.0449,
+      "duplicatesDropped": 0,
+      "notes": [],
+      "gradients": [
+        {
+          "form": "css",
+          "css": "linear-gradient(to right, #7bc043 0%, #d6c23a 55%, #d2603a 100%)",
+          "findingCodes": [
+            "lightness/reversal"
+          ],
+          "status": "scored",
+          "score": 88,
+          "dimensions": {
+            "lightness": 18,
+            "chroma": 20,
+            "hue": 30,
+            "spacing": 20
+          },
+          "hasHardStops": false,
+          "stops": 3,
+          "refine": {
+            "refined": true,
+            "colourChanged": true,
+            "scoreAfter": 100,
+            "meanDeltaE": 0.0449,
+            "maxDeltaE": 0.0871
+          }
+        }
+      ]
+    },
+    {
+      "briefId": "mobile-splash-01",
+      "category": "mobile-splash",
+      "model": "synthetic-model-b",
+      "condition": "with-skill",
+      "sample": 0,
+      "synthetic": true,
+      "outputChars": 117,
+      "found": 1,
+      "scored": 1,
+      "anyGradientFound": true,
+      "scorableRatio": 1,
+      "minScore": 95,
+      "meanScore": 95,
+      "findingCodes": {
+        "hue/narrow-arc": 1
+      },
+      "colourChangedCount": 1,
+      "meanRefineDeltaE": 0.0136,
+      "duplicatesDropped": 0,
+      "notes": [],
+      "gradients": [
+        {
+          "form": "css",
+          "css": "linear-gradient(0deg, #1b1740 0%, #4b3c82 55%, #8a76b8 100%)",
+          "findingCodes": [
+            "hue/narrow-arc"
+          ],
+          "status": "scored",
+          "score": 95,
+          "dimensions": {
+            "lightness": 30,
+            "chroma": 20,
+            "hue": 25,
+            "spacing": 20
+          },
+          "hasHardStops": false,
+          "stops": 3,
+          "refine": {
+            "refined": true,
+            "colourChanged": true,
+            "scoreAfter": 95,
+            "meanDeltaE": 0.0136,
+            "maxDeltaE": 0.0203
+          }
+        }
+      ]
+    },
+    {
+      "briefId": "saas-hero-01",
+      "category": "saas-hero",
+      "model": "synthetic-model-b",
+      "condition": "with-skill",
+      "sample": 0,
+      "synthetic": true,
+      "outputChars": 80,
+      "found": 1,
+      "scored": 1,
+      "anyGradientFound": true,
+      "scorableRatio": 1,
+      "minScore": 95,
+      "meanScore": 95,
+      "findingCodes": {
+        "hue/narrow-arc": 1
+      },
+      "colourChangedCount": 1,
+      "meanRefineDeltaE": 0.0331,
+      "duplicatesDropped": 0,
+      "notes": [],
+      "gradients": [
+        {
+          "form": "tailwind-utility",
+          "css": "linear-gradient(to right, #6366f1, #7c8cf3, #9fb4f7)",
+          "findingCodes": [
+            "hue/narrow-arc"
+          ],
+          "status": "scored",
+          "score": 95,
+          "dimensions": {
+            "lightness": 30,
+            "chroma": 20,
+            "hue": 25,
+            "spacing": 20
+          },
+          "hasHardStops": false,
+          "stops": 3,
+          "refine": {
+            "refined": true,
+            "colourChanged": true,
+            "scoreAfter": 95,
+            "meanDeltaE": 0.0331,
+            "maxDeltaE": 0.0515
+          }
+        }
+      ]
+    },
+    {
+      "briefId": "saas-hero-02",
+      "category": "saas-hero",
+      "model": "synthetic-model-b",
+      "condition": "with-skill",
+      "sample": 0,
+      "synthetic": true,
+      "outputChars": 113,
+      "found": 1,
+      "scored": 1,
+      "anyGradientFound": true,
+      "scorableRatio": 1,
+      "minScore": 100,
+      "meanScore": 100,
+      "findingCodes": {},
+      "colourChangedCount": 1,
+      "meanRefineDeltaE": 0.0237,
+      "duplicatesDropped": 0,
+      "notes": [],
+      "gradients": [
+        {
+          "form": "css",
+          "css": "linear-gradient(to bottom right, #f6b8d8 0%, #f58aa0 100%)",
+          "findingCodes": [],
+          "status": "scored",
+          "score": 100,
+          "dimensions": {
+            "lightness": 30,
+            "chroma": 20,
+            "hue": 30,
+            "spacing": 20
+          },
+          "hasHardStops": false,
+          "stops": 2,
+          "refine": {
+            "refined": true,
+            "colourChanged": true,
+            "scoreAfter": 100,
+            "meanDeltaE": 0.0237,
+            "maxDeltaE": 0.0248
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,614 @@
+{
+  "schemaVersion": 1,
+  "name": "GradientBench briefs",
+  "version": "0.1.0",
+  "authoringPolicy": "Written by the Opal42 maintainers for this project. No copied or paraphrased third-party copy. Company, product and brand names are invented; any resemblance to a real organisation is coincidental and no endorsement is implied. Briefs describe a UI situation and never ask for a specific CSS gradient, so every model is free to choose its own colours. Constraint hex values are arbitrary design values, not trademarked brand colours. See docs/bench.md.",
+  "briefs": [
+    {
+      "id": "saas-hero-01",
+      "category": "saas-hero",
+      "brief": "Hero background for a project-management tool aimed at small design agencies. Calm, trustworthy, a little playful. A headline and a product screenshot sit on top."
+    },
+    {
+      "id": "saas-hero-02",
+      "category": "saas-hero",
+      "brief": "Landing hero for an invoicing app for freelancers. Should feel quick and uncluttered; the background must not fight with a large white headline."
+    },
+    {
+      "id": "saas-hero-03",
+      "category": "saas-hero",
+      "brief": "Hero section for a developer-observability platform. Technical but approachable; a slow, deep background behind a code sample card."
+    },
+    {
+      "id": "saas-hero-04",
+      "category": "saas-hero",
+      "brief": "Hero for an HR onboarding product. Warm and human rather than corporate; text is dark and left-aligned."
+    },
+    {
+      "id": "saas-hero-05",
+      "category": "saas-hero",
+      "brief": "Background for the sign-up page of a customer-support inbox. Energetic, confident; a form card is centred on top."
+    },
+    {
+      "id": "saas-hero-06",
+      "category": "saas-hero",
+      "brief": "Hero for a data-privacy SaaS. Should signal safety and clarity without looking like a bank; headline is white."
+    },
+    {
+      "id": "saas-hero-07",
+      "category": "saas-hero",
+      "brief": "Hero for a meeting-notes assistant. Soft, modern, a hint of colour in one corner only; lots of whitespace."
+    },
+    {
+      "id": "saas-hero-08",
+      "category": "saas-hero",
+      "brief": "Pricing-page header band for a subscription analytics tool. Subtle, supports a three-column pricing grid below it."
+    },
+    {
+      "id": "saas-hero-09",
+      "category": "saas-hero",
+      "brief": "Hero background for a calendar-scheduling tool for clinics. Clean and clinical but friendly; avoid the usual purple-to-blue look."
+    },
+    {
+      "id": "saas-hero-10",
+      "category": "saas-hero",
+      "brief": "Full-bleed hero for an API-first email service. Dark theme, a glowing feel behind a terminal-style demo."
+    },
+    {
+      "id": "ecommerce-banner-01",
+      "category": "ecommerce-banner",
+      "brief": "Seasonal banner for a ceramics shop: autumn collection. Earthy, warm, with room for a product photo on the right."
+    },
+    {
+      "id": "ecommerce-banner-02",
+      "category": "ecommerce-banner",
+      "brief": "Free-shipping announcement bar across the top of a sneaker store. Thin, bold, must stay readable at 40px height."
+    },
+    {
+      "id": "ecommerce-banner-03",
+      "category": "ecommerce-banner",
+      "brief": "Homepage banner for a plant nursery's spring sale. Fresh and light; text overlay in dark green."
+    },
+    {
+      "id": "ecommerce-banner-04",
+      "category": "ecommerce-banner",
+      "brief": "Black Friday style banner for an electronics retailer, but tasteful. Dark base with one accent area."
+    },
+    {
+      "id": "ecommerce-banner-05",
+      "category": "ecommerce-banner",
+      "brief": "Category banner for a children's book shop. Cheerful, soft, not neon."
+    },
+    {
+      "id": "ecommerce-banner-06",
+      "category": "ecommerce-banner",
+      "brief": "Banner for a specialty coffee roaster's subscription offer. Rich and roasted; headline in cream."
+    },
+    {
+      "id": "ecommerce-banner-07",
+      "category": "ecommerce-banner",
+      "brief": "Gift-card promotion tile for a boutique stationery store. Elegant, muted, slightly metallic feel without looking tacky."
+    },
+    {
+      "id": "ecommerce-banner-08",
+      "category": "ecommerce-banner",
+      "brief": "Clearance banner for a furniture store. Calm, neutral base; the percentage-off badge is the loud element, not the background."
+    },
+    {
+      "id": "ecommerce-banner-09",
+      "category": "ecommerce-banner",
+      "brief": "Back-to-school banner for an online bookstore. Friendly, bright, works on both desktop and a narrow phone crop."
+    },
+    {
+      "id": "ecommerce-banner-10",
+      "category": "ecommerce-banner",
+      "brief": "Summer swimwear collection banner. Sunlit water feeling; keep contrast high for a white caption."
+    },
+    {
+      "id": "dashboard-card-01",
+      "category": "dashboard-card",
+      "brief": "Revenue summary card in a finance dashboard: one big number and a small trend line. Subtle depth, not decorative."
+    },
+    {
+      "id": "dashboard-card-02",
+      "category": "dashboard-card",
+      "brief": "Active-users KPI tile on an admin dashboard. Slight tint to separate it from neighbouring white cards."
+    },
+    {
+      "id": "dashboard-card-03",
+      "category": "dashboard-card",
+      "brief": "Storage-usage card with a progress bar fill. The fill should read as 'getting fuller' toward the right."
+    },
+    {
+      "id": "dashboard-card-04",
+      "category": "dashboard-card",
+      "brief": "Server-health status card that is currently healthy. Calm green family, text stays dark."
+    },
+    {
+      "id": "dashboard-card-05",
+      "category": "dashboard-card",
+      "brief": "Support-queue card showing a backlog warning. Amber family; must not look like an error state."
+    },
+    {
+      "id": "dashboard-card-06",
+      "category": "dashboard-card",
+      "brief": "Weekly goals card for a fitness dashboard. Motivating but restrained; works in a 3-column grid."
+    },
+    {
+      "id": "dashboard-card-07",
+      "category": "dashboard-card",
+      "brief": "Card header strip for an analytics widget titled 'Conversion funnel'. Thin band, 48px tall."
+    },
+    {
+      "id": "dashboard-card-08",
+      "category": "dashboard-card",
+      "brief": "Skeleton-loading shimmer for dashboard cards. A neutral grey sweep, no colour."
+    },
+    {
+      "id": "dashboard-card-09",
+      "category": "dashboard-card",
+      "brief": "Profile card on a team dashboard with an avatar overlapping the top edge. The top cover area needs a background."
+    },
+    {
+      "id": "dashboard-card-10",
+      "category": "dashboard-card",
+      "brief": "Dark-theme metric card for a trading dashboard showing a positive daily change. Subtle, no neon."
+    },
+    {
+      "id": "mobile-splash-01",
+      "category": "mobile-splash",
+      "brief": "Splash screen for a meditation app. Slow, breathable, dusk colours; logo is a white glyph in the centre."
+    },
+    {
+      "id": "mobile-splash-02",
+      "category": "mobile-splash",
+      "brief": "Launch screen for a bike-sharing app. Energetic, outdoors, daytime; must work in portrait on tall phones."
+    },
+    {
+      "id": "mobile-splash-03",
+      "category": "mobile-splash",
+      "brief": "Splash for a language-learning app aimed at teenagers. Playful, saturated but not harsh."
+    },
+    {
+      "id": "mobile-splash-04",
+      "category": "mobile-splash",
+      "brief": "Splash for a personal-finance app. Reassuring, deep, one dominant hue."
+    },
+    {
+      "id": "mobile-splash-05",
+      "category": "mobile-splash",
+      "brief": "Onboarding screen background for a recipe app. Warm kitchen feel; text blocks at the bottom third."
+    },
+    {
+      "id": "mobile-splash-06",
+      "category": "mobile-splash",
+      "brief": "Splash for a weather app. Should evoke early morning sky, top-to-bottom."
+    },
+    {
+      "id": "mobile-splash-07",
+      "category": "mobile-splash",
+      "brief": "Launch screen for a podcast player. Dark, moody, a single glow behind the logo."
+    },
+    {
+      "id": "mobile-splash-08",
+      "category": "mobile-splash",
+      "brief": "Loading screen background for a puzzle game on phones. Light and friendly, avoids looking like a stock gradient."
+    },
+    {
+      "id": "mobile-splash-09",
+      "category": "mobile-splash",
+      "brief": "Splash for a sleep-tracking app. Night sky, very low brightness so it is gentle in a dark bedroom."
+    },
+    {
+      "id": "mobile-splash-10",
+      "category": "mobile-splash",
+      "brief": "Splash for a pet-adoption app. Soft, cuddly, pastel; logo in dark plum."
+    },
+    {
+      "id": "dark-mode-button-01",
+      "category": "dark-mode-button",
+      "brief": "Primary call-to-action button for a dark-mode developer tool. Subtle gradient with a visible hover state."
+    },
+    {
+      "id": "dark-mode-button-02",
+      "category": "dark-mode-button",
+      "brief": "'Upgrade' button in a dark settings page. It should draw the eye without glowing."
+    },
+    {
+      "id": "dark-mode-button-03",
+      "category": "dark-mode-button",
+      "brief": "Floating action button in a dark music app. Circular, 56px, needs a clear fill and a pressed state."
+    },
+    {
+      "id": "dark-mode-button-04",
+      "category": "dark-mode-button",
+      "brief": "Pill-shaped 'Start free trial' button on a dark marketing site; white label."
+    },
+    {
+      "id": "dark-mode-button-05",
+      "category": "dark-mode-button",
+      "brief": "Destructive 'Delete workspace' button in dark mode. Serious, not alarming."
+    },
+    {
+      "id": "dark-mode-button-06",
+      "category": "dark-mode-button",
+      "brief": "Secondary outlined button in dark mode whose border uses a gradient."
+    },
+    {
+      "id": "dark-mode-button-07",
+      "category": "dark-mode-button",
+      "brief": "Toggle switch track in dark mode, on state. Smooth, narrow, 24px tall."
+    },
+    {
+      "id": "dark-mode-button-08",
+      "category": "dark-mode-button",
+      "brief": "Dark-theme 'Buy now' button for a game store. Confident, a little shine."
+    },
+    {
+      "id": "dark-mode-button-09",
+      "category": "dark-mode-button",
+      "brief": "Segmented-control active segment in a dark dashboard. Understated lift from the track."
+    },
+    {
+      "id": "dark-mode-button-10",
+      "category": "dark-mode-button",
+      "brief": "Dark-mode 'Record' button for a screen-capture tool. Red family, readable white icon."
+    },
+    {
+      "id": "dataviz-heat-strip-01",
+      "category": "dataviz-heat-strip",
+      "brief": "A one-dimensional colour strip for a temperature legend from -10 to 40 degrees Celsius. Must read as ordered cold to hot."
+    },
+    {
+      "id": "dataviz-heat-strip-02",
+      "category": "dataviz-heat-strip",
+      "brief": "Sequential scale strip for a population-density choropleth legend; light to dark, perceptually even."
+    },
+    {
+      "id": "dataviz-heat-strip-03",
+      "category": "dataviz-heat-strip",
+      "brief": "Diverging strip for profit and loss, centred on zero, with neutral midpoint."
+    },
+    {
+      "id": "dataviz-heat-strip-04",
+      "category": "dataviz-heat-strip",
+      "brief": "Heat strip beneath a calendar heatmap showing commit activity: none to very busy."
+    },
+    {
+      "id": "dataviz-heat-strip-05",
+      "category": "dataviz-heat-strip",
+      "brief": "Air-quality index legend strip from good to hazardous, ordered, colour-blind-friendly."
+    },
+    {
+      "id": "dataviz-heat-strip-06",
+      "category": "dataviz-heat-strip",
+      "brief": "Elevation legend strip for a topographic map, sea level to peaks."
+    },
+    {
+      "id": "dataviz-heat-strip-07",
+      "category": "dataviz-heat-strip",
+      "brief": "Rainfall intensity strip for a weather radar legend; dry to torrential."
+    },
+    {
+      "id": "dataviz-heat-strip-08",
+      "category": "dataviz-heat-strip",
+      "brief": "Sentiment strip from very negative to very positive for a survey dashboard, with a neutral centre."
+    },
+    {
+      "id": "dataviz-heat-strip-09",
+      "category": "dataviz-heat-strip",
+      "brief": "Load-average strip for a server monitoring page: idle to saturated, readable in greyscale as well."
+    },
+    {
+      "id": "dataviz-heat-strip-10",
+      "category": "dataviz-heat-strip",
+      "brief": "Sequential legend for a correlation matrix, 0 to 1 only, single hue family."
+    },
+    {
+      "id": "marketing-landing-01",
+      "category": "marketing-landing",
+      "brief": "Landing page for a local farmers' market festival. Section dividers need background treatments; lively and warm."
+    },
+    {
+      "id": "marketing-landing-02",
+      "category": "marketing-landing",
+      "brief": "Event page for an indie music night. Dusky, stage-light feeling behind the lineup list."
+    },
+    {
+      "id": "marketing-landing-03",
+      "category": "marketing-landing",
+      "brief": "Landing page for a solar-panel installer. Optimistic, sunrise energy, but still credible."
+    },
+    {
+      "id": "marketing-landing-04",
+      "category": "marketing-landing",
+      "brief": "Newsletter sign-up strip for a cooking blog; sits between two white sections, 200px tall."
+    },
+    {
+      "id": "marketing-landing-05",
+      "category": "marketing-landing",
+      "brief": "Landing page for a yoga studio. Gentle, airy; a different soft background per section."
+    },
+    {
+      "id": "marketing-landing-06",
+      "category": "marketing-landing",
+      "brief": "Crowdfunding page for a board game. Playful, bold, a hero and a stretch-goal band."
+    },
+    {
+      "id": "marketing-landing-07",
+      "category": "marketing-landing",
+      "brief": "Webinar registration page for a cybersecurity training company. Serious, dark; a countdown sits on top."
+    },
+    {
+      "id": "marketing-landing-08",
+      "category": "marketing-landing",
+      "brief": "Landing page for an electric-bike brand. Fresh and fast; a diagonal feeling to the hero background."
+    },
+    {
+      "id": "marketing-landing-09",
+      "category": "marketing-landing",
+      "brief": "Footer call-to-action band for a nonprofit that plants trees. Natural, hopeful."
+    },
+    {
+      "id": "marketing-landing-10",
+      "category": "marketing-landing",
+      "brief": "Landing page for a bakery's holiday pre-order. Cosy, warm, festive without clichés."
+    },
+    {
+      "id": "game-ui-01",
+      "category": "game-ui",
+      "brief": "Health bar for a fantasy RPG. Full to empty reading left to right; must look good at 12px tall."
+    },
+    {
+      "id": "game-ui-02",
+      "category": "game-ui",
+      "brief": "Mana bar for the same RPG; a different colour family from the health bar."
+    },
+    {
+      "id": "game-ui-03",
+      "category": "game-ui",
+      "brief": "Main-menu background for a sci-fi strategy game. Deep space, a faint horizon glow."
+    },
+    {
+      "id": "game-ui-04",
+      "category": "game-ui",
+      "brief": "Button for a puzzle game's 'Next level' screen. Candy-like, glossy but legible."
+    },
+    {
+      "id": "game-ui-05",
+      "category": "game-ui",
+      "brief": "Loot rarity frames: common to legendary, as a set of gradient borders or fills."
+    },
+    {
+      "id": "game-ui-06",
+      "category": "game-ui",
+      "brief": "Racing game speedometer arc fill, from calm to redline."
+    },
+    {
+      "id": "game-ui-07",
+      "category": "game-ui",
+      "brief": "Dialogue box background for a cosy farming game. Parchment feeling, low contrast edges."
+    },
+    {
+      "id": "game-ui-08",
+      "category": "game-ui",
+      "brief": "Pause overlay for a platformer that dims the scene but keeps it visible."
+    },
+    {
+      "id": "game-ui-09",
+      "category": "game-ui",
+      "brief": "Experience-points bar for a mobile RPG with a golden theme."
+    },
+    {
+      "id": "game-ui-10",
+      "category": "game-ui",
+      "brief": "Cooldown overlay on an ability icon in a MOBA, sweeping dark to transparent-feeling."
+    },
+    {
+      "id": "brand-constrained-01",
+      "category": "brand-constrained",
+      "brief": "Hero background for Brightwell Mortgages, using only the brand palette; trustworthy and plain.",
+      "constraints": [
+        "Use only the brand colours (tints and shades of them are fine)."
+      ],
+      "brandColors": [
+        "#0b3d91",
+        "#f2b705"
+      ]
+    },
+    {
+      "id": "brand-constrained-02",
+      "category": "brand-constrained",
+      "brief": "Banner for Fernhill Tea, a small organic tea company. Keep it recognisably on-brand.",
+      "constraints": [
+        "Brand colours only."
+      ],
+      "brandColors": [
+        "#2d6a4f",
+        "#f4e9d8"
+      ]
+    },
+    {
+      "id": "brand-constrained-03",
+      "category": "brand-constrained",
+      "brief": "App header for Northgate Transit, a regional bus operator. Must feel like their identity.",
+      "constraints": [
+        "Primary colour must dominate."
+      ],
+      "brandColors": [
+        "#d62828",
+        "#003049"
+      ]
+    },
+    {
+      "id": "brand-constrained-04",
+      "category": "brand-constrained",
+      "brief": "Newsletter header for Quillstone Books, an independent publisher.",
+      "constraints": [
+        "Two brand colours only, no extra hues."
+      ],
+      "brandColors": [
+        "#5b2a86",
+        "#e9d8a6"
+      ]
+    },
+    {
+      "id": "brand-constrained-05",
+      "category": "brand-constrained",
+      "brief": "Card background for Lumen Dental clinic's appointment widget.",
+      "constraints": [
+        "Use the teal brand colour as the anchor."
+      ],
+      "brandColors": [
+        "#0a9396",
+        "#e9f5f4"
+      ]
+    },
+    {
+      "id": "brand-constrained-06",
+      "category": "brand-constrained",
+      "brief": "Landing hero for Cobalt & Co accounting, with a restrained look.",
+      "constraints": [
+        "Navy and one warm accent."
+      ],
+      "brandColors": [
+        "#14213d",
+        "#fca311"
+      ]
+    },
+    {
+      "id": "brand-constrained-07",
+      "category": "brand-constrained",
+      "brief": "Promo banner for Marlow Outdoors, a camping-gear shop.",
+      "constraints": [
+        "Forest green and sand only."
+      ],
+      "brandColors": [
+        "#386641",
+        "#e6d5b8"
+      ]
+    },
+    {
+      "id": "brand-constrained-08",
+      "category": "brand-constrained",
+      "brief": "Splash for Peppermint Pay, a payments app.",
+      "constraints": [
+        "Mint and charcoal; avoid adding other hues."
+      ],
+      "brandColors": [
+        "#3ddc97",
+        "#2b2d42"
+      ]
+    },
+    {
+      "id": "brand-constrained-09",
+      "category": "brand-constrained",
+      "brief": "Section background for Harbor Light Credit Union's annual report page.",
+      "constraints": [
+        "Stay inside the blue family of the brand."
+      ],
+      "brandColors": [
+        "#1d4e89",
+        "#79a6dc"
+      ]
+    },
+    {
+      "id": "brand-constrained-10",
+      "category": "brand-constrained",
+      "brief": "Event ticket header for Saffron Street Food Festival.",
+      "constraints": [
+        "Saffron and deep aubergine are the brand colours."
+      ],
+      "brandColors": [
+        "#f4a300",
+        "#3b0a45"
+      ]
+    },
+    {
+      "id": "accessibility-constrained-01",
+      "category": "accessibility-constrained",
+      "brief": "Hero background behind 18px body text in #ffffff. All text must keep a contrast ratio of at least 4.5:1 across the whole gradient.",
+      "constraints": [
+        "Text colour is #ffffff.",
+        "Contrast of at least 4.5:1 everywhere text sits."
+      ]
+    },
+    {
+      "id": "accessibility-constrained-02",
+      "category": "accessibility-constrained",
+      "brief": "Card background behind #1a1a1a text. Must pass WCAG AA at every point.",
+      "constraints": [
+        "Text colour is #1a1a1a.",
+        "WCAG AA contrast at every point."
+      ]
+    },
+    {
+      "id": "accessibility-constrained-03",
+      "category": "accessibility-constrained",
+      "brief": "A status banner that must not rely on colour alone and stays readable for people with deuteranopia.",
+      "constraints": [
+        "Avoid red-green as the only distinction.",
+        "Provide a non-colour cue."
+      ]
+    },
+    {
+      "id": "accessibility-constrained-04",
+      "category": "accessibility-constrained",
+      "brief": "Low-vision friendly page header: high contrast, no banding, no subtle low-contrast sweeps.",
+      "constraints": [
+        "Aim for strong, simple transitions."
+      ]
+    },
+    {
+      "id": "accessibility-constrained-05",
+      "category": "accessibility-constrained",
+      "brief": "Button with white label that must hit 4.5:1 against its fill at both ends of the gradient.",
+      "constraints": [
+        "Label colour is #ffffff.",
+        "4.5:1 at the lightest point of the fill."
+      ]
+    },
+    {
+      "id": "accessibility-constrained-06",
+      "category": "accessibility-constrained",
+      "brief": "Reduced-motion friendly animated background: describe the static fallback and any animation.",
+      "constraints": [
+        "Respect prefers-reduced-motion."
+      ]
+    },
+    {
+      "id": "accessibility-constrained-07",
+      "category": "accessibility-constrained",
+      "brief": "Windows high-contrast mode friendly hero: describe how the decorative gradient behaves when forced colours are on.",
+      "constraints": [
+        "Decorative gradients must not carry meaning.",
+        "Support forced-colors."
+      ]
+    },
+    {
+      "id": "accessibility-constrained-08",
+      "category": "accessibility-constrained",
+      "brief": "Form field focus highlight that remains visible against both light and dark pages.",
+      "constraints": [
+        "Visible at 3:1 against adjacent colours."
+      ]
+    },
+    {
+      "id": "accessibility-constrained-09",
+      "category": "accessibility-constrained",
+      "brief": "Large-print notice board background for a care home display. Gentle, very legible, no fine detail.",
+      "constraints": [
+        "Text is #000000 at 28px or larger."
+      ]
+    },
+    {
+      "id": "accessibility-constrained-10",
+      "category": "accessibility-constrained",
+      "brief": "Data legend strip readable in greyscale: the lightness must change steadily so order survives without hue.",
+      "constraints": [
+        "Lightness must be monotonic.",
+        "Order must be readable in greyscale."
+      ]
+    }
+  ]
+}

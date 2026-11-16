@@ -35,6 +35,7 @@ export default defineConfig([
       'packages/*/scripts/**/*.ts',
       'packages/*/vitest.config.ts',
       'packages/*/tsdown.config.ts',
+      'packages/bench/src/**/*.ts',
       'packages/cli/src/**/*.ts',
       'packages/mcp/src/**/*.ts',
       'packages/stylelint-plugin/src/**/*.ts',

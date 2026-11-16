@@ -1,0 +1,66 @@
+{
+  "name": "@opal42/bench",
+  "version": "0.0.0",
+  "private": true,
+  "description": "GradientBench v0: an offline, model-agnostic harness that scores the CSS gradients in model outputs with the Opal42 v1 smoothness metric. Working name. No network, no telemetry, no model calls.",
+  "keywords": [
+    "gradient",
+    "css-gradient",
+    "benchmark",
+    "oklab",
+    "oklch"
+  ],
+  "license": "MIT",
+  "author": "LightSeek3r (https://github.com/LightSeek3r)",
+  "homepage": "https://github.com/LightSeek3r/gradient-studio/blob/master/docs/bench.md",
+  "bugs": {
+    "url": "https://github.com/LightSeek3r/gradient-studio/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LightSeek3r/gradient-studio.git",
+    "directory": "packages/bench"
+  },
+  "type": "module",
+  "bin": {
+    "opal42-bench": "./dist/cli.js"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./briefs.schema.json": "./prompts/briefs.schema.json",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "prompts",
+    "examples"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "@opal42/gradient": "^0.0.0"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "bench": "node dist/cli.js",
+    "examples": "node dist/cli.js score examples/synthetic-results.jsonl --out examples/synthetic-report/summary.json && node dist/cli.js report examples/synthetic-report/summary.json --out examples/synthetic-report",
+    "lint:package": "publint --strict",
+    "attw": "attw --pack . --profile esm-only",
+    "size": "size-limit",
+    "prepack": "npm run build"
+  },
+  "devDependencies": {
+    "axe-core": "^4.14.0",
+    "jsdom": "^31.0.1",
+    "vitest-axe": "^0.1.0"
+  }
+}
