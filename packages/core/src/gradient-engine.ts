@@ -213,11 +213,13 @@ function oklabDeltaE(a: OklabColor, b: OklabColor): number {
   );
 }
 
-const HEX_COLOR = new RegExp(V1_MODEL.domain.colorPattern);
+// Built on first use, so that importing the colour helpers does not drag the
+// scoring model into a bundle (and loading the module does no work).
+let hexColor: RegExp | undefined;
 
 /** True for an opaque `#rrggbb` colour (either case) — the only colour v1 accepts. */
 export function isValidStopColor(color: unknown): color is string {
-  return typeof color === "string" && HEX_COLOR.test(color);
+  return typeof color === "string" && (hexColor ??= new RegExp(V1_MODEL.domain.colorPattern)).test(color);
 }
 
 /** A stop the CSS/interpolation helpers can use: valid colour and a finite position. */

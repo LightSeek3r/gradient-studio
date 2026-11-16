@@ -1,0 +1,9 @@
+/* Gradients the CLI finds but does not score. */
+.var      { background: linear-gradient(var(--from), var(--to)); }
+.radial   { background: radial-gradient(circle at 30% 30%, #ff0080, #7928ca); }
+.conic    { background: conic-gradient(from 90deg, red, yellow, lime, red); }
+.legacy   { background: -webkit-linear-gradient(left, #fff, #000); }
+.fade     { background: linear-gradient(to bottom, rgba(0, 0, 0, 0), #000000); }
+.stripes  { background: repeating-linear-gradient(45deg, #fff 0 10px, #000 10px 20px); }
+.mixed    { background: linear-gradient(in oklch, color-mix(in srgb, red, blue), lime); }
+.single   { background: linear-gradient(#336699); }

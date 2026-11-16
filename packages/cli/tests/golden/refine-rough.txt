@@ -1,0 +1,36 @@
+rough.css:3:15  smoothness score 58/100  (lightness 18/30, hue 10/30, chroma 10/20, spacing 20/20)  linear-gradient(90deg, #ff0000, #00ff00 50%, #0000ff)
+  rough.css:3:47  error  lightness/reversal  -12  Lightness fluctuates (1 reversal) — creates visual noise
+  rough.css:3:38  error  hue/wide-arc  -20  Hue arc spans >180° — colors clash unexpectedly
+  rough.css:3:47  warning  chroma/muddy-midpoint  -10  Colors produce a muddy/grey midpoint when blended
+  refinement available: smoothness score 58 -> 90
+    - linear-gradient(90deg, #ff0000, #00ff00 50%, #0000ff)
+    + linear-gradient(90deg, #f500a6 0%, #ff0000 50%, #7e00d0 100%)
+rough.css:7:15  smoothness score 88/100  (lightness 18/30, hue 30/30, chroma 20/20, spacing 20/20)  linear-gradient(to right, #111111, #eeeeee, #222222)
+  rough.css:7:50  error  lightness/reversal  -12  Lightness fluctuates (1 reversal) — creates visual noise
+rough.css:11:15  smoothness score 41/100  (lightness 6/30, hue 10/30, chroma 15/20, spacing 10/20)  linear-gradient(90deg, #ff6b6b 0%, #ffd93d 5%, #6bcb77 10%, #4d96ff 1…
+  rough.css:11:50  error  lightness/reversal  -12  Lightness fluctuates (1 reversal) — creates visual noise
+  rough.css:11:38  warning  lightness/abrupt-jump  -8  Abrupt color jump between closely-spaced stops
+  rough.css:11:62  info  lightness/uneven-speed  -4  Slightly uneven transition speed across the gradient
+  rough.css:11:38  error  hue/wide-arc  -20  Hue arc spans >180° — colors clash unexpectedly
+  rough.css:11:62  info  chroma/muddy-midpoint  -5  Slight desaturation in gradient midpoints
+  rough.css:11:62  warning  rhythm/uneven-gaps  -10  Stop positions are unevenly clustered
+  refinement available: smoothness score 41 -> 88
+    - linear-gradient(90deg, #ff6b6b 0%, #ffd93d 5%, #6bcb77 10%, #4d96ff 100%)
+    + linear-gradient(90deg, #dd8f00 0%, #d2af00 33%, #9ab000 67%, #00b468 100%)
+rough.css:15:15  smoothness score 77/100  (lightness 30/30, hue 30/30, chroma 7/20, spacing 10/20)  linear-gradient( 180deg, #0b3d91 0%, #1565c0 10%, #e3f2fd 90%, #fffff…
+  rough.css:18:5  info  chroma/saturation-range  -5  Uneven saturation across stops
+  rough.css:19:5  warning  chroma/dead-zone  -8  Grey/desaturated stop among vivid colors — creates a dead zone
+  rough.css:18:5  warning  rhythm/uneven-gaps  -10  Stop positions are unevenly clustered
+  refinement available: smoothness score 77 -> 87
+    - linear-gradient( 180deg, #0b3d91 0%, #1565c0 10%, #e3f2fd 90%, #ffffff 100% )
+    + linear-gradient( 180deg, #1f417e 0%, #3977c6 33%, #6bd7ff 67%, #ffffff 100% )
+rough.css:25:15  smoothness score 71/100  (lightness 30/30, hue 22/30, chroma 9/20, spacing 10/20)  linear-gradient(90deg, #e63946 0%, #e63946 50%, #1d3557 50%, #1d3557 …
+  rough.css:25:50  warning  hue/wide-arc  -8  Wide hue arc (>120°) risks muddy midpoints
+  rough.css:25:38  info  chroma/saturation-range  -5  Uneven saturation across stops
+  rough.css:25:38  warning  chroma/banding  -6  Low color resolution between stops — visible banding likely
+  rough.css:25:50  warning  rhythm/uneven-gaps  -10  Stop positions are unevenly clustered
+  note: hard stops; the v1 score does not adjust for stripes
+
+1 file scanned, 5 gradients: 5 scored
+smoothness score: min 41, mean 67, max 88
+3 gradients can be refined; run with --write to apply

@@ -1,0 +1,1399 @@
+{
+  "schemaVersion": 1,
+  "tool": {
+    "name": "opal42",
+    "version": "0.0.0-test"
+  },
+  "scoringModel": "v1",
+  "command": "score",
+  "files": [
+    {
+      "path": "card.vue",
+      "status": "scanned",
+      "gradients": [
+        {
+          "range": {
+            "start": 50,
+            "end": 103
+          },
+          "loc": {
+            "line": 2,
+            "col": 40,
+            "endLine": 2,
+            "endCol": 93
+          },
+          "kind": "linear",
+          "repeating": false,
+          "status": "ok",
+          "score": 58,
+          "dimensions": {
+            "lightness": 18,
+            "chroma": 10,
+            "hue": 10,
+            "spacing": 20
+          },
+          "analysis": {
+            "hasHardStops": false
+          },
+          "issues": [
+            {
+              "code": "lightness/reversal",
+              "severity": "error",
+              "dimension": "lightness",
+              "pointsLost": 12,
+              "message": "Lightness fluctuates (1 reversal) — creates visual noise",
+              "range": {
+                "start": 82,
+                "end": 93
+              },
+              "loc": {
+                "line": 2,
+                "col": 72,
+                "endLine": 2,
+                "endCol": 83
+              },
+              "stopIndices": [
+                1
+              ]
+            },
+            {
+              "code": "hue/wide-arc",
+              "severity": "error",
+              "dimension": "hue",
+              "pointsLost": 20,
+              "message": "Hue arc spans >180° — colors clash unexpectedly",
+              "range": {
+                "start": 73,
+                "end": 102
+              },
+              "loc": {
+                "line": 2,
+                "col": 63,
+                "endLine": 2,
+                "endCol": 92
+              },
+              "stopIndices": [
+                0,
+                2
+              ]
+            },
+            {
+              "code": "chroma/muddy-midpoint",
+              "severity": "warning",
+              "dimension": "chroma",
+              "pointsLost": 10,
+              "message": "Colors produce a muddy/grey midpoint when blended",
+              "range": {
+                "start": 82,
+                "end": 102
+              },
+              "loc": {
+                "line": 2,
+                "col": 72,
+                "endLine": 2,
+                "endCol": 92
+              },
+              "stopIndices": [
+                1,
+                2
+              ]
+            }
+          ],
+          "warnings": []
+        },
+        {
+          "range": {
+            "start": 178,
+            "end": 230
+          },
+          "loc": {
+            "line": 9,
+            "col": 15,
+            "endLine": 9,
+            "endCol": 67
+          },
+          "kind": "linear",
+          "repeating": false,
+          "status": "ok",
+          "score": 85,
+          "dimensions": {
+            "lightness": 30,
+            "chroma": 20,
+            "hue": 15,
+            "spacing": 20
+          },
+          "analysis": {
+            "hasHardStops": false
+          },
+          "issues": [
+            {
+              "code": "hue/narrow-arc",
+              "severity": "info",
+              "dimension": "hue",
+              "pointsLost": 5,
+              "message": "Very narrow hue arc (<15°) — the gradient reads as a single hue",
+              "range": {
+                "start": 213,
+                "end": 229
+              },
+              "loc": {
+                "line": 9,
+                "col": 50,
+                "endLine": 9,
+                "endCol": 66
+              },
+              "stopIndices": [
+                1,
+                2
+              ]
+            },
+            {
+              "code": "hue/direction-reversal",
+              "severity": "warning",
+              "dimension": "hue",
+              "pointsLost": 10,
+              "message": "Hue path reverses direction — risk of muddy in-between tones",
+              "range": {
+                "start": 213,
+                "end": 220
+              },
+              "loc": {
+                "line": 9,
+                "col": 50,
+                "endLine": 9,
+                "endCol": 57
+              },
+              "stopIndices": [
+                1
+              ]
+            }
+          ],
+          "warnings": []
+        }
+      ]
+    },
+    {
+      "path": "nested/legacy.scss",
+      "status": "scanned",
+      "gradients": [
+        {
+          "range": {
+            "start": 34,
+            "end": 78
+          },
+          "loc": {
+            "line": 2,
+            "col": 20,
+            "endLine": 2,
+            "endCol": 64
+          },
+          "kind": "linear",
+          "repeating": false,
+          "status": "skipped",
+          "score": null,
+          "dimensions": null,
+          "issues": [],
+          "warnings": [],
+          "skipped": {
+            "code": "preprocessor",
+            "reason": "preprocessor variable or template expression"
+          }
+        },
+        {
+          "range": {
+            "start": 101,
+            "end": 141
+          },
+          "loc": {
+            "line": 3,
+            "col": 20,
+            "endLine": 3,
+            "endCol": 60
+          },
+          "kind": "linear",
+          "repeating": false,
+          "status": "ok",
+          "score": 100,
+          "dimensions": {
+            "lightness": 30,
+            "chroma": 20,
+            "hue": 30,
+            "spacing": 20
+          },
+          "analysis": {
+            "hasHardStops": false
+          },
+          "issues": [],
+          "warnings": []
+        }
+      ]
+    },
+    {
+      "path": "notes.md",
+      "status": "scanned",
+      "gradients": [
+        {
+          "range": {
+            "start": 44,
+            "end": 84
+          },
+          "loc": {
+            "line": 4,
+            "col": 21,
+            "endLine": 4,
+            "endCol": 61
+          },
+          "kind": "linear",
+          "repeating": false,
+          "status": "ok",
+          "score": 100,
+          "dimensions": {
+            "lightness": 30,
+            "chroma": 20,
+            "hue": 30,
+            "spacing": 20
+          },
+          "analysis": {
+            "hasHardStops": false
+          },
+          "issues": [],
+          "warnings": []
+        },
+        {
+          "range": {
+            "start": 102,
+            "end": 145
+          },
+          "loc": {
+            "line": 7,
+            "col": 10,
+            "endLine": 7,
+            "endCol": 53
+          },
+          "kind": "linear",
+          "repeating": false,
+          "status": "ok",
+          "score": 100,
+          "dimensions": {
+            "lightness": 30,
+            "chroma": 20,
+            "hue": 30,
+            "spacing": 20
+          },
+          "analysis": {
+            "hasHardStops": false
+          },
+          "issues": [],
+          "warnings": []
+        }
+      ]
+    },
+    {
+      "path": "page.html",
+      "status": "scanned",
+      "gradients": [
+        {
+          "range": {
+            "start": 69,
+            "end": 102
+          },
+          "loc": {
+            "line": 5,
+            "col": 26,
+            "endLine": 5,
+            "endCol": 59
+          },
+          "kind": "linear",
+          "repeating": false,
+          "status": "ok",
+          "score": 92,
+          "dimensions": {
+            "lightness": 22,
+            "chroma": 20,
+            "hue": 30,
+            "spacing": 20
+          },
+          "analysis": {
+            "hasHardStops": false
+          },
+          "issues": [
+            {
+              "code": "lightness/low-contrast",
+              "severity": "warning",
+              "dimension": "lightness",
+              "pointsLost": 8,
+              "message": "Very low contrast between stops — gradient barely visible",
+              "range": {
+                "start": 85,
+                "end": 101
+              },
+              "loc": {
+                "line": 5,
+                "col": 42,
+                "endLine": 5,
+                "endCol": 58
+              },
+              "stopIndices": [
+                0,
+                1
+              ]
+            }
+          ],
+          "warnings": []
+        },
+        {
+          "range": {
+            "start": 176,
+            "end": 217
+          },
+          "loc": {
+            "line": 9,
+            "col": 39,
+            "endLine": 9,
+            "endCol": 80
+          },
+          "kind": "linear",
+          "repeating": false,
+          "status": "ok",
+          "score": 100,
+          "dimensions": {
+            "lightness": 30,
+            "chroma": 20,
+            "hue": 30,
+            "spacing": 20
+          },
+          "analysis": {
+            "hasHardStops": false
+          },
+          "issues": [],
+          "warnings": []
+        },
+        {
+          "range": {
+            "start": 264,
+            "end": 312
+          },
+          "loc": {
+            "line": 10,
+            "col": 33,
+            "endLine": 10,
+            "endCol": 81
+          },
+          "kind": "linear",
+          "repeating": false,
+          "status": "ok",
+          "score": 100,
+          "dimensions": {
+            "lightness": 30,
+            "chroma": 20,
+            "hue": 30,
+            "spacing": 20
+          },
+          "analysis": {
+            "hasHardStops": false
+          },
+          "issues": [],
+          "warnings": []
+        }
+      ]
+    },
+    {
+      "path": "rough.css",
+      "status": "scanned",
+      "gradients": [
+        {
+          "range": {
+            "start": 79,
+            "end": 132
+          },
+          "loc": {
+            "line": 3,
+            "col": 15,
+            "endLine": 3,
+            "endCol": 68
+          },
+          "kind": "linear",
+          "repeating": false,
+          "status": "ok",
+          "score": 58,
+          "dimensions": {
+            "lightness": 18,
+            "chroma": 10,
+            "hue": 10,
+            "spacing": 20
+          },
+          "analysis": {
+            "hasHardStops": false
+          },
+          "issues": [
+            {
+              "code": "lightness/reversal",
+              "severity": "error",
+              "dimension": "lightness",
+              "pointsLost": 12,
+              "message": "Lightness fluctuates (1 reversal) — creates visual noise",
+              "range": {
+                "start": 111,
+                "end": 122
+              },
+              "loc": {
+                "line": 3,
+                "col": 47,
+                "endLine": 3,
+                "endCol": 58
+              },
+              "stopIndices": [
+                1
+              ]
+            },
+            {
+              "code": "hue/wide-arc",
+              "severity": "error",
+              "dimension": "hue",
+              "pointsLost": 20,
+              "message": "Hue arc spans >180° — colors clash unexpectedly",
+              "range": {
+                "start": 102,
+                "end": 131
+              },
+              "loc": {
+                "line": 3,
+                "col": 38,
+                "endLine": 3,
+                "endCol": 67
+              },
+              "stopIndices": [
+                0,
+                2
+              ]
+            },
+            {
+              "code": "chroma/muddy-midpoint",
+              "severity": "warning",
+              "dimension": "chroma",
+              "pointsLost": 10,
+              "message": "Colors produce a muddy/grey midpoint when blended",
+              "range": {
+                "start": 111,
+                "end": 131
+              },
+              "loc": {
+                "line": 3,
+                "col": 47,
+                "endLine": 3,
+                "endCol": 67
+              },
+              "stopIndices": [
+                1,
+                2
+              ]
+            }
+          ],
+          "warnings": []
+        },
+        {
+          "range": {
+            "start": 160,
+            "end": 212
+          },
+          "loc": {
+            "line": 7,
+            "col": 15,
+            "endLine": 7,
+            "endCol": 67
+          },
+          "kind": "linear",
+          "repeating": false,
+          "status": "ok",
+          "score": 88,
+          "dimensions": {
+            "lightness": 18,
+            "chroma": 20,
+            "hue": 30,
+            "spacing": 20
+          },
+          "analysis": {
+            "hasHardStops": false
+          },
+          "issues": [
+            {
+              "code": "lightness/reversal",
+              "severity": "error",
+              "dimension": "lightness",
+              "pointsLost": 12,
+              "message": "Lightness fluctuates (1 reversal) — creates visual noise",
+              "range": {
+                "start": 195,
+                "end": 202
+              },
+              "loc": {
+                "line": 7,
+                "col": 50,
+                "endLine": 7,
+                "endCol": 57
+              },
+              "stopIndices": [
+                1
+              ]
+            }
+          ],
+          "warnings": []
+        },
+        {
+          "range": {
+            "start": 244,
+            "end": 317
+          },
+          "loc": {
+            "line": 11,
+            "col": 15,
+            "endLine": 11,
+            "endCol": 88
+          },
+          "kind": "linear",
+          "repeating": false,
+          "status": "ok",
+          "score": 41,
+          "dimensions": {
+            "lightness": 6,
+            "chroma": 15,
+            "hue": 10,
+            "spacing": 10
+          },
+          "analysis": {
+            "hasHardStops": false
+          },
+          "issues": [
+            {
+              "code": "lightness/reversal",
+              "severity": "error",
+              "dimension": "lightness",
+              "pointsLost": 12,
+              "message": "Lightness fluctuates (1 reversal) — creates visual noise",
+              "range": {
+                "start": 279,
+                "end": 289
+              },
+              "loc": {
+                "line": 11,
+                "col": 50,
+                "endLine": 11,
+                "endCol": 60
+              },
+              "stopIndices": [
+                1
+              ]
+            },
+            {
+              "code": "lightness/abrupt-jump",
+              "severity": "warning",
+              "dimension": "lightness",
+              "pointsLost": 8,
+              "message": "Abrupt color jump between closely-spaced stops",
+              "range": {
+                "start": 267,
+                "end": 289
+              },
+              "loc": {
+                "line": 11,
+                "col": 38,
+                "endLine": 11,
+                "endCol": 60
+              },
+              "stopIndices": [
+                0,
+                1
+              ]
+            },
+            {
+              "code": "lightness/uneven-speed",
+              "severity": "info",
+              "dimension": "lightness",
+              "pointsLost": 4,
+              "message": "Slightly uneven transition speed across the gradient",
+              "range": {
+                "start": 291,
+                "end": 316
+              },
+              "loc": {
+                "line": 11,
+                "col": 62,
+                "endLine": 11,
+                "endCol": 87
+              },
+              "stopIndices": [
+                2,
+                3
+              ]
+            },
+            {
+              "code": "hue/wide-arc",
+              "severity": "error",
+              "dimension": "hue",
+              "pointsLost": 20,
+              "message": "Hue arc spans >180° — colors clash unexpectedly",
+              "range": {
+                "start": 267,
+                "end": 316
+              },
+              "loc": {
+                "line": 11,
+                "col": 38,
+                "endLine": 11,
+                "endCol": 87
+              },
+              "stopIndices": [
+                0,
+                3
+              ]
+            },
+            {
+              "code": "chroma/muddy-midpoint",
+              "severity": "info",
+              "dimension": "chroma",
+              "pointsLost": 5,
+              "message": "Slight desaturation in gradient midpoints",
+              "range": {
+                "start": 291,
+                "end": 316
+              },
+              "loc": {
+                "line": 11,
+                "col": 62,
+                "endLine": 11,
+                "endCol": 87
+              },
+              "stopIndices": [
+                2,
+                3
+              ]
+            },
+            {
+              "code": "rhythm/uneven-gaps",
+              "severity": "warning",
+              "dimension": "spacing",
+              "pointsLost": 10,
+              "message": "Stop positions are unevenly clustered",
+              "range": {
+                "start": 291,
+                "end": 316
+              },
+              "loc": {
+                "line": 11,
+                "col": 62,
+                "endLine": 11,
+                "endCol": 87
+              },
+              "stopIndices": [
+                2,
+                3
+              ]
+            }
+          ],
+          "warnings": []
+        },
+        {
+          "range": {
+            "start": 346,
+            "end": 445
+          },
+          "loc": {
+            "line": 15,
+            "col": 15,
+            "endLine": 21,
+            "endCol": 4
+          },
+          "kind": "linear",
+          "repeating": false,
+          "status": "ok",
+          "score": 77,
+          "dimensions": {
+            "lightness": 30,
+            "chroma": 7,
+            "hue": 30,
+            "spacing": 10
+          },
+          "analysis": {
+            "hasHardStops": false
+          },
+          "issues": [
+            {
+              "code": "chroma/saturation-range",
+              "severity": "info",
+              "dimension": "chroma",
+              "pointsLost": 5,
+              "message": "Uneven saturation across stops",
+              "range": {
+                "start": 395,
+                "end": 441
+              },
+              "loc": {
+                "line": 18,
+                "col": 5,
+                "endLine": 20,
+                "endCol": 17
+              },
+              "stopIndices": [
+                1,
+                3
+              ]
+            },
+            {
+              "code": "chroma/dead-zone",
+              "severity": "warning",
+              "dimension": "chroma",
+              "pointsLost": 8,
+              "message": "Grey/desaturated stop among vivid colors — creates a dead zone",
+              "range": {
+                "start": 412,
+                "end": 441
+              },
+              "loc": {
+                "line": 19,
+                "col": 5,
+                "endLine": 20,
+                "endCol": 17
+              },
+              "stopIndices": [
+                2,
+                3
+              ]
+            },
+            {
+              "code": "rhythm/uneven-gaps",
+              "severity": "warning",
+              "dimension": "spacing",
+              "pointsLost": 10,
+              "message": "Stop positions are unevenly clustered",
+              "range": {
+                "start": 395,
+                "end": 423
+              },
+              "loc": {
+                "line": 18,
+                "col": 5,
+                "endLine": 19,
+                "endCol": 16
+              },
+              "stopIndices": [
+                1,
+                2
+              ]
+            }
+          ],
+          "warnings": []
+        },
+        {
+          "range": {
+            "start": 473,
+            "end": 547
+          },
+          "loc": {
+            "line": 25,
+            "col": 15,
+            "endLine": 25,
+            "endCol": 89
+          },
+          "kind": "linear",
+          "repeating": false,
+          "status": "ok",
+          "score": 71,
+          "dimensions": {
+            "lightness": 30,
+            "chroma": 9,
+            "hue": 22,
+            "spacing": 10
+          },
+          "analysis": {
+            "hasHardStops": true
+          },
+          "issues": [
+            {
+              "code": "hue/wide-arc",
+              "severity": "warning",
+              "dimension": "hue",
+              "pointsLost": 8,
+              "message": "Wide hue arc (>120°) risks muddy midpoints",
+              "range": {
+                "start": 508,
+                "end": 532
+              },
+              "loc": {
+                "line": 25,
+                "col": 50,
+                "endLine": 25,
+                "endCol": 74
+              },
+              "stopIndices": [
+                1,
+                2
+              ]
+            },
+            {
+              "code": "chroma/saturation-range",
+              "severity": "info",
+              "dimension": "chroma",
+              "pointsLost": 5,
+              "message": "Uneven saturation across stops",
+              "range": {
+                "start": 496,
+                "end": 532
+              },
+              "loc": {
+                "line": 25,
+                "col": 38,
+                "endLine": 25,
+                "endCol": 74
+              },
+              "stopIndices": [
+                0,
+                2
+              ]
+            },
+            {
+              "code": "chroma/banding",
+              "severity": "warning",
+              "dimension": "chroma",
+              "pointsLost": 6,
+              "message": "Low color resolution between stops — visible banding likely",
+              "range": {
+                "start": 496,
+                "end": 519
+              },
+              "loc": {
+                "line": 25,
+                "col": 38,
+                "endLine": 25,
+                "endCol": 61
+              },
+              "stopIndices": [
+                0,
+                1
+              ]
+            },
+            {
+              "code": "rhythm/uneven-gaps",
+              "severity": "warning",
+              "dimension": "spacing",
+              "pointsLost": 10,
+              "message": "Stop positions are unevenly clustered",
+              "range": {
+                "start": 508,
+                "end": 532
+              },
+              "loc": {
+                "line": 25,
+                "col": 50,
+                "endLine": 25,
+                "endCol": 74
+              },
+              "stopIndices": [
+                1,
+                2
+              ]
+            }
+          ],
+          "warnings": []
+        }
+      ]
+    },
+    {
+      "path": "skipped.css",
+      "status": "scanned",
+      "gradients": [
+        {
+          "range": {
+            "start": 74,
+            "end": 113
+          },
+          "loc": {
+            "line": 2,
+            "col": 25,
+            "endLine": 2,
+            "endCol": 64
+          },
+          "kind": "linear",
+          "repeating": false,
+          "status": "skipped",
+          "score": null,
+          "dimensions": null,
+          "issues": [],
+          "warnings": [],
+          "skipped": {
+            "code": "var",
+            "reason": "var() cannot be resolved statically"
+          }
+        },
+        {
+          "range": {
+            "start": 141,
+            "end": 193
+          },
+          "loc": {
+            "line": 3,
+            "col": 25,
+            "endLine": 3,
+            "endCol": 77
+          },
+          "kind": "radial",
+          "repeating": false,
+          "status": "skipped",
+          "score": null,
+          "dimensions": null,
+          "issues": [],
+          "warnings": [],
+          "skipped": {
+            "code": "unsupported-kind",
+            "reason": "radial gradients are found but not interpreted"
+          }
+        },
+        {
+          "range": {
+            "start": 221,
+            "end": 271
+          },
+          "loc": {
+            "line": 4,
+            "col": 25,
+            "endLine": 4,
+            "endCol": 75
+          },
+          "kind": "conic",
+          "repeating": false,
+          "status": "skipped",
+          "score": null,
+          "dimensions": null,
+          "issues": [],
+          "warnings": [],
+          "skipped": {
+            "code": "unsupported-kind",
+            "reason": "conic gradients are found but not interpreted"
+          }
+        },
+        {
+          "range": {
+            "start": 299,
+            "end": 340
+          },
+          "loc": {
+            "line": 5,
+            "col": 25,
+            "endLine": 5,
+            "endCol": 66
+          },
+          "kind": "linear",
+          "repeating": false,
+          "vendorPrefix": "-webkit-",
+          "status": "skipped",
+          "score": null,
+          "dimensions": null,
+          "issues": [],
+          "warnings": [],
+          "skipped": {
+            "code": "legacy-syntax",
+            "reason": "-webkit-linear-gradient() uses the legacy angle and keyword conventions"
+          }
+        },
+        {
+          "range": {
+            "start": 368,
+            "end": 421
+          },
+          "loc": {
+            "line": 6,
+            "col": 25,
+            "endLine": 6,
+            "endCol": 78
+          },
+          "kind": "linear",
+          "repeating": false,
+          "status": "skipped",
+          "score": null,
+          "dimensions": null,
+          "issues": [],
+          "warnings": [],
+          "skipped": {
+            "code": "alpha",
+            "reason": "stop 0 is translucent (alpha 0); the v1 model only judges opaque stops"
+          }
+        },
+        {
+          "range": {
+            "start": 449,
+            "end": 510
+          },
+          "loc": {
+            "line": 7,
+            "col": 25,
+            "endLine": 7,
+            "endCol": 86
+          },
+          "kind": "linear",
+          "repeating": true,
+          "status": "skipped",
+          "score": null,
+          "dimensions": null,
+          "issues": [],
+          "warnings": [],
+          "skipped": {
+            "code": "length-position",
+            "reason": "stop position in px depends on the box size; only % positions are supported"
+          }
+        },
+        {
+          "range": {
+            "start": 538,
+            "end": 600
+          },
+          "loc": {
+            "line": 8,
+            "col": 25,
+            "endLine": 8,
+            "endCol": 87
+          },
+          "kind": "linear",
+          "repeating": false,
+          "status": "skipped",
+          "score": null,
+          "dimensions": null,
+          "issues": [],
+          "warnings": [],
+          "skipped": {
+            "code": "color-mix",
+            "reason": "color-mix() is not supported"
+          }
+        },
+        {
+          "range": {
+            "start": 628,
+            "end": 652
+          },
+          "loc": {
+            "line": 9,
+            "col": 25,
+            "endLine": 9,
+            "endCol": 49
+          },
+          "kind": "linear",
+          "repeating": false,
+          "status": "skipped",
+          "score": null,
+          "dimensions": null,
+          "issues": [],
+          "warnings": [],
+          "skipped": {
+            "code": "too-few-stops",
+            "reason": "needs at least 2 stops"
+          }
+        }
+      ]
+    },
+    {
+      "path": "smooth.css",
+      "status": "scanned",
+      "gradients": [
+        {
+          "range": {
+            "start": 89,
+            "end": 151
+          },
+          "loc": {
+            "line": 3,
+            "col": 15,
+            "endLine": 3,
+            "endCol": 77
+          },
+          "kind": "linear",
+          "repeating": false,
+          "status": "ok",
+          "score": 95,
+          "dimensions": {
+            "lightness": 30,
+            "chroma": 20,
+            "hue": 25,
+            "spacing": 20
+          },
+          "analysis": {
+            "hasHardStops": false
+          },
+          "issues": [
+            {
+              "code": "hue/narrow-arc",
+              "severity": "info",
+              "dimension": "hue",
+              "pointsLost": 5,
+              "message": "Very narrow hue arc (<15°) — the gradient reads as a single hue",
+              "range": {
+                "start": 113,
+                "end": 150
+              },
+              "loc": {
+                "line": 3,
+                "col": 39,
+                "endLine": 3,
+                "endCol": 76
+              },
+              "stopIndices": [
+                0,
+                2
+              ]
+            }
+          ],
+          "warnings": []
+        },
+        {
+          "range": {
+            "start": 184,
+            "end": 237
+          },
+          "loc": {
+            "line": 7,
+            "col": 21,
+            "endLine": 7,
+            "endCol": 74
+          },
+          "kind": "linear",
+          "repeating": false,
+          "status": "ok",
+          "score": 100,
+          "dimensions": {
+            "lightness": 30,
+            "chroma": 20,
+            "hue": 30,
+            "spacing": 20
+          },
+          "analysis": {
+            "hasHardStops": false
+          },
+          "issues": [],
+          "warnings": []
+        },
+        {
+          "range": {
+            "start": 266,
+            "end": 316
+          },
+          "loc": {
+            "line": 11,
+            "col": 15,
+            "endLine": 11,
+            "endCol": 65
+          },
+          "kind": "linear",
+          "repeating": false,
+          "status": "ok",
+          "score": 95,
+          "dimensions": {
+            "lightness": 30,
+            "chroma": 20,
+            "hue": 25,
+            "spacing": 20
+          },
+          "analysis": {
+            "hasHardStops": false
+          },
+          "issues": [
+            {
+              "code": "hue/narrow-arc",
+              "severity": "info",
+              "dimension": "hue",
+              "pointsLost": 5,
+              "message": "Very narrow hue arc (<15°) — the gradient reads as a single hue",
+              "range": {
+                "start": 290,
+                "end": 315
+              },
+              "loc": {
+                "line": 11,
+                "col": 39,
+                "endLine": 11,
+                "endCol": 64
+              },
+              "stopIndices": [
+                0,
+                2
+              ]
+            }
+          ],
+          "warnings": []
+        }
+      ]
+    },
+    {
+      "path": "theme.ts",
+      "status": "scanned",
+      "gradients": [
+        {
+          "range": {
+            "start": 38,
+            "end": 100
+          },
+          "loc": {
+            "line": 2,
+            "col": 12,
+            "endLine": 2,
+            "endCol": 74
+          },
+          "kind": "linear",
+          "repeating": false,
+          "status": "ok",
+          "score": 82,
+          "dimensions": {
+            "lightness": 22,
+            "chroma": 20,
+            "hue": 30,
+            "spacing": 10
+          },
+          "analysis": {
+            "hasHardStops": false
+          },
+          "issues": [
+            {
+              "code": "lightness/uneven-speed",
+              "severity": "warning",
+              "dimension": "lightness",
+              "pointsLost": 8,
+              "message": "Uneven perceptual speed — some transitions race while others crawl",
+              "range": {
+                "start": 62,
+                "end": 85
+              },
+              "loc": {
+                "line": 2,
+                "col": 36,
+                "endLine": 2,
+                "endCol": 59
+              },
+              "stopIndices": [
+                0,
+                1
+              ]
+            },
+            {
+              "code": "rhythm/uneven-gaps",
+              "severity": "warning",
+              "dimension": "spacing",
+              "pointsLost": 10,
+              "message": "Stop positions are unevenly clustered",
+              "range": {
+                "start": 62,
+                "end": 85
+              },
+              "loc": {
+                "line": 2,
+                "col": 36,
+                "endLine": 2,
+                "endCol": 59
+              },
+              "stopIndices": [
+                0,
+                1
+              ]
+            }
+          ],
+          "warnings": []
+        },
+        {
+          "range": {
+            "start": 113,
+            "end": 162
+          },
+          "loc": {
+            "line": 3,
+            "col": 11,
+            "endLine": 3,
+            "endCol": 60
+          },
+          "kind": "linear",
+          "repeating": false,
+          "status": "ok",
+          "score": 95,
+          "dimensions": {
+            "lightness": 30,
+            "chroma": 20,
+            "hue": 25,
+            "spacing": 20
+          },
+          "analysis": {
+            "hasHardStops": false
+          },
+          "issues": [
+            {
+              "code": "hue/narrow-arc",
+              "severity": "info",
+              "dimension": "hue",
+              "pointsLost": 5,
+              "message": "Very narrow hue arc (<15°) — the gradient reads as a single hue",
+              "range": {
+                "start": 137,
+                "end": 161
+              },
+              "loc": {
+                "line": 3,
+                "col": 35,
+                "endLine": 3,
+                "endCol": 59
+              },
+              "stopIndices": [
+                0,
+                1
+              ]
+            }
+          ],
+          "warnings": []
+        },
+        {
+          "range": {
+            "start": 234,
+            "end": 250
+          },
+          "loc": {
+            "line": 5,
+            "col": 12,
+            "endLine": 5,
+            "endCol": 28
+          },
+          "kind": "linear",
+          "repeating": false,
+          "status": "skipped",
+          "score": null,
+          "dimensions": null,
+          "issues": [],
+          "warnings": [],
+          "skipped": {
+            "code": "unbalanced",
+            "reason": "linear-gradient( is never closed"
+          }
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "filesScanned": 8,
+    "filesSkipped": 0,
+    "filesWithErrors": 0,
+    "gradients": 28,
+    "scored": 18,
+    "skipped": 10,
+    "skippedByCode": {
+      "alpha": 1,
+      "color-mix": 1,
+      "legacy-syntax": 1,
+      "length-position": 1,
+      "preprocessor": 1,
+      "too-few-stops": 1,
+      "unbalanced": 1,
+      "unsupported-kind": 2,
+      "var": 1
+    },
+    "belowMinScore": 0,
+    "minScore": null,
+    "failOnUnscorable": false,
+    "scoreMin": 41,
+    "scoreMax": 100,
+    "scoreMean": 85.39,
+    "fixable": 0,
+    "fixed": 0,
+    "exitCode": 0
+  }
+}

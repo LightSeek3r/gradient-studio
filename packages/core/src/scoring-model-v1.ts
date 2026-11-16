@@ -58,7 +58,7 @@ function deepFreeze<T>(value: T): DeepReadonly<T> {
  * `…AtLeast` >=. Severity convention: penalty >= 12 → error, 6-10 → warning,
  * <= 5 → info (the four previously silent penalties are all info).
  */
-export const V1_MODEL = deepFreeze({
+export const V1_MODEL = /* @__PURE__ */ deepFreeze({
   version: "v1",
 
   domain: {
@@ -394,7 +394,7 @@ const M = V1_MODEL;
  * `segmentRgbSteps` are integer-valued and computed exactly, so they cannot be
  * precision-sensitive and are not listed.
  */
-export const V1_BOUNDARY_TABLE: readonly BoundaryEntry[] = deepFreeze<BoundaryEntry[]>([
+export const V1_BOUNDARY_TABLE: readonly BoundaryEntry[] = /* @__PURE__ */ (() => deepFreeze<BoundaryEntry[]>([
   { measurement: "maxDeltaE", thresholds: [M.lightness.contrast.invisibleBelow, M.lightness.contrast.lowBelow] },
   { measurement: "maxCloseJumpDeltaE", thresholds: [M.lightness.abruptJump.deltaEAbove] },
   { measurement: "velocityCv", thresholds: [M.lightness.velocity.mildAbove, M.lightness.velocity.strongAbove] },
@@ -424,7 +424,7 @@ export const V1_BOUNDARY_TABLE: readonly BoundaryEntry[] = deepFreeze<BoundaryEn
   },
   { measurement: "span", thresholds: [M.rhythm.span.squeezedBelow, M.rhythm.span.narrowBelow] },
   { measurement: "gapCv", thresholds: [M.rhythm.gaps.unevenAbove, M.rhythm.gaps.clusteredAbove] },
-]);
+]))();
 
 /** Default boundary tolerance: relative to the threshold, absolute below 1. */
 export const BOUNDARY_EPSILON = 1e-6;
@@ -460,7 +460,7 @@ export function boundaryHits(
 // ── Finding codes ─────────────────────────────────────────────────────────────
 
 /** Every finding code v1 can emit, with its dimension. spec/scoring-v1.md has one section per code. */
-export const V1_FINDING_CODES = deepFreeze({
+export const V1_FINDING_CODES = /* @__PURE__ */ (() => deepFreeze({
   [M.lightness.reversal.code]: "lightness",
   [M.lightness.perceivedReversal.code]: "lightness",
   [M.lightness.contrast.code]: "lightness",
@@ -476,4 +476,4 @@ export const V1_FINDING_CODES = deepFreeze({
   [M.rhythm.edge.code]: "rhythm",
   [M.rhythm.span.code]: "rhythm",
   [M.rhythm.gaps.code]: "rhythm",
-} as Record<string, Dimension>);
+} as Record<string, Dimension>))();

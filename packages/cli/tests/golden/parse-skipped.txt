@@ -1,0 +1,26 @@
+skipped.css:2:25  linear-gradient  [74,113)  skipped (var): var() cannot be resolved statically
+  stop 0  2:41-52  [90,101)  "var(--from)"
+  stop 1  2:54-63  [103,112)  "var(--to)"
+skipped.css:3:25  radial-gradient  [141,193)  skipped (unsupported-kind): radial gradients are found but not interpreted
+  stop 0  3:60-67  [176,183)  "#ff0080"
+  stop 1  3:69-76  [185,192)  "#7928ca"
+skipped.css:4:25  conic-gradient  [221,271)  skipped (unsupported-kind): conic gradients are found but not interpreted
+  stop 0  4:52-55  [248,251)  "red"
+  stop 1  4:57-63  [253,259)  "yellow"
+  stop 2  4:65-69  [261,265)  "lime"
+  stop 3  4:71-74  [267,270)  "red"
+skipped.css:5:25  -webkit-linear-gradient  [299,340)  skipped (legacy-syntax): -webkit-linear-gradient() uses the legacy angle and keyword conventions
+skipped.css:6:25  linear-gradient  [368,421)  parsed, 2 stops
+  direction  6:41-50  [384,393)  "to bottom"
+  stop 0  6:52-68  [395,411)  "rgba(0, 0, 0, 0)"
+  stop 1  6:70-77  [413,420)  "#000000"
+skipped.css:7:25  repeating-linear-gradient  [449,510)  skipped (length-position): stop position in px depends on the box size; only % positions are supported
+  stop 0  7:58-69  [482,493)  "#fff 0 10px"
+  stop 1  7:71-85  [495,509)  "#000 10px 20px"
+skipped.css:8:25  linear-gradient  [538,600)  skipped (color-mix): color-mix() is not supported
+  stop 0  8:51-80  [564,593)  "color-mix(in srgb, red, blue)"
+  stop 1  8:82-86  [595,599)  "lime"
+skipped.css:9:25  linear-gradient  [628,652)  parsed, 1 stops
+  stop 0  9:41-48  [644,651)  "#336699"
+
+8 gradients found in 1 file, 6 skipped by the parser

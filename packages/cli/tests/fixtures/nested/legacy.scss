@@ -1,0 +1,3 @@
+$angle: 45deg;
+.old { background: linear-gradient(#{$angle}, #ff0000, #0000ff); }
+.new { background: linear-gradient(45deg, #232526, #414345); }

@@ -1,0 +1,279 @@
+{
+  "schemaVersion": 1,
+  "tool": {
+    "name": "opal42",
+    "version": "0.0.0-test"
+  },
+  "command": "parse",
+  "files": [
+    {
+      "path": "smooth.css",
+      "status": "scanned",
+      "gradients": [
+        {
+          "range": {
+            "start": 89,
+            "end": 151
+          },
+          "loc": {
+            "line": 3,
+            "col": 15,
+            "endLine": 3,
+            "endCol": 77
+          },
+          "kind": "linear",
+          "repeating": false,
+          "document": {
+            "kind": "linear",
+            "angle": 135,
+            "stops": [
+              {
+                "color": "#1e3a8a",
+                "position": 0
+              },
+              {
+                "color": "#2563eb",
+                "position": 0.5
+              },
+              {
+                "color": "#93c5fd",
+                "position": 1
+              }
+            ]
+          },
+          "stopRanges": [
+            {
+              "range": {
+                "start": 113,
+                "end": 123
+              },
+              "loc": {
+                "line": 3,
+                "col": 39,
+                "endLine": 3,
+                "endCol": 49
+              },
+              "text": "#1e3a8a 0%"
+            },
+            {
+              "range": {
+                "start": 125,
+                "end": 136
+              },
+              "loc": {
+                "line": 3,
+                "col": 51,
+                "endLine": 3,
+                "endCol": 62
+              },
+              "text": "#2563eb 50%"
+            },
+            {
+              "range": {
+                "start": 138,
+                "end": 150
+              },
+              "loc": {
+                "line": 3,
+                "col": 64,
+                "endLine": 3,
+                "endCol": 76
+              },
+              "text": "#93c5fd 100%"
+            }
+          ],
+          "warnings": [],
+          "angleRange": {
+            "range": {
+              "start": 105,
+              "end": 111
+            },
+            "loc": {
+              "line": 3,
+              "col": 31,
+              "endLine": 3,
+              "endCol": 37
+            },
+            "text": "135deg"
+          }
+        },
+        {
+          "range": {
+            "start": 184,
+            "end": 237
+          },
+          "loc": {
+            "line": 7,
+            "col": 21,
+            "endLine": 7,
+            "endCol": 74
+          },
+          "kind": "linear",
+          "repeating": false,
+          "document": {
+            "kind": "linear",
+            "angle": 180,
+            "stops": [
+              {
+                "color": "#fef3c7"
+              },
+              {
+                "color": "#fde68a"
+              },
+              {
+                "color": "#f59e0b"
+              }
+            ]
+          },
+          "stopRanges": [
+            {
+              "range": {
+                "start": 211,
+                "end": 218
+              },
+              "loc": {
+                "line": 7,
+                "col": 48,
+                "endLine": 7,
+                "endCol": 55
+              },
+              "text": "#fef3c7"
+            },
+            {
+              "range": {
+                "start": 220,
+                "end": 227
+              },
+              "loc": {
+                "line": 7,
+                "col": 57,
+                "endLine": 7,
+                "endCol": 64
+              },
+              "text": "#fde68a"
+            },
+            {
+              "range": {
+                "start": 229,
+                "end": 236
+              },
+              "loc": {
+                "line": 7,
+                "col": 66,
+                "endLine": 7,
+                "endCol": 73
+              },
+              "text": "#f59e0b"
+            }
+          ],
+          "warnings": [],
+          "angleRange": {
+            "range": {
+              "start": 200,
+              "end": 209
+            },
+            "loc": {
+              "line": 7,
+              "col": 37,
+              "endLine": 7,
+              "endCol": 46
+            },
+            "text": "to bottom"
+          }
+        },
+        {
+          "range": {
+            "start": 266,
+            "end": 316
+          },
+          "loc": {
+            "line": 11,
+            "col": 15,
+            "endLine": 11,
+            "endCol": 65
+          },
+          "kind": "linear",
+          "repeating": false,
+          "document": {
+            "kind": "linear",
+            "angle": 180,
+            "stops": [
+              {
+                "color": "#0f172a"
+              },
+              {
+                "color": "#1e293b"
+              },
+              {
+                "color": "#334155"
+              }
+            ]
+          },
+          "stopRanges": [
+            {
+              "range": {
+                "start": 290,
+                "end": 297
+              },
+              "loc": {
+                "line": 11,
+                "col": 39,
+                "endLine": 11,
+                "endCol": 46
+              },
+              "text": "#0f172a"
+            },
+            {
+              "range": {
+                "start": 299,
+                "end": 306
+              },
+              "loc": {
+                "line": 11,
+                "col": 48,
+                "endLine": 11,
+                "endCol": 55
+              },
+              "text": "#1e293b"
+            },
+            {
+              "range": {
+                "start": 308,
+                "end": 315
+              },
+              "loc": {
+                "line": 11,
+                "col": 57,
+                "endLine": 11,
+                "endCol": 64
+              },
+              "text": "#334155"
+            }
+          ],
+          "warnings": [],
+          "angleRange": {
+            "range": {
+              "start": 282,
+              "end": 288
+            },
+            "loc": {
+              "line": 11,
+              "col": 31,
+              "endLine": 11,
+              "endCol": 37
+            },
+            "text": "180deg"
+          }
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "filesScanned": 1,
+    "filesSkipped": 0,
+    "filesWithErrors": 0,
+    "gradients": 3,
+    "skipped": 0,
+    "exitCode": 0
+  }
+}

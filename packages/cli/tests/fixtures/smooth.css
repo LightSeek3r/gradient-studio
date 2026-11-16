@@ -1,0 +1,12 @@
+/* A calm set: lightness moves one way, the hue barely changes. */
+.hero {
+  background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 50%, #93c5fd 100%);
+}
+
+.card {
+  background-image: linear-gradient(to bottom, #fef3c7, #fde68a, #f59e0b);
+}
+
+.footer {
+  background: linear-gradient(180deg, #0f172a, #1e293b, #334155);
+}

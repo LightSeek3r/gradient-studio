@@ -1,0 +1,25 @@
+::error file=rough.css,line=3,col=15,endLine=3,endColumn=68,title=Smoothness score below minimum::smoothness score 58/100 is below --min-score 80
+::warning file=rough.css,line=3,col=47,endLine=3,endColumn=58,title=opal42 lightness/reversal::Lightness fluctuates (1 reversal) — creates visual noise (-12 points)
+::warning file=rough.css,line=3,col=38,endLine=3,endColumn=67,title=opal42 hue/wide-arc::Hue arc spans >180° — colors clash unexpectedly (-20 points)
+::warning file=rough.css,line=3,col=47,endLine=3,endColumn=67,title=opal42 chroma/muddy-midpoint::Colors produce a muddy/grey midpoint when blended (-10 points)
+::warning file=rough.css,line=7,col=50,endLine=7,endColumn=57,title=opal42 lightness/reversal::Lightness fluctuates (1 reversal) — creates visual noise (-12 points)
+::error file=rough.css,line=11,col=15,endLine=11,endColumn=88,title=Smoothness score below minimum::smoothness score 41/100 is below --min-score 80
+::warning file=rough.css,line=11,col=50,endLine=11,endColumn=60,title=opal42 lightness/reversal::Lightness fluctuates (1 reversal) — creates visual noise (-12 points)
+::warning file=rough.css,line=11,col=38,endLine=11,endColumn=60,title=opal42 lightness/abrupt-jump::Abrupt color jump between closely-spaced stops (-8 points)
+::notice file=rough.css,line=11,col=62,endLine=11,endColumn=87,title=opal42 lightness/uneven-speed::Slightly uneven transition speed across the gradient (-4 points)
+::warning file=rough.css,line=11,col=38,endLine=11,endColumn=87,title=opal42 hue/wide-arc::Hue arc spans >180° — colors clash unexpectedly (-20 points)
+::notice file=rough.css,line=11,col=62,endLine=11,endColumn=87,title=opal42 chroma/muddy-midpoint::Slight desaturation in gradient midpoints (-5 points)
+::warning file=rough.css,line=11,col=62,endLine=11,endColumn=87,title=opal42 rhythm/uneven-gaps::Stop positions are unevenly clustered (-10 points)
+::error file=rough.css,line=15,col=15,endLine=21,endColumn=4,title=Smoothness score below minimum::smoothness score 77/100 is below --min-score 80
+::notice file=rough.css,line=18,col=5,endLine=20,endColumn=17,title=opal42 chroma/saturation-range::Uneven saturation across stops (-5 points)
+::warning file=rough.css,line=19,col=5,endLine=20,endColumn=17,title=opal42 chroma/dead-zone::Grey/desaturated stop among vivid colors — creates a dead zone (-8 points)
+::warning file=rough.css,line=18,col=5,endLine=19,endColumn=16,title=opal42 rhythm/uneven-gaps::Stop positions are unevenly clustered (-10 points)
+::error file=rough.css,line=25,col=15,endLine=25,endColumn=89,title=Smoothness score below minimum::smoothness score 71/100 is below --min-score 80
+::warning file=rough.css,line=25,col=50,endLine=25,endColumn=74,title=opal42 hue/wide-arc::Wide hue arc (>120°) risks muddy midpoints (-8 points)
+::notice file=rough.css,line=25,col=38,endLine=25,endColumn=74,title=opal42 chroma/saturation-range::Uneven saturation across stops (-5 points)
+::warning file=rough.css,line=25,col=38,endLine=25,endColumn=61,title=opal42 chroma/banding::Low color resolution between stops — visible banding likely (-6 points)
+::warning file=rough.css,line=25,col=50,endLine=25,endColumn=74,title=opal42 rhythm/uneven-gaps::Stop positions are unevenly clustered (-10 points)
+
+1 file scanned, 5 gradients: 5 scored
+smoothness score: min 41, mean 67, max 88
+4 gradients below --min-score 80

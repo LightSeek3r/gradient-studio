@@ -179,16 +179,21 @@ export const CSS_NAMED_COLORS: Record<string, string> = {
 };
 
 /** Alphabetical name list — feeds the `<datalist>` autocomplete. */
-export const CSS_COLOR_NAMES = Object.keys(CSS_NAMED_COLORS);
+export const CSS_COLOR_NAMES = /* @__PURE__ */ Object.keys(CSS_NAMED_COLORS);
 
 // Lookups go through Maps (own entries only), never through `obj[key]` on a
 // plain object: user text such as "constructor" or "__proto__" must not reach
 // Object.prototype members.
-const NAME_TO_HEX = new Map<string, string>(Object.entries(CSS_NAMED_COLORS));
-const HEX_TO_NAME = new Map<string, string>();
-for (const [name, hex] of Object.entries(CSS_NAMED_COLORS)) {
-  if (!HEX_TO_NAME.has(hex)) HEX_TO_NAME.set(hex, name);
-}
+// Built by pure expressions (annotated) so that a bundler can drop the tables
+// when no name function is imported.
+const NAME_TO_HEX = /* @__PURE__ */ (() => new Map<string, string>(Object.entries(CSS_NAMED_COLORS)))();
+const HEX_TO_NAME = /* @__PURE__ */ (() => {
+  const m = new Map<string, string>();
+  for (const [name, hex] of Object.entries(CSS_NAMED_COLORS)) {
+    if (!m.has(hex)) m.set(hex, name);
+  }
+  return m;
+})();
 
 let namedLabs: { name: string; lab: OklabColor }[] | null = null;
 function getNamedLabs() {

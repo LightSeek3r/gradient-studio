@@ -6,7 +6,7 @@ import tseslint from 'typescript-eslint'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([
-  globalIgnores(['dist', '**/node_modules', '**/coverage']),
+  globalIgnores(['dist', '**/dist', '**/node_modules', '**/coverage', '.changeset']),
   {
     // Every workspace: base JS + TypeScript rules.
     files: ['**/*.{ts,tsx}'],
@@ -29,6 +29,8 @@ export default defineConfig([
       'packages/*/tests/**/*.ts',
       'packages/*/scripts/**/*.ts',
       'packages/*/vitest.config.ts',
+      'packages/*/tsdown.config.ts',
+      'packages/cli/src/**/*.ts',
       'apps/web/vite.config.ts',
       'apps/web/vitest.config.ts',
       'apps/web/tests/**/*.ts',

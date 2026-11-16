@@ -1,0 +1,65 @@
+[
+ {
+  "name": "everything (index, import *)",
+  "path": "dist/index.js",
+  "import": "*",
+  "gzip": true,
+  "limit": "21.5 kB"
+ },
+ {
+  "name": "score",
+  "path": "dist/index.js",
+  "import": "{ score }",
+  "gzip": true,
+  "limit": "6.2 kB"
+ },
+ {
+  "name": "parseGradient",
+  "path": "dist/index.js",
+  "import": "{ parseGradient }",
+  "gzip": true,
+  "limit": "9.1 kB"
+ },
+ {
+  "name": "parseGradient + scoreParsed + refine",
+  "path": "dist/index.js",
+  "import": "{ parseGradient, scoreParsed, refine }",
+  "gzip": true,
+  "limit": "16.4 kB"
+ },
+ {
+  "name": "./css (everything)",
+  "path": "dist/css.js",
+  "import": "*",
+  "gzip": true,
+  "limit": "9.2 kB"
+ },
+ {
+  "name": "./color (everything)",
+  "path": "dist/color.js",
+  "import": "*",
+  "gzip": true,
+  "limit": "7.4 kB"
+ },
+ {
+  "name": "./color parseAnyColor",
+  "path": "dist/color.js",
+  "import": "{ parseAnyColor }",
+  "gzip": true,
+  "limit": "2.6 kB"
+ },
+ {
+  "name": "./color hexToOklch",
+  "path": "dist/color.js",
+  "import": "{ hexToOklch }",
+  "gzip": true,
+  "limit": "500 B"
+ },
+ {
+  "name": "./names (everything)",
+  "path": "dist/names.js",
+  "import": "*",
+  "gzip": true,
+  "limit": "2.2 kB"
+ }
+]

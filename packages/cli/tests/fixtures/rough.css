@@ -1,0 +1,26 @@
+/* Gradients the v1 model has things to say about. */
+.rainbow {
+  background: linear-gradient(90deg, #ff0000, #00ff00 50%, #0000ff);
+}
+
+.bumpy {
+  background: linear-gradient(to right, #111111, #eeeeee, #222222);
+}
+
+.clustered {
+  background: linear-gradient(90deg, #ff6b6b 0%, #ffd93d 5%, #6bcb77 10%, #4d96ff 100%);
+}
+
+.uneven {
+  background: linear-gradient(
+    180deg,
+    #0b3d91 0%,
+    #1565c0 10%,
+    #e3f2fd 90%,
+    #ffffff 100%
+  );
+}
+
+.split {
+  background: linear-gradient(90deg, #e63946 0%, #e63946 50%, #1d3557 50%, #1d3557 100%);
+}

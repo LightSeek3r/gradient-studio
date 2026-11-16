@@ -1,0 +1,60 @@
+card.vue:2:40  smoothness score 58/100  (lightness 18/30, hue 10/30, chroma 10/20, spacing 20/20)  linear-gradient(90deg, #ff0000, #00ff00 50%, #0000ff)
+  card.vue:2:72  error  lightness/reversal  -12  Lightness fluctuates (1 reversal) — creates visual noise
+  card.vue:2:63  error  hue/wide-arc  -20  Hue arc spans >180° — colors clash unexpectedly
+  card.vue:2:72  warning  chroma/muddy-midpoint  -10  Colors produce a muddy/grey midpoint when blended
+card.vue:9:15  smoothness score 85/100  (lightness 30/30, hue 15/30, chroma 20/20, spacing 20/20)  linear-gradient(to right, #003366, #3366cc, #99ccff)
+  card.vue:9:50  info  hue/narrow-arc  -5  Very narrow hue arc (<15°) — the gradient reads as a single hue
+  card.vue:9:50  warning  hue/direction-reversal  -10  Hue path reverses direction — risk of muddy in-between tones
+nested/legacy.scss:2:20  skipped (preprocessor)  preprocessor variable or template expression
+nested/legacy.scss:3:20  smoothness score 100/100  (lightness 30/30, hue 30/30, chroma 20/20, spacing 20/20)  linear-gradient(45deg, #232526, #414345)
+notes.md:4:21  smoothness score 100/100  (lightness 30/30, hue 30/30, chroma 20/20, spacing 20/20)  linear-gradient(90deg, #7f00ff, #e100ff)
+notes.md:7:10  smoothness score 100/100  (lightness 30/30, hue 30/30, chroma 20/20, spacing 20/20)  linear-gradient(to right, #00c6ff, #0072ff)
+page.html:5:26  smoothness score 92/100  (lightness 22/30, hue 30/30, chroma 20/20, spacing 20/20)  linear-gradient(#fdfbfb, #ebedee)
+  page.html:5:42  warning  lightness/low-contrast  -8  Very low contrast between stops — gradient barely visible
+page.html:9:39  smoothness score 100/100  (lightness 30/30, hue 30/30, chroma 20/20, spacing 20/20)  linear-gradient(120deg, #84fab0, #8fd3f4)
+page.html:10:33  smoothness score 100/100  (lightness 30/30, hue 30/30, chroma 20/20, spacing 20/20)  linear-gradient(45deg, #f6d365 0%, #fda085 100%)
+rough.css:3:15  smoothness score 58/100  (lightness 18/30, hue 10/30, chroma 10/20, spacing 20/20)  linear-gradient(90deg, #ff0000, #00ff00 50%, #0000ff)
+  rough.css:3:47  error  lightness/reversal  -12  Lightness fluctuates (1 reversal) — creates visual noise
+  rough.css:3:38  error  hue/wide-arc  -20  Hue arc spans >180° — colors clash unexpectedly
+  rough.css:3:47  warning  chroma/muddy-midpoint  -10  Colors produce a muddy/grey midpoint when blended
+rough.css:7:15  smoothness score 88/100  (lightness 18/30, hue 30/30, chroma 20/20, spacing 20/20)  linear-gradient(to right, #111111, #eeeeee, #222222)
+  rough.css:7:50  error  lightness/reversal  -12  Lightness fluctuates (1 reversal) — creates visual noise
+rough.css:11:15  smoothness score 41/100  (lightness 6/30, hue 10/30, chroma 15/20, spacing 10/20)  linear-gradient(90deg, #ff6b6b 0%, #ffd93d 5%, #6bcb77 10%, #4d96ff 1…
+  rough.css:11:50  error  lightness/reversal  -12  Lightness fluctuates (1 reversal) — creates visual noise
+  rough.css:11:38  warning  lightness/abrupt-jump  -8  Abrupt color jump between closely-spaced stops
+  rough.css:11:62  info  lightness/uneven-speed  -4  Slightly uneven transition speed across the gradient
+  rough.css:11:38  error  hue/wide-arc  -20  Hue arc spans >180° — colors clash unexpectedly
+  rough.css:11:62  info  chroma/muddy-midpoint  -5  Slight desaturation in gradient midpoints
+  rough.css:11:62  warning  rhythm/uneven-gaps  -10  Stop positions are unevenly clustered
+rough.css:15:15  smoothness score 77/100  (lightness 30/30, hue 30/30, chroma 7/20, spacing 10/20)  linear-gradient( 180deg, #0b3d91 0%, #1565c0 10%, #e3f2fd 90%, #fffff…
+  rough.css:18:5  info  chroma/saturation-range  -5  Uneven saturation across stops
+  rough.css:19:5  warning  chroma/dead-zone  -8  Grey/desaturated stop among vivid colors — creates a dead zone
+  rough.css:18:5  warning  rhythm/uneven-gaps  -10  Stop positions are unevenly clustered
+rough.css:25:15  smoothness score 71/100  (lightness 30/30, hue 22/30, chroma 9/20, spacing 10/20)  linear-gradient(90deg, #e63946 0%, #e63946 50%, #1d3557 50%, #1d3557 …
+  rough.css:25:50  warning  hue/wide-arc  -8  Wide hue arc (>120°) risks muddy midpoints
+  rough.css:25:38  info  chroma/saturation-range  -5  Uneven saturation across stops
+  rough.css:25:38  warning  chroma/banding  -6  Low color resolution between stops — visible banding likely
+  rough.css:25:50  warning  rhythm/uneven-gaps  -10  Stop positions are unevenly clustered
+  note: hard stops; the v1 score does not adjust for stripes
+skipped.css:2:25  skipped (var)  var() cannot be resolved statically
+skipped.css:3:25  skipped (unsupported-kind)  radial gradients are found but not interpreted
+skipped.css:4:25  skipped (unsupported-kind)  conic gradients are found but not interpreted
+skipped.css:5:25  skipped (legacy-syntax)  -webkit-linear-gradient() uses the legacy angle and keyword conventions
+skipped.css:6:25  skipped (alpha)  stop 0 is translucent (alpha 0); the v1 model only judges opaque stops
+skipped.css:7:25  skipped (length-position)  stop position in px depends on the box size; only % positions are supported
+skipped.css:8:25  skipped (color-mix)  color-mix() is not supported
+skipped.css:9:25  skipped (too-few-stops)  needs at least 2 stops
+smooth.css:3:15  smoothness score 95/100  (lightness 30/30, hue 25/30, chroma 20/20, spacing 20/20)  linear-gradient(135deg, #1e3a8a 0%, #2563eb 50%, #93c5fd 100%)
+  smooth.css:3:39  info  hue/narrow-arc  -5  Very narrow hue arc (<15°) — the gradient reads as a single hue
+smooth.css:7:21  smoothness score 100/100  (lightness 30/30, hue 30/30, chroma 20/20, spacing 20/20)  linear-gradient(to bottom, #fef3c7, #fde68a, #f59e0b)
+smooth.css:11:15  smoothness score 95/100  (lightness 30/30, hue 25/30, chroma 20/20, spacing 20/20)  linear-gradient(180deg, #0f172a, #1e293b, #334155)
+  smooth.css:11:39  info  hue/narrow-arc  -5  Very narrow hue arc (<15°) — the gradient reads as a single hue
+theme.ts:2:12  smoothness score 82/100  (lightness 22/30, hue 30/30, chroma 20/20, spacing 10/20)  linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%)
+  theme.ts:2:36  warning  lightness/uneven-speed  -8  Uneven perceptual speed — some transitions race while others crawl
+  theme.ts:2:36  warning  rhythm/uneven-gaps  -10  Stop positions are unevenly clustered
+theme.ts:3:11  smoothness score 95/100  (lightness 30/30, hue 25/30, chroma 20/20, spacing 20/20)  linear-gradient(to top, #09203f 0%, #537895 100%)
+  theme.ts:3:35  info  hue/narrow-arc  -5  Very narrow hue arc (<15°) — the gradient reads as a single hue
+theme.ts:5:12  skipped (unbalanced)  linear-gradient( is never closed
+
+8 files scanned, 28 gradients: 18 scored, 10 skipped (alpha 1, color-mix 1, legacy-syntax 1, length-position 1, preprocessor 1, too-few-stops 1, unbalanced 1, unsupported-kind 2, var 1)
+smoothness score: min 41, mean 85.39, max 100

@@ -2,22 +2,73 @@
   "name": "@opal42/gradient",
   "version": "0.0.0",
   "private": true,
-  "description": "Gradient scoring and colour engine (OKLAB/OKLCH). Working name; scope unverified.",
+  "description": "A deterministic smoothness score, parser and refiner for CSS gradients (OKLAB/OKLCH). Pure functions, zero dependencies. Working name.",
+  "keywords": [
+    "gradient",
+    "css-gradient",
+    "oklab",
+    "oklch",
+    "color",
+    "linter",
+    "parser"
+  ],
   "license": "MIT",
   "author": "LightSeek3r (https://github.com/LightSeek3r)",
+  "homepage": "https://github.com/LightSeek3r/gradient-studio/tree/master/packages/core#readme",
+  "bugs": {
+    "url": "https://github.com/LightSeek3r/gradient-studio/issues"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/LightSeek3r/gradient-studio.git",
     "directory": "packages/core"
   },
   "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./src/index.ts"
+    ".": {
+      "source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./color": {
+      "source": "./src/color.ts",
+      "types": "./dist/color.d.ts",
+      "default": "./dist/color.js"
+    },
+    "./names": {
+      "source": "./src/names.ts",
+      "types": "./dist/names.d.ts",
+      "default": "./dist/names.js"
+    },
+    "./css": {
+      "source": "./src/css.ts",
+      "types": "./dist/css.d.ts",
+      "default": "./dist/css.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   },
   "scripts": {
+    "build": "tsdown",
     "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.scripts.json",
     "test": "vitest run",
     "vectors": "vite-node scripts/gen-vectors.ts",
-    "vectors:diff": "vite-node scripts/vector-diff.ts"
+    "vectors:diff": "vite-node scripts/vector-diff.ts",
+    "lint:package": "publint --strict",
+    "attw": "attw --pack . --profile esm-only",
+    "size": "size-limit",
+    "prepack": "npm run build"
   }
 }

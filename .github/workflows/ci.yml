@@ -37,3 +37,21 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      - name: Build packages (core, CLI)
+        run: npm run build:packages
+
+      - name: publint
+        run: npm run lint:package
+
+      - name: Are the types wrong
+        run: npm run attw
+
+      - name: Size limit
+        run: npm run size
+
+      - name: CLI smoke test
+        run: node packages/cli/dist/cli.js score packages/cli/tests/fixtures
+
+      - name: Vectors unchanged
+        run: npm run vectors:diff
