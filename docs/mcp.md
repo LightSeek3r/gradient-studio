@@ -229,4 +229,4 @@ accepts the older `initialize` handshake (revisions 2025-11-25 down to
 and was not verified.
 
 The tool handlers are in `packages/mcp/src/handlers.ts`, free of the SDK and of
-Node, so a stateless Worker can reuse them later (`@opal42/mcp/handlers`).
+Node, so a stateless Worker can reuse them (`@opal42/mcp/handlers`); that Worker is built but not deployed, see [`worker.md`](worker.md).

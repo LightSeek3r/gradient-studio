@@ -1,0 +1,41 @@
+// Worker project config for the hosted opal42 MCP endpoint (NOT the Pages config
+// of apps/web). Nothing here is deployed; see docs/worker.md for the owner checklist.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+
+  // Placeholder name. Changing it changes the workers.dev subdomain.
+  "name": "opal42-mcp",
+  "main": "src/index.ts",
+
+  // Must not be later than the workerd bundled with the installed wrangler
+  // (workerd 2026-11-16 at the time of writing). No compatibility_flags: the
+  // Worker uses only web-standard APIs, so nodejs_compat is deliberately off.
+  "compatibility_date": "2026-11-01",
+
+  // PRIVACY (PLAN D4): no request logging or tracing. Workers Logs defaults to ON
+  // for new Workers, so it is switched off explicitly. Logpush is a separate
+  // opt-in (`logpush`), left unset (false) on purpose; do not add a Tail Worker.
+  "observability": { "enabled": false },
+  "logpush": false,
+
+  // No routes: the owner decides the domain (docs/worker.md). Rate limiting rules
+  // need a zone, which workers.dev does not give you.
+  // "routes": [{ "pattern": "mcp.example.com", "custom_domain": true }],
+
+  // Browser CORS is OFF when this is empty. Comma-separated exact origins to allow.
+  // REFINE_MAX_STOPS: total stops one refine_gradient request may contain. refine is
+  // CPU-heavy (about 6 ms for 2 stops, 190 ms for 32 in Node), so 3 is the setting that
+  // fits the Free plan's 10 ms CPU limit. Raise it (16 or more) on Workers Paid; 0
+  // disables the tool. See docs/worker.md, "CPU".
+  "vars": { "CORS_ALLOWED_ORIGINS": "", "REFINE_MAX_STOPS": "3" },
+
+  // Resolve the workspace packages to their TypeScript source so `wrangler dev`
+  // and `wrangler deploy` need no prior `npm run build:packages`.
+  "alias": {
+    "@opal42/mcp/handlers": "../../packages/mcp/src/handlers.ts",
+    "@opal42/gradient": "../../packages/core/src/index.ts"
+  }
+
+  // Deliberately absent: kv_namespaces, d1_databases, r2_buckets, durable_objects,
+  // queues, services, ai, secrets. The Worker is stateless and has no bindings.
+}

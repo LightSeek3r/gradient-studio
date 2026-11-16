@@ -1,0 +1,26 @@
+{
+  "name": "opal42-mcp-worker",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Stateless Cloudflare Worker serving the opal42 gradient MCP tools over Streamable HTTP at /mcp. Not deployed. Working name.",
+  "license": "MIT",
+  "author": "LightSeek3r (https://github.com/LightSeek3r)",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "build": "node scripts/bundle.mjs",
+    "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.test.json",
+    "test": "vitest run",
+    "bench": "vite-node --config vitest.config.ts scripts/bench.ts",
+    "test:workerd": "vitest run --config vitest.workerd.config.ts"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/server": "^2.4.0",
+    "@opal42/gradient": "^0.0.0",
+    "@opal42/mcp": "^0.0.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20261116.1",
+    "wrangler": "^4.163.0"
+  }
+}

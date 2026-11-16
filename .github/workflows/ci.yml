@@ -58,6 +58,9 @@ jobs:
           node packages/mcp/dist/cli.js --version
           (echo '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'; sleep 1) | node packages/mcp/dist/cli.js | grep -q score_gradient
 
+      - name: Worker bundles (wrangler dry run; nothing is deployed)
+        run: npm run build -w opal42-mcp-worker
+
       - name: Agent skill is valid
         run: node skills/gradient-quality/scripts/validate-skill.mjs skills/gradient-quality
 
