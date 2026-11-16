@@ -1,0 +1,49 @@
+# Working name; NOT published to PyPI (publishing is a later, owner-only step).
+# Only setuptools is needed to build, and it is already present in a stock
+# Python environment, so nothing is downloaded to run the tests.
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "opal42-gradient"
+version = "0.1.0.dev0"
+description = "Pure-Python port of Gradient Studio's gradient smoothness score (scoring model v1). Zero dependencies."
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.10"
+authors = [{ name = "LightSeek3r" }]
+keywords = ["gradient", "css", "oklab", "oklch", "color", "lint"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Multimedia :: Graphics",
+  "Typing :: Typed",
+]
+dependencies = []
+
+[project.urls]
+Repository = "https://github.com/LightSeek3r/gradient-studio"
+Documentation = "https://github.com/LightSeek3r/gradient-studio/blob/master/docs/python.md"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+packages = ["opal42_gradient"]
+
+[tool.setuptools.package-data]
+opal42_gradient = ["py.typed"]
+
+[tool.mypy]
+strict = true
+python_version = "3.10"
+files = ["src/opal42_gradient"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

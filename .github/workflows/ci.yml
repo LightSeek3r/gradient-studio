@@ -130,3 +130,45 @@ jobs:
 
       - name: Extension browser tests
         run: npm run test:e2e:extension
+
+  # Python port (ports/python): standard library only, no install step and no
+  # network. Replays spec/vectors/*.json against the port and runs the unit and
+  # property tests on the oldest and the newest supported Python. The interpreter
+  # comes from the runner image's tool cache, so no action beyond the already
+  # pinned checkout is needed.
+  python-port:
+    name: python-port (Python ${{ matrix.python }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.10", "3.13"]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Select Python ${{ matrix.python }} from the runner tool cache
+        env:
+          PYTHON_VERSION: ${{ matrix.python }}
+        run: |
+          dir=$(ls -d "${RUNNER_TOOL_CACHE:-/opt/hostedtoolcache}/Python/${PYTHON_VERSION}".*/x64 2>/dev/null | sort -V | tail -1)
+          if [ -z "$dir" ]; then
+            echo "Python ${PYTHON_VERSION} is not in the runner tool cache" >&2
+            exit 1
+          fi
+          echo "$dir/bin" >> "$GITHUB_PATH"
+
+      - name: Python version
+        run: python3 --version
+
+      - name: Unit, property and conformance tests
+        working-directory: ports/python
+        run: python3 -m unittest discover -v
+
+      - name: Conformance summary (exits 1 on any mismatch)
+        working-directory: ports/python
+        run: python3 scripts/check_conformance.py
+
+      - name: Name table is generated from the TypeScript source
+        working-directory: ports/python
+        run: python3 scripts/gen_names.py --check

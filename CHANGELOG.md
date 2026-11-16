@@ -6,6 +6,25 @@ All notable changes to Gradient Studio are listed here. The format follows
 
 ## [Unreleased]
 
+### Added (Python port, `ports/python`)
+
+- `opal42-gradient` (working name, **not published**; no PyPI name has been reserved): a pure-Python
+  (3.10+, standard library only, typed) port of scoring model v1 in `ports/python`: colour
+  conversions, hex/rgb/hsl/name parsing and formatting, `score_gradient` with coded and located
+  findings, `suggest_gradient` / `refine_gradient` with the same guarantees, `build_gradient_css`,
+  `build_multi_gradient_style`, `interpolate_gradient`, `color_at_position`, `complement_hex`, and the
+  148-name table generated from the TypeScript source. The gradient-string parser, the document API
+  and the exporters are not ported.
+- A conformance harness that replays `spec/vectors/*.json` (`python3 -m unittest discover`,
+  `scripts/check_conformance.py`): 1,740 cases, 1,651 compared exactly, 89 boundary cases checked on
+  measurements, 0 mismatches, on Python 3.10 to 3.13; plus property tests. A CI job `python-port` runs
+  it on Python 3.10 and 3.13. No vector, spec or TypeScript file changed.
+- `docs/python.md`: what is ported, the results, and the JavaScript-versus-Python portability notes
+  (`Math.round` half-up versus banker's rounding, `%`, `Math.cbrt`, `sum()` on Python 3.12+, regex and
+  number-printing differences, last-bit differences of `pow`/`sin`/`cos`/`atan2`) and a finding for the
+  spec: on 3-stop gradients the location of `lightness/uneven-speed` is decided by sub-ulp noise (10
+  vectors), which suggests a boundary annotation for location ties.
+
 ### Added (web app: English and French)
 
 - Full EN/FR localisation of the web app with no new dependency: typed catalogues

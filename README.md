@@ -172,6 +172,9 @@ apps/web/                gradient-studio-web (private): the React app, built int
   public/                  favicon, app icons, web manifest and the Open Graph image
   index.html               page shell, meta description, Open Graph and Twitter Card tags
 spec/                    scoring-v1.md and the characterisation vectors
+ports/python/            opal42-gradient (working name, not published): a standard-library-only
+                         Python port of scoring model v1, checked against spec/vectors/
+                         ([docs/python.md](docs/python.md))
 docs/                    the README screenshots, the plan and the social preview image
 ```
 
