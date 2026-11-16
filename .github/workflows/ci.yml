@@ -64,6 +64,9 @@ jobs:
       - name: Stylelint plugin smoke test
         run: npx stylelint --config packages/stylelint-plugin/tests/smoke.config.mjs packages/cli/tests/fixtures/smooth.css
 
+      - name: VS Code extension bundles and packages
+        run: npm run package -w gradient-score
+
       - name: Vectors unchanged
         run: npm run vectors:diff
 

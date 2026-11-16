@@ -1,0 +1,8 @@
+# Allow-list: ship only the bundle, the manifest, docs, the licence and the icon.
+**
+!package.json
+!README.md
+!CHANGELOG.md
+!LICENSE
+!images/icon.png
+!dist/extension.js

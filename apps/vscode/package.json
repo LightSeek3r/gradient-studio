@@ -1,0 +1,127 @@
+{
+  "name": "gradient-score",
+  "displayName": "Opal42 Gradient Score",
+  "description": "A smoothness score for CSS gradients, shown above each gradient with located findings, quick fixes and a swatch preview. Local only: no network, no telemetry. Working name.",
+  "version": "0.1.0",
+  "private": true,
+  "publisher": "opal42",
+  "license": "MIT",
+  "author": "LightSeek3r (https://github.com/LightSeek3r)",
+  "homepage": "https://github.com/LightSeek3r/gradient-studio/blob/master/docs/vscode.md",
+  "bugs": {
+    "url": "https://github.com/LightSeek3r/gradient-studio/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LightSeek3r/gradient-studio.git",
+    "directory": "apps/vscode"
+  },
+  "keywords": [
+    "gradient",
+    "css-gradient",
+    "oklab",
+    "oklch",
+    "linter",
+    "color"
+  ],
+  "categories": [
+    "Linters",
+    "Other"
+  ],
+  "icon": "images/icon.png",
+  "type": "commonjs",
+  "main": "./dist/extension.js",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": true
+    },
+    "virtualWorkspaces": true
+  },
+  "activationEvents": [
+    "onLanguage:css",
+    "onLanguage:scss",
+    "onLanguage:less",
+    "onLanguage:html",
+    "onLanguage:vue",
+    "onLanguage:svelte",
+    "onLanguage:astro",
+    "onLanguage:javascriptreact",
+    "onLanguage:typescriptreact",
+    "onLanguage:javascript",
+    "onLanguage:typescript",
+    "onLanguage:markdown",
+    "onLanguage:mdx"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "opal42.scoreFile",
+        "title": "Score current file",
+        "category": "Opal42"
+      },
+      {
+        "command": "opal42.openInStudio",
+        "title": "Open in Gradient Studio",
+        "category": "Opal42"
+      }
+    ],
+    "configuration": {
+      "title": "Opal42 Gradient Score",
+      "properties": {
+        "opal42.minScore": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 100,
+          "markdownDescription": "Optional smoothness score (0-100) below which a gradient's diagnostics are shown as errors. **No default**: leave it unset and diagnostics keep the severity of the finding (information or warning). It changes severity only; nothing is blocked."
+        },
+        "opal42.showSkipped": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "Show a lens (\"Not scored - ...\") above gradients that cannot be scored: `var()`, `calc()`, transparency, hard stops, repeating, radial and conic gradients, and so on."
+        },
+        "opal42.codeLens.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show the smoothness score above each scored gradient."
+        },
+        "opal42.diagnostics.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Report the findings of the score as diagnostics on the stops that cause them."
+        },
+        "opal42.maxFileSizeKB": {
+          "type": "number",
+          "default": 500,
+          "minimum": 10,
+          "maximum": 2000,
+          "description": "Documents larger than this many kilobytes are not analysed."
+        },
+        "opal42.studioUrl": {
+          "type": "string",
+          "default": "https://gradient-studio-al4.pages.dev/",
+          "markdownDescription": "Address of the Gradient Studio web app opened by **Opal42: Open in Gradient Studio**. Only opened when you run that command. Must start with `https://` or `http://`."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "icon": "node scripts/make-icon.mjs",
+    "package": "npm run typecheck && npm run build && vsce package --no-dependencies",
+    "ls": "vsce ls --no-dependencies"
+  },
+  "devDependencies": {
+    "@opal42/gradient": "*",
+    "@types/vscode": "1.90.0",
+    "@vscode/vsce": "^4.1.1",
+    "esbuild": "^0.28.2"
+  }
+}

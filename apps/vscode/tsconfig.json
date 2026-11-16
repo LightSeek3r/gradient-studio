@@ -1,0 +1,25 @@
+{
+  // Extension source and tests. `src/analyze.ts` and friends never import
+  // `vscode`; only `src/extension.ts` does (types from @types/vscode).
+  "compilerOptions": {
+    "target": "ES2023",
+    "lib": ["ES2023"],
+    "module": "ESNext",
+    "types": ["node", "vscode"],
+    "skipLibCheck": true,
+
+    "moduleResolution": "bundler",
+    "customConditions": ["source"],
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedSideEffectImports": true
+  },
+  "include": ["src", "tests", "vitest.config.ts"]
+}
