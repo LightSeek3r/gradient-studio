@@ -104,6 +104,49 @@ centre is actually used). The centre now falls back to the midpoint of the
 shorter arc from the first to the last chromatic stop.
 - 4 × `suggested`, `scoreAfter`; 1 × `suggested`; 2 × with D5; 2 × with D6.
 
+### D8 — tie-dependent location / selection — **4 findings cases**
+Found after the freeze, when CI moved to Node 24: wherever an exact `<` / `>`
+chose WHICH stop, segment or candidate is reported, two values equal in exact
+arithmetic were ordered by the last bit of `Math.pow` / `cbrt` / `atan2`, which
+differs between V8 versions (and in Python). Fixed with one mechanism,
+`src/tolerance.ts` (values within `EPS = 1e-9`, relative above 1, are ties;
+the lowest index wins); full rule table and audit in `docs/DETERMINISM.md`.
+Measurements, threshold tests, scores, codes and messages are unchanged.
+
+Rule (`vector-diff.ts`, input predicate `d8Ties` in `vector-lib.ts`): the input
+has two candidates for a reported location whose deciding values agree within
+EPS (two most-deviant velocities or gaps, two chromatic hues or two largest hue
+gaps, two extreme chromas, two worst midpoint dips, or a first-to-last chromatic
+arc of 180° for refine). Only `v1-findings.json` may change, only in
+`findings`, and only the `stops` / `segment` of a finding whose rule has such a
+tie; code, severity, dimension, points and message must be identical. 112 of
+the 316 corpus inputs satisfy some D8 predicate (gaps 102, velocity 61, chroma
+11, hue 8, dip 3; most of them are exact ties that already resolved to the
+lowest index).
+
+- 4 × `findings` (`abrupt jump 11%`, `random #84 (n=3)`, `random #112 (n=3)`,
+  `random #172 (n=3)`): `lightness/uneven-speed` on a 3-stop gradient, whose two
+  velocity deviations from their mean are equal in exact arithmetic, moved from
+  the second segment to the first. These are 4 of the 10 cases listed in
+  `docs/python.md`; the other 6 already named the first segment.
+- Hue arcs: no vector changed. Exact duplicates (the same colour twice) already
+  resolved as the rule now specifies (start = lowest index of its tie group,
+  end = highest index), and no corpus input has distinct colours of one hue.
+- `v1-score.json`, `v1-suggest.json`, `v1-interpolate.json`, `v1-css.json`,
+  `v1-color.json`: byte-identical.
+
+| file | cases | byte-identical | changed | D8 | unexplained |
+|---|---:|---:|---:|---:|---:|
+| v1-score.json | 316 | 316 | 0 | 0 | 0 |
+| v1-suggest.json | 316 | 316 | 0 | 0 | 0 |
+| v1-interpolate.json | 316 | 316 | 0 | 0 | 0 |
+| v1-css.json | 319 | 319 | 0 | 0 | 0 |
+| v1-color.json | 156 | 156 | 0 | 0 | 0 |
+| v1-findings.json | 316 | 312 | 4 | 4 | 0 |
+
+(Against the commit before D8, `6dbcefa`; the summary table at the top is
+against `cdfc480` and covers D1-D7.)
+
 ## Not changed on purpose
 
 - The 0.02 vs 0.04/0.08 "achromatic" thresholds (documented in
@@ -111,3 +154,7 @@ shorter arc from the first to the last chromatic stop.
 - `hexToRgb`/`rgbToHex` still map garbage to NaN / "NaN" text: they are low-level
   converters; every scoring/CSS entry point validates first.
 - Positions outside 0–100 still render in CSS; they are only unscorable.
+- D8 left the interior-extremum test of `lightness/reversal` and
+  `lightness/perceived-reversal` exact: it decides a COUNT (a score), so a
+  tolerance would change v1 scores. No corpus input has neighbouring stops of
+  different colours whose L agree within 1e-9 (docs/DETERMINISM.md).

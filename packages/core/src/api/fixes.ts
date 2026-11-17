@@ -44,6 +44,7 @@ import {
   type LchColor,
 } from "../gradient-engine";
 import { V1_MODEL } from "../scoring-model-v1";
+import { approxEq, argBest, roundHalfUp } from "../tolerance";
 import { isDocumentLike, resolveStops } from "./document";
 import { persistFacts, persists } from "./fix-persistence";
 import { score } from "./score";
@@ -114,10 +115,10 @@ const INSIDE = 0.95;
 
 const clamp = (v: number, lo: number, hi: number): number => (v < lo ? lo : v > hi ? hi : v);
 const wrap = (h: number): number => ((h % 360) + 360) % 360;
-/** Signed shortest arc from `from` to `to`, in (−180, 180]. */
+/** Signed shortest arc from `from` to `to`, in (−180, 180]; within EPS of 180° it is +180 (D8). */
 const arcTo = (from: number, to: number): number => {
   const d = wrap(to - from);
-  return d > 180 ? d - 360 : d;
+  return d > 180 && !approxEq(d, 180) ? d - 360 : d;
 };
 const toLch = (hex: string): LchColor => oklabToLch(rgbToOklab(hexToRgb(hex)));
 
@@ -196,7 +197,8 @@ function candidatesFor(w: Working, A: number[], refined: GradientTick[] | null):
     // Push the two ends of the named stops apart (low contrast, banding).
     const a = A[0];
     const b = A[A.length - 1];
-    const dir = w.lch[b].L >= w.lch[a].L ? 1 : -1;
+    // Equal lightness within EPS counts as "b is lighter" (D8).
+    const dir = w.lch[b].L >= w.lch[a].L || approxEq(w.lch[b].L, w.lch[a].L) ? 1 : -1;
     for (const d of L_STEPS) {
       push("lightness", [
         [a, withL(a, w.lch[a].L - (dir * d) / 2)],
@@ -318,7 +320,8 @@ function candidatesFor(w: Working, A: number[], refined: GradientTick[] | null):
   /** A legal position for stop i near `target`, given (possibly moved) neighbours, or null. */
   const place = (i: number, target: number, lo: number | null, hi: number | null): number | null => {
     if (w.locked[i]) return null;
-    let p = Math.round(clamp(target, 0, 100));
+    // A target that is a half in exact arithmetic rounds up on every engine (D8).
+    let p = roundHalfUp(clamp(target, 0, 100));
     if (lo !== null && p <= lo + gapMin) p = Math.floor(lo + gapMin) + 1;
     if (hi !== null && p >= hi - gapMin) p = Math.ceil(hi - gapMin) - 1;
     if (lo !== null && p <= lo + gapMin) return null;
@@ -562,8 +565,8 @@ function search(sorted: GradientTick[], lockPositions: boolean, hooks?: SearchHo
     // does, the most any candidate recovers).
     const want = Math.min(bestGain, finding.pointsLost);
     best = best.filter((b) => b.gain >= want);
-    let pick = best[0];
-    for (const b of best) if (b.cost < pick.cost - 1e-12) pick = b;
+    // Costs within EPS are ties; the first such candidate wins (D8).
+    const pick = best[argBest(best.map((b) => b.cost), "min")];
     fixes.push({
       code: finding.code,
       kind: pick.c.kind,

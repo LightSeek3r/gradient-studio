@@ -10,6 +10,13 @@ All functions are pure, deterministic, free of DOM/Node globals, and **never
 throw on bad input**. A failure is a value: `null`, `[]`, `unscorable`,
 `skipped` or `declined`. Never `NaN`, never a placeholder colour.
 
+**Across engines.** Scores, issue codes, `stopIndices` / `segment`, `refine`
+output and `proposeFixes` results are identical on every supported Node version
+(22 and 24, both in CI); non-integer measurements agree to 1e-9 relative, not
+bitwise; only `boundary` cases (a measurement within 1e-6 of a threshold) may
+flip a score. Near-equal candidates are ties broken by the lowest index
+([`docs/DETERMINISM.md`](../docs/DETERMINISM.md), defect D8).
+
 ## Units
 
 | Quantity | Unit |
@@ -164,7 +171,9 @@ much, the most any candidate recovers). There is no scoring logic in
   neighbour is never moved, and a moved stop never lands that close to one;
 - achromatic stops (`C ≤ V1_MODEL.refine.achromaticAtMost`) stay achromatic;
 - pure and deterministic; never throws. Unscorable or malformed input and
-  gradients without findings give `[]`.
+  gradients without findings give `[]`. The result is identical on every
+  supported Node version: candidate costs within `1e-9` are ties and the first
+  candidate wins (`docs/DETERMINISM.md`).
 
 Notes: `gain` can differ from the finding's `pointsLost` (the edit may remove
 or add another finding, and a clamped dimension absorbs penalties — a finding

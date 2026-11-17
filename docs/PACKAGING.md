@@ -194,3 +194,11 @@ imported** (the user passes it to `register`), also a dev dependency for the tes
 `minimatch` 10, both flagged by `npm audit` (moderate). A root `overrides` entry
 (`"@bundled-es-modules/glob": { "glob": "^14.0.6" }`, which brings `minimatch` 11) keeps
 `npm audit` at 0. Style Dictionary's own tests are not run against glob 14; our builds are.
+
+## Size note after the determinism fix D8 (2026-11-17)
+
+`src/tolerance.ts` (`approxEq`, `argBest`, `roundHalfUp`, `quantize`) and the hue-arc tie groups
+(`hueArcEnds`) are on the scoring path (`docs/DETERMINISM.md`). Re-measured: `{ score }` 6.46 kB, over its
+6.2 kB budget, so it was **re-baselined to 6.6 kB** (the note above predicted it). Whole core 25.13 kB
+(budget 25.3 kB), `{ parseGradient, scoreParsed, refine }` 15.74 kB (16.4 kB), `./color` 6.86 kB
+(7.4 kB): inside their budgets, unchanged.

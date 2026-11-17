@@ -66,6 +66,14 @@ quantity a threshold is compared with. The vectors record them, and a case is
 its thresholds *t* (`V1_BOUNDARY_TABLE`, `boundaryHits`). Ports must match
 non-boundary cases exactly and boundary cases on measurements only.
 
+**Ties (D8).** Wherever a rule names "the largest", "the worst", "the first on
+ties" or the ends of an arc, values that agree within `EPS = 1e-9` (relative,
+absolute below 1; `src/tolerance.ts`) are **ties**, and ties go to the lowest
+position-sorted index. The measurements and every threshold test are exact as
+before; only the choice among near-equal candidates uses the tolerance, so that
+locations do not depend on the last bit of `pow` / `cbrt` / `atan2` (which
+differs between Node versions and languages). See `docs/DETERMINISM.md`.
+
 **Two definitions of "achromatic" (kept as v1 behaviour).** Hue rules and refine
 treat a stop as chromatic when `C > 0.02`; the dead-zone rule calls a stop
 achromatic when `C < 0.04` and vivid when `C ≥ 0.08`. A stop with
@@ -162,7 +170,8 @@ the vivid middle stop looks brighter than the grey after it → −6, `stops: [1
 - `V1_MODEL.lightness.velocity.mildAbove` = 0.5
 - `V1_MODEL.lightness.velocity.mild.penalty` = 4
 
-**Location** the segment whose speed deviates most from the mean (first on ties).
+**Location** the segment whose speed deviates most from the mean (first on ties,
+within EPS: with two segments, e.g. any 3-stop gradient, always the first).
 
 **Example.** `#000000 0%, #ffffff 10%, #f4f4f4 55%, #e8e8e8 100%`:
 `velocityCv ≈ 1.38` → −8, `segment: [0, 10]`.
@@ -192,8 +201,12 @@ Two hues can enclose at most 180°, so the clash tier needs ≥ 3 chromatic stop
 - `V1_MODEL.hue.arc.wide.penalty` = 8
 
 **Location** `stops` = the two chromatic stops at the ends of the arc (the hues
-either side of the largest gap; first largest gap on ties, starting with the
-wrap-around gap).
+either side of the largest gap). Hues within EPS count as equal (also across
+0°/360°): the start is the **lowest** index among the stops sharing the start
+hue and the end the **highest** index among those sharing the end hue (what
+exact duplicates always gave); when all chromatic hues are equal, the lowest and
+highest index; when several gaps tie for largest, the one whose start has the
+lowest index. The same rule applies to `hue/narrow-arc`.
 
 **Example.** `#ff0000 → #00ff80`: arc ≈ 122° → wide, −8, `stops: [0, 1]`.
 `#ff0000, #00ff00, #0000ff` (0/50/100): arc ≈ 235° → clash, −20.
@@ -248,7 +261,8 @@ the new direction starts from).
 - `V1_MODEL.chroma.range.unevenAbove` = 0.12
 - `V1_MODEL.chroma.range.uneven.penalty` = 5
 
-**Location** `stops` = the most and the least saturated stop (first occurrence).
+**Location** `stops` = the most and the least saturated stop (first occurrence,
+within EPS).
 
 **Example.** `#808080 → #ff0000`: range ≈ 0.258 → −12, `stops: [0, 1]`.
 
@@ -296,7 +310,7 @@ dip (0 if none).
 - `V1_MODEL.chroma.midpoint.slight.penalty` = 5
 
 This is the only sRGB-specific rule in v1. **Location** the worst segment (first
-on ties).
+on ties, within EPS).
 
 **Example.** `#00ff00 → #ff00ff`: the sRGB midpoint `#808080` is grey,
 `worstDip ≈ 1` → −10, `segment: [0, 100]`.
@@ -385,7 +399,7 @@ stops and a positive mean gap).
 - `V1_MODEL.rhythm.gaps.unevenAbove` = 0.25
 - `V1_MODEL.rhythm.gaps.uneven.penalty` = 4
 
-**Location** the gap deviating most from the mean gap (first on ties).
+**Location** the gap deviating most from the mean gap (first on ties, within EPS).
 
 **Example.** stops at 0/35/100: gaps 35, 65, `gapCv = 0.3` → −4,
 "Stop spacing is slightly uneven", `segment: [0, 35]`.
@@ -408,7 +422,7 @@ Not scored, but part of v1 and frozen by `v1-suggest.json`.
    mean; when the mean resultant length is below `degenerateResultantBelow`
    (e.g. opposed hues, where the mean is floating-point noise) it is the
    midpoint of the shorter arc from the first to the last chromatic stop by
-   position, going towards increasing hue at exactly 180°.
+   position, going towards increasing hue at exactly 180° (within EPS).
 5. Chroma (chromatic stops only): `C = min(maxChroma, meanC · (1 + chromaEnvelope · sin(π t)))`,
    with `meanC` over chromatic stops and `t` the stop index / (n − 1).
 6. Positions: one even slot per group (`round(g / (G − 1) · 100)`), members keep

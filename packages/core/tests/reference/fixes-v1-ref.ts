@@ -1,5 +1,10 @@
 // FROZEN COPY of the original (pre-optimisation) implementation at 0584db9, kept ONLY as the
 // slow reference for the differential tests (tests/perf-equivalence.test.ts). Do not edit. It shares only constants, types, document helpers and gamutFitOklch with src/.
+// ONE SANCTIONED EDIT (defect D8, docs/DETERMINISM.md): the tie-break of every selection that
+// chooses a stop / segment / candidate by a float comparison was changed IN LOCKSTEP with src/,
+// using the shared helpers of src/tolerance.ts (approxEq, argBest, roundHalfUp). Every such edit is
+// marked "D8 (lockstep)". Without it the differential tests would compare the optimised code
+// against a reference with a different (engine-noise-dependent) tie rule. Nothing else changed.
 // ── proposeFixes: one targeted, verified change per finding ───────────────────
 // A fix answers "what is the smallest edit that makes THIS deduction go away?".
 // For every finding of the v1 score a small, fixed set of candidate edits is
@@ -38,6 +43,7 @@ import {
   type LchColor,
 } from "./gradient-engine-v1-ref";
 import { V1_MODEL } from "../../src/scoring-model-v1";
+import { approxEq, argBest, roundHalfUp } from "../../src/tolerance";
 import { isDocumentLike, resolveStops } from "../../src/api/document";
 import { score } from "./score-v1-ref";
 import type { GradientDocument, ScoreResult, Stop } from "../../src/api/types";
@@ -109,7 +115,7 @@ const wrap = (h: number): number => ((h % 360) + 360) % 360;
 /** Signed shortest arc from `from` to `to`, in (−180, 180]. */
 const arcTo = (from: number, to: number): number => {
   const d = wrap(to - from);
-  return d > 180 ? d - 360 : d;
+  return d > 180 && !approxEq(d, 180) ? d - 360 : d; // D8 (lockstep)
 };
 const toLch = (hex: string): LchColor => oklabToLch(rgbToOklab(hexToRgb(hex)));
 
@@ -188,7 +194,7 @@ function candidatesFor(w: Working, A: number[], refined: GradientTick[] | null):
     // Push the two ends of the named stops apart (low contrast, banding).
     const a = A[0];
     const b = A[A.length - 1];
-    const dir = w.lch[b].L >= w.lch[a].L ? 1 : -1;
+    const dir = w.lch[b].L >= w.lch[a].L || approxEq(w.lch[b].L, w.lch[a].L) ? 1 : -1; // D8 (lockstep)
     for (const d of L_STEPS) {
       push("lightness", [
         [a, withL(a, w.lch[a].L - (dir * d) / 2)],
@@ -310,7 +316,7 @@ function candidatesFor(w: Working, A: number[], refined: GradientTick[] | null):
   /** A legal position for stop i near `target`, given (possibly moved) neighbours, or null. */
   const place = (i: number, target: number, lo: number | null, hi: number | null): number | null => {
     if (w.locked[i]) return null;
-    let p = Math.round(clamp(target, 0, 100));
+    let p = roundHalfUp(clamp(target, 0, 100)); // D8 (lockstep)
     if (lo !== null && p <= lo + gapMin) p = Math.floor(lo + gapMin) + 1;
     if (hi !== null && p >= hi - gapMin) p = Math.ceil(hi - gapMin) - 1;
     if (lo !== null && p <= lo + gapMin) return null;
@@ -506,8 +512,7 @@ function search(sorted: GradientTick[], lockPositions: boolean): RawFix[] {
     // does, the most any candidate recovers).
     const want = Math.min(bestGain, finding.pointsLost);
     best = best.filter((b) => b.gain >= want);
-    let pick = best[0];
-    for (const b of best) if (b.cost < pick.cost - 1e-12) pick = b;
+    const pick = best[argBest(best.map((b) => b.cost), "min")]; // D8 (lockstep)
     fixes.push({
       code: finding.code,
       kind: pick.c.kind,

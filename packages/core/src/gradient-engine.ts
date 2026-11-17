@@ -11,6 +11,7 @@ import {
   type Severity,
   type Tier,
 } from "./scoring-model-v1";
+import { approxEq, argBest } from "./tolerance";
 
 export { V1_MODEL };
 export type { Dimension as FindingDimension, ScoreMeasurements, Severity };
@@ -270,13 +271,65 @@ function interiorExtrema(values: number[]): number[] {
   return out;
 }
 
-/** Index of the value deviating most from `mean` (first on ties). */
+/**
+ * Index of the value deviating most from `mean`. Deviations within `EPS` of
+ * the largest are ties and the lowest index wins (D8): with two values the two
+ * deviations from their mean are equal in exact arithmetic, so this names the
+ * first one on every engine instead of whichever the last bit favours.
+ */
 function mostDeviant(values: number[], mean: number): number {
-  let best = 0;
-  for (let i = 1; i < values.length; i++) {
-    if (Math.abs(values[i] - mean) > Math.abs(values[best] - mean)) best = i;
+  return argBest(values.map((v) => Math.abs(v - mean)), "max");
+}
+
+/**
+ * @internal The two stops `hue/wide-arc` and `hue/narrow-arc` name (D8):
+ * `[start, end]` of the minimum arc enclosing the chromatic hues. `byHue` is
+ * the chromatic stops in (hue, index) order, `h` the hue of each stop.
+ *
+ * Rule: hues within `EPS` of each other (chained, and across the 0°/360°
+ * seam) count as EQUAL, and the old rule is applied to the (hue, index) order
+ * with that equality: the arc starts at the first stop after the largest gap
+ * and ends at the last stop before it. So the START is the LOWEST index of its
+ * tie group and the END the HIGHEST index of its tie group, which is exactly
+ * what exact duplicates (same colour twice) always gave; when all hues tie
+ * (one group, arc ≈ 0) they are the group's lowest and highest index. When
+ * several gaps tie for largest, the one whose start has the lowest index wins.
+ * Without near-ties this is identical to the old rule. The arc MEASUREMENT is
+ * not computed here and does not change.
+ */
+export function hueArcEnds(byHue: readonly number[], h: (i: number) => number): [number, number] {
+  const groups: number[][] = [];
+  for (let k = 0; k < byHue.length; k++) {
+    const i = byHue[k];
+    if (k > 0 && approxEq(h(i), h(byHue[k - 1]))) groups[groups.length - 1].push(i);
+    else groups.push([i]);
   }
-  return best;
+  if (groups.length > 1) {
+    const firstG = groups[0];
+    const lastG = groups[groups.length - 1];
+    if (approxEq(h(firstG[0]) + 360, h(lastG[lastG.length - 1]))) {
+      groups[0] = lastG.concat(firstG);
+      groups.pop();
+    }
+  }
+  if (groups.length === 1) return [Math.min(...groups[0]), Math.max(...groups[0])];
+  const K = groups.length;
+  const gaps: number[] = [];
+  for (let c = 0; c < K; c++) {
+    const from = groups[c];
+    let d = h(groups[(c + 1) % K][0]) - h(from[from.length - 1]);
+    if (d < 0) d += 360;
+    gaps.push(d);
+  }
+  let largest = -Infinity;
+  for (const g of gaps) if (g > largest) largest = g;
+  let best: [number, number] | null = null;
+  for (let c = 0; c < K; c++) {
+    if (!approxEq(gaps[c], largest)) continue;
+    const start = Math.min(...groups[(c + 1) % K]);
+    if (best === null || start < best[0]) best = [start, Math.max(...groups[c])];
+  }
+  return best!;
 }
 
 /** @internal What the scorer derives from one `#rrggbb` string. Treated as immutable. */
@@ -607,17 +660,14 @@ export function scorePrepared(p: PreparedScore): GradientScore {
     const byHue = p.hueOrder.filter((i) => lchs[i].C > MH.chromaticAbove);
     const last = byHue.length - 1;
     let maxGap = lchs[byHue[0]].h + 360 - lchs[byHue[last]].h;
-    // The arc runs from the hue after the largest gap round to the hue before it.
-    let arcEnds = [byHue[0], byHue[last]];
     for (let k = 1; k < byHue.length; k++) {
       const gap = lchs[byHue[k]].h - lchs[byHue[k - 1]].h;
-      if (gap > maxGap) {
-        maxGap = gap;
-        arcEnds = [byHue[k], byHue[k - 1]];
-      }
+      if (gap > maxGap) maxGap = gap;
     }
     enclosingArc = 360 - maxGap;
-    const where = { stops: arcEnds };
+    // The arc runs from the hue after the largest gap round to the hue before
+    // it; which of several equal-hue stops is named is decided by hueArcEnds (D8).
+    const where = { stops: hueArcEnds(byHue, (i) => lchs[i].h) };
 
     if (enclosingArc > MH.arc.clashAbove) {
       hueScore -= add(MH.arc.wideCode, "hue", MH.arc.clash, where);
@@ -673,7 +723,8 @@ export function scorePrepared(p: PreparedScore): GradientScore {
   let chromaScore: number = M.weights.chroma;
 
   // 3a. Stop-level chroma consistency
-  const rangeWhere = { stops: [chromas.indexOf(maxC), chromas.indexOf(minC)] };
+  // The most and least saturated stops; near-equal chromas tie to the lowest index (D8).
+  const rangeWhere = { stops: [argBest(chromas, "max"), argBest(chromas, "min")] };
   if (chromaRange > MC.range.spikeAbove) {
     chromaScore -= add(MC.range.code, "chroma", MC.range.spike, rangeWhere);
   } else if (chromaRange > MC.range.unevenAbove) {
@@ -702,21 +753,23 @@ export function scorePrepared(p: PreparedScore): GradientScore {
   // 3c. Midpoint desaturation — browsers interpolate in sRGB, which can
   //     produce a muddy grey/brown between two vivid stops.
   let worstDip = 0;
-  let worstDipAt = -1;
   const segmentEndpointChroma: number[] = [];
+  /** Per segment: its dip, or NaN when the rule does not apply to it. */
+  const segmentDips: number[] = [];
   for (let i = 0; i < n - 1; i++) {
     const avgEndpointChroma = (lchs[i].C + lchs[i + 1].C) / 2;
     segmentEndpointChroma.push(avgEndpointChroma);
+    segmentDips.push(NaN);
     if (avgEndpointChroma > MC.midpoint.endpointChromaAbove) {
       let midC = p.segmentMidpointChroma[i];
       if (Number.isNaN(midC)) midC = p.segmentMidpointChroma[i] = midpointChroma(rgbs[i], rgbs[i + 1]);
       const dip = 1 - midC / avgEndpointChroma;
-      if (dip > worstDip) {
-        worstDip = dip;
-        worstDipAt = i;
-      }
+      segmentDips[i] = dip;
+      if (dip > worstDip) worstDip = dip;
     }
   }
+  // The segment named: the first whose dip ties the worst within EPS (D8).
+  const worstDipAt = worstDip > 0 ? argBest(segmentDips, "max") : -1;
   if (worstDip > MC.midpoint.muddyAbove) {
     chromaScore -= add(MC.midpoint.code, "chroma", MC.midpoint.muddy, seg(worstDipAt));
   } else if (worstDip > MC.midpoint.slightAbove) {
@@ -906,7 +959,8 @@ export function refineGradient(ticks: GradientTick[]): RefineResult {
     if (Math.sqrt(meanX * meanX + meanY * meanY) < R.degenerateResultantBelow) {
       const h1 = chromatic[0].h;
       const d = ((chromatic[chromatic.length - 1].h - h1) % 360 + 360) % 360;
-      meanHue = ((d <= 180 ? h1 + d / 2 : h1 - (360 - d) / 2) + 360) % 360;
+      // Exactly 180° (within EPS, D8): towards increasing hue.
+      meanHue = ((d <= 180 || approxEq(d, 180) ? h1 + d / 2 : h1 - (360 - d) / 2) + 360) % 360;
     } else {
       meanHue = (toDeg(Math.atan2(meanY, meanX)) + 360) % 360;
     }

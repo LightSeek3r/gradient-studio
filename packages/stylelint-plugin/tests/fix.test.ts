@@ -30,7 +30,11 @@ describe("autofix: opal42/min-score", () => {
 
   it("goes as far as needed for a higher threshold", async () => {
     expect((await lint(wrap(ROUGH), min(90), { fix: true })).output).toBe(wrap("linear-gradient(90deg, #00a600, #009000 50%, #006900)"));
-    expect((await lint(wrap(ROUGH), min(99), { fix: true })).output).toBe(wrap("linear-gradient(90deg, #799600, #009000 50%, #006900)"));
+    // After the first fix all three stops are greens of ONE hue (equal to ~1e-13°). Which of them
+    // `hue/narrow-arc` names used to depend on Math.cbrt/atan2 noise (Node 22 and 24 differed).
+    // Under the D8 tie rule (docs/DETERMINISM.md) a single tie group names its lowest and highest
+    // index, [0, 2], and the cheapest fix edits stop 3; it scores 100, like the old answer.
+    expect((await lint(wrap(ROUGH), min(99), { fix: true })).output).toBe(wrap("linear-gradient(90deg, #00a600, #009000 50%, #4b5f00)"));
   });
 
   it("keeps named colours that it does not change and writes the changed one as hex", async () => {

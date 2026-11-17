@@ -16,6 +16,7 @@ import {
   type OklabColor,
   type RGB,
 } from "./gradient-engine";
+import { argBest } from "./tolerance";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -220,19 +221,16 @@ export function nearestColorName(hex: string): ColorNameMatch {
   if (exact) return { name: exact, exact: true };
 
   const lab = rgbToOklab(hexToRgb(canonical));
-  let best = getNamedLabs()[0];
-  let bestDist = Infinity;
-  for (const candidate of getNamedLabs()) {
-    const d =
+  const named = getNamedLabs();
+  const distances = named.map(
+    (candidate) =>
       (lab.L - candidate.lab.L) ** 2 +
       (lab.a - candidate.lab.a) ** 2 +
-      (lab.b - candidate.lab.b) ** 2;
-    if (d < bestDist) {
-      bestDist = d;
-      best = candidate;
-    }
-  }
-  return { name: best.name, exact: false };
+      (lab.b - candidate.lab.b) ** 2,
+  );
+  // Equidistant names (within EPS, D8) go to the first in table order; garbage
+  // input (NaN distances) gets the first name, as before.
+  return { name: named[Math.max(0, argBest(distances, "min"))].name, exact: false };
 }
 
 // ── HSL ───────────────────────────────────────────────────────────────────────

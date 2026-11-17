@@ -23,6 +23,7 @@ from dataclasses import dataclass, replace
 from typing import Any, Final, Literal
 
 from ._jsnum import clamp, js_fmod, js_number_str, js_round
+from ._tolerance import approx_eq, arg_best, hue_arc_ends
 from .colorspace import (
     RGB,
     Lch,
@@ -222,11 +223,8 @@ def _interior_extrema(values: Sequence[float]) -> list[int]:
 
 
 def _most_deviant(values: Sequence[float], mean: float) -> int:
-    best = 0
-    for i in range(1, len(values)):
-        if abs(values[i] - mean) > abs(values[best] - mean):
-            best = i
-    return best
+    """The value deviating most from ``mean``; ties within EPS to the lowest index (D8)."""
+    return arg_best([abs(v - mean) for v in values], "max")
 
 
 def _total(values: Iterable[float]) -> float:
@@ -423,14 +421,14 @@ def score_gradient(ticks: Sequence[StopLike]) -> GradientScore:
         by_hue = sorted(((lchs[i].h, i) for i in chromatic), key=lambda p: p[0])
         last = len(by_hue) - 1
         max_gap = by_hue[0][0] + 360 - by_hue[last][0]
-        # The arc runs from the hue after the largest gap round to the hue before it.
-        arc_ends = [by_hue[0][1], by_hue[last][1]]
         for k in range(1, len(by_hue)):
             gap = by_hue[k][0] - by_hue[k - 1][0]
             if gap > max_gap:
                 max_gap = gap
-                arc_ends = [by_hue[k][1], by_hue[k - 1][1]]
         enclosing_arc = 360 - max_gap
+        # The arc runs from the hue after the largest gap round to the hue before it;
+        # which of several equal-hue stops is named is decided with ties (D8).
+        arc_ends = hue_arc_ends([i for _, i in by_hue], [lch.h for lch in lchs])
         if enclosing_arc > MH.arc.clash_above:
             hue_score -= add(MH.arc.wide_code, "hue", MH.arc.clash, arc_ends)
         elif enclosing_arc > MH.arc.wide_above:
@@ -472,7 +470,7 @@ def score_gradient(ticks: Sequence[StopLike]) -> GradientScore:
     chroma_score: int = M.weights.chroma
 
     # 3a. Stop-level chroma consistency.
-    range_where = [chromas.index(max_c), chromas.index(min_c)]
+    range_where = [arg_best(chromas, "max"), arg_best(chromas, "min")]  # ties within EPS: lowest index (D8)
     if chroma_range > MC.range.spike_above:
         chroma_score -= add(MC.range.code, "chroma", MC.range.spike, range_where)
     elif chroma_range > MC.range.uneven_above:
@@ -497,6 +495,7 @@ def score_gradient(ticks: Sequence[StopLike]) -> GradientScore:
     #     Math.round((a + b) / 2) is a half-up rounding; Python's round() would go to even.
     worst_dip: float = 0
     worst_dip_at = -1
+    segment_dips: list[float] = []
     segment_endpoint_chroma: list[float] = []
     for i in range(n - 1):
         c1, c2 = rgbs[i], rgbs[i + 1]
@@ -508,11 +507,14 @@ def score_gradient(ticks: Sequence[StopLike]) -> GradientScore:
         mid_lch = oklab_to_lch(rgb_to_oklab(mid))
         avg_endpoint_chroma = (lchs[i].C + lchs[i + 1].C) / 2
         segment_endpoint_chroma.append(avg_endpoint_chroma)
+        segment_dips.append(math.nan)
         if avg_endpoint_chroma > MC.midpoint.endpoint_chroma_above:
             dip = 1 - mid_lch.C / avg_endpoint_chroma
+            segment_dips[i] = dip
             if dip > worst_dip:
                 worst_dip = dip
-                worst_dip_at = i
+    if worst_dip > 0:
+        worst_dip_at = arg_best(segment_dips, "max")  # ties within EPS: first segment (D8)
     if worst_dip > MC.midpoint.muddy_above:
         stops_, segment_ = seg(worst_dip_at)
         chroma_score -= add(MC.midpoint.code, "chroma", MC.midpoint.muddy, stops_, segment_)
@@ -675,7 +677,8 @@ def refine_gradient(ticks: Sequence[StopLike]) -> RefineResult:
         if math.sqrt(mean_x * mean_x + mean_y * mean_y) < R.degenerate_resultant_below:
             h1 = chromatic[0].h
             d = js_fmod(js_fmod(chromatic[-1].h - h1, 360) + 360, 360)
-            mean_hue = js_fmod((h1 + d / 2 if d <= 180 else h1 - (360 - d) / 2) + 360, 360)
+            # Exactly 180 degrees (within EPS, D8): towards increasing hue.
+            mean_hue = js_fmod((h1 + d / 2 if d <= 180 or approx_eq(d, 180) else h1 - (360 - d) / 2) + 360, 360)
         else:
             mean_hue = js_fmod(to_deg(math.atan2(mean_y, mean_x)) + 360, 360)
 

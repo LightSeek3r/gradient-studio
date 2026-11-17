@@ -36,6 +36,7 @@ import {
   type ScoreMeasurements,
 } from "../src/gradient-engine";
 import { boundaryHits, V1_MODEL } from "../src/scoring-model-v1";
+import { approxEq } from "../src/tolerance";
 import {
   complementHex,
   formatHex,
@@ -280,6 +281,79 @@ export function hasDegenerateHueMean(stops: Stop[]): boolean {
   let maxGap = s[0] + 360 - s[s.length - 1];
   for (let i = 1; i < s.length; i++) maxGap = Math.max(maxGap, s[i] - s[i - 1]);
   return Math.sqrt(x * x + y * y) < R.degenerateResultantBelow && 360 - maxGap > R.maxHueArc;
+}
+
+// ── D8: tie-dependent location / selection ───────────────────────────────────
+// Input predicates for the D8 fix (src/tolerance.ts, docs/DETERMINISM.md): the
+// input has two or more candidates for a reported location whose deciding
+// values agree within EPS, so the old exact comparison chose between them by
+// floating-point noise. Computed from the input colours and positions only
+// (independently of the engine's selection code), never from an output.
+
+export type D8Kind = "velocity" | "gaps" | "hue" | "chroma" | "dip" | "refine-180";
+
+/** True when the two largest (or, `min`, smallest) of `values` agree within EPS. */
+function topTwoTie(values: number[], mode: "max" | "min" = "max"): boolean {
+  if (values.length < 2) return false;
+  const s = [...values].sort((a, b) => (mode === "max" ? b - a : a - b));
+  return approxEq(s[0], s[1]);
+}
+
+/** Which D8 tie situations the input contains (empty: none, D8 cannot explain a change). */
+export function d8Ties(stops: Stop[]): Set<D8Kind> {
+  const out = new Set<D8Kind>();
+  if (scoreGradient(toTicks(stops)).status !== "ok") return out;
+  const sorted = stops.map((s, i) => ({ s, i })).sort((a, b) => a.s.position - b.s.position || a.i - b.i).map((x) => x.s);
+  const n = sorted.length;
+  const rgbs = sorted.map((s) => hexToRgb(s.color));
+  const labs = rgbs.map(rgbToOklab);
+  const lchs = labs.map(oklabToLch);
+  const gaps: number[] = [];
+  const dEs: number[] = [];
+  for (let i = 0; i < n - 1; i++) {
+    gaps.push(sorted[i + 1].position - sorted[i].position);
+    dEs.push(de(labs[i], labs[i + 1]));
+  }
+  const deviations = (values: number[]) => {
+    const mean = values.reduce((a, v) => a + v, 0) / values.length;
+    return values.map((v) => Math.abs(v - mean));
+  };
+  // lightness/uneven-speed: the most deviant velocity.
+  const velocities = gaps.flatMap((g, i) => (g > 0 ? [dEs[i] / g] : []));
+  if (n >= 3 && velocities.length >= 2 && topTwoTie(deviations(velocities))) out.add("velocity");
+  // rhythm/uneven-gaps: the most deviant gap.
+  if (n >= 3 && topTwoTie(deviations(gaps))) out.add("gaps");
+  // hue arcs: two chromatic hues within EPS (also across 0°/360°), or two largest gaps within EPS.
+  const hues = lchs.filter((l) => l.C > V1_MODEL.hue.chromaticAbove).map((l) => l.h).sort((a, b) => a - b);
+  if (hues.length >= 2) {
+    const hueGaps = hues.map((h, k) => (k === 0 ? hues[0] + 360 - hues[hues.length - 1] : h - hues[k - 1]));
+    if (hueGaps.some((g) => approxEq(g, 0) || approxEq(g, 360)) || topTwoTie(hueGaps)) out.add("hue");
+  }
+  // chroma/saturation-range: the most / least saturated stop.
+  const cs = lchs.map((l) => l.C);
+  if (topTwoTie(cs, "max") || topTwoTie(cs, "min")) out.add("chroma");
+  // chroma/muddy-midpoint: the worst dip.
+  const dipValues: number[] = [];
+  for (let i = 0; i < n - 1; i++) {
+    const avg = (cs[i] + cs[i + 1]) / 2;
+    if (!(avg > V1_MODEL.chroma.midpoint.endpointChromaAbove)) continue;
+    const mid = oklabToLch(
+      rgbToOklab({
+        r: Math.round((rgbs[i].r + rgbs[i + 1].r) / 2),
+        g: Math.round((rgbs[i].g + rgbs[i + 1].g) / 2),
+        b: Math.round((rgbs[i].b + rgbs[i + 1].b) / 2),
+      }),
+    );
+    dipValues.push(1 - mid.C / avg);
+  }
+  if (topTwoTie(dipValues)) out.add("dip");
+  // refine: the opposed-hue fallback centre at exactly 180° between the first and last chromatic stop.
+  const chromatic = lchs.filter((l) => l.C > V1_MODEL.refine.achromaticAtMost);
+  if (chromatic.length >= 2) {
+    const d = (((chromatic[chromatic.length - 1].h - chromatic[0].h) % 360) + 360) % 360;
+    if (approxEq(d, 180)) out.add("refine-180");
+  }
+  return out;
 }
 
 /** D2: stops do not span 0-100, or several stops share the last position. */

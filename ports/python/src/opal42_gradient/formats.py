@@ -16,6 +16,7 @@ from typing import Final
 
 from ._jsnum import JS_WHITESPACE, clamp, js_fmod, js_number_str, js_parse_float, js_round, js_trim
 from ._names_table import CSS_COLOR_NAMES, CSS_NAMED_COLORS
+from ._tolerance import arg_best
 from .colorspace import (
     RGB,
     Lch,
@@ -78,21 +79,19 @@ class ColorNameMatch:
 
 
 def nearest_color_name(hex_color: str) -> ColorNameMatch:
-    """Nearest CSS named colour, measured as OKLab delta E (squared distance, first wins ties)."""
+    """Nearest CSS named colour, measured as OKLab delta E (squared distance; ties within EPS: first)."""
     canonical = hex_color.lower()
     exact = _HEX_TO_NAME.get(canonical)
     if exact is not None:
         return ColorNameMatch(exact, True)
 
     lab = rgb_to_oklab(hex_to_rgb(canonical))
-    best_name, best_dist = _NAMED_LABS[0][0], math.inf
-    for name, cand in _NAMED_LABS:
+    distances: list[float] = []
+    for _name, cand in _NAMED_LABS:
         dl, da, db = lab.L - cand.L, lab.a - cand.a, lab.b - cand.b
-        d = dl * dl + da * da + db * db
-        if d < best_dist:
-            best_dist = d
-            best_name = name
-    return ColorNameMatch(best_name, False)
+        distances.append(dl * dl + da * da + db * db)
+    # Equidistant names (within EPS, D8) go to the first in table order.
+    return ColorNameMatch(_NAMED_LABS[max(0, arg_best(distances, "min"))][0], False)
 
 
 # ── HSL ──────────────────────────────────────────────────────────────────────

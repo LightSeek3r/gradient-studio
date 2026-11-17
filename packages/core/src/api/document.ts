@@ -2,6 +2,7 @@
 
 import { gamutFitOklch } from "../color-formats";
 import { hexToRgb, lchToOklab, oklabToLch, oklabToRgb, rgbToHex, rgbToOklab, isValidStopColor } from "../gradient-engine";
+import { quantize } from "../tolerance";
 import type {
   GradientDocument,
   HueInterpolation,
@@ -209,7 +210,9 @@ export function bakeStops(doc: GradientDocument, n: number, opts?: SampleOptions
   const total = stops[k - 1].position - stops[0].position;
   const extra: number[] = new Array(Math.max(0, k - 1)).fill(0);
   if (want > k && total > 0) {
-    // Largest-remainder apportionment, ties to the earlier segment.
+    // Largest-remainder apportionment, ties to the earlier segment. Remainders
+    // equal within EPS (e.g. equal-length segments whose exact share differs in
+    // the last bit) are ties (D8): the key is quantized so the sort is a strict order.
     const budget = want - k;
     const exact = extra.map((_, i) => ((stops[i + 1].position - stops[i].position) / total) * budget);
     let given = 0;
@@ -217,7 +220,7 @@ export function bakeStops(doc: GradientDocument, n: number, opts?: SampleOptions
       extra[i] = Math.floor(exact[i]);
       given += extra[i];
     }
-    const order = exact.map((e, i) => ({ i, r: e - Math.floor(e) })).sort((a, b) => b.r - a.r || a.i - b.i);
+    const order = exact.map((e, i) => ({ i, r: e - Math.floor(e) })).sort((a, b) => quantize(b.r) - quantize(a.r) || a.i - b.i);
     for (let j = 0; given < budget && j < order.length; j++) {
       if (stops[order[j].i + 1].position > stops[order[j].i].position) {
         extra[order[j].i]++;

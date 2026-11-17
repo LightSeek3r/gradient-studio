@@ -8,7 +8,9 @@
 // scores) — never the new output — plus field-level rules: e.g. a D4-only
 // score case may differ only by the inserted formerly-silent messages, a D2
 // case only in `samples`, and colorAtPosition / CSS / colour vectors may not
-// change at all. Unchanged cases are compared as serialised JSON, i.e. their
+// change at all; D8 (tie-dependent location, docs/DETERMINISM.md) may move only
+// a finding's stops / segment, and only when the input has a near-tie
+// (`d8Ties`). Unchanged cases are compared as serialised JSON, i.e. their
 // line in the file is byte-identical. Exits 1 if any change is unexplained.
 
 import { execFileSync } from "node:child_process";
@@ -22,12 +24,24 @@ import {
   isD2Region,
   isUnsorted,
   silentPenalties,
+  d8Ties,
+  type D8Kind,
   type Measurements,
   type Stop,
 } from "./vector-lib";
 
 type Json = Record<string, unknown>;
-type Defect = "D1" | "D2" | "D3" | "D4" | "D5" | "D6" | "D7";
+type Defect = "D1" | "D2" | "D3" | "D4" | "D5" | "D6" | "D7" | "D8";
+
+/** D8: which tie situation (an input predicate, `d8Ties`) can move the location of each finding code. */
+const D8_LOCATION: Record<string, D8Kind> = {
+  [V1_MODEL.lightness.velocity.code]: "velocity",
+  [V1_MODEL.rhythm.gaps.code]: "gaps",
+  [V1_MODEL.hue.arc.wideCode]: "hue",
+  [V1_MODEL.hue.arc.narrowCode]: "hue",
+  [V1_MODEL.chroma.range.code]: "chroma",
+  [V1_MODEL.chroma.midpoint.code]: "dip",
+};
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = resolve(here, "../../..");
@@ -136,6 +150,7 @@ function classify(file: string, o: Json, n: Json): Verdict {
       const lowered = (o.scoreAfter as number) < (o.scoreBefore as number);
       if (greyOrHard || lowered) why.add("D5");
       if (hasDegenerateHueMean(stops)) why.add("D7");
+      if (d8Ties(stops).has("refine-180")) why.add("D8");
       if (!why.size) return fail("no defect region");
       const r = allowOnly(["scoreBefore", "suggested", "scoreAfter", "defects"]);
       if (r) return r;
@@ -143,7 +158,7 @@ function classify(file: string, o: Json, n: Json): Verdict {
       const declined = same(n.suggested, sortedStops(stops));
       // Only "old refine lowered the score" (or D6 moving the baseline) can
       // explain the new output; then it must be the declined (unchanged) input.
-      if (fields.includes("suggested") && !greyOrHard && !why.has("D7") && !declined) {
+      if (fields.includes("suggested") && !greyOrHard && !why.has("D7") && !why.has("D8") && !declined) {
         return fail("suggestion changed but is not the declined input");
       }
       if ((n.scoreAfter as number) < (n.scoreBefore as number)) return fail("refine lowers the score");
@@ -163,6 +178,27 @@ function classify(file: string, o: Json, n: Json): Verdict {
         for (const k of Object.keys(os)) {
           if (!same(os[k].slice(0, -1), ns[k].slice(0, -1))) return fail("interior samples moved for spanning stops");
         }
+      }
+      break;
+    }
+    case "v1-findings.json": {
+      // D8 only: a finding's location (stops / segment) may move between candidates that tie
+      // within EPS; codes, severities, points, messages, score, details and measurements may not.
+      const ties = d8Ties(stops);
+      if (!ties.size) return fail("no defect region");
+      why.add("D8");
+      const r = allowOnly(["findings"]);
+      if (r) return r;
+      const of = o.findings as Json[];
+      const nf = n.findings as Json[];
+      if (of.length !== nf.length) return fail("D8 changed the number of findings");
+      for (let k = 0; k < of.length; k++) {
+        for (const key of ["code", "severity", "dimension", "pointsLost", "message"]) {
+          if (!same(of[k][key], nf[k][key])) return fail(`D8 changed findings[${k}].${key}`);
+        }
+        if (same(of[k], nf[k])) continue;
+        const kind = D8_LOCATION[String(of[k].code)];
+        if (!kind || !ties.has(kind)) return fail(`findings[${k}] (${String(of[k].code)}) moved without a ${kind ?? "D8"} tie`);
       }
       break;
     }
@@ -249,15 +285,15 @@ for (const r of reports) {
 
 if (markdown) {
   out();
-  out("| file | cases | byte-identical | changed | added | D2 | D4 | D5 | D6 | D7 | unexplained |");
-  out("|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|");
+  out("| file | cases | byte-identical | changed | added | D2 | D4 | D5 | D6 | D7 | D8 | unexplained |");
+  out("|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|");
   for (const r of reports) {
     const count = (d: Defect) => r.changed.filter((c) => c.v.defects.has(d)).length;
     const un = r.changed.filter((c) => !c.v.explained).length;
     out(
       r.status === "compared"
-        ? `| ${r.file} | ${r.total} | ${r.unchanged} | ${r.changed.length} | ${r.added.length} | ${count("D2")} | ${count("D4")} | ${count("D5")} | ${count("D6")} | ${count("D7")} | ${un} |`
-        : `| ${r.file} | ${r.total} | — | — | ${r.total} (new file) | | | | | | |`,
+        ? `| ${r.file} | ${r.total} | ${r.unchanged} | ${r.changed.length} | ${r.added.length} | ${count("D2")} | ${count("D4")} | ${count("D5")} | ${count("D6")} | ${count("D7")} | ${count("D8")} | ${un} |`
+        : `| ${r.file} | ${r.total} | — | — | ${r.total} (new file) | | | | | | | |`,
     );
   }
 }

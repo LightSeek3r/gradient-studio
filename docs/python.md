@@ -100,7 +100,7 @@ interpolation always returns valid hex, garbage input never raises), unit tests 
 the JavaScript-semantics helpers, and consistency tests: every `` `V1_MODEL.x` = v ``
 line of `spec/scoring-v1.md` is checked against the Python model, every finding
 code has a spec section, and the generated name table is checked against the
-TypeScript source. 58 tests in total (one, comparing with `math.cbrt`, is skipped on Python 3.10), about 6 seconds.
+TypeScript source. 65 tests in total (two, comparing with `math.cbrt`, are skipped on Python 3.10), about 6 seconds.
 
 **The harness does bite.** Re-running it with deliberate faults:
 
@@ -108,8 +108,8 @@ TypeScript source. 58 tests in total (one, comparing with `math.cbrt`, is skippe
 |---|---|
 | Python `round()` instead of `Math.round` in the muddy-midpoint and refine-slot code | 122 of 316 score cases, 122 findings cases and 14 suggest cases fail |
 | Python `round()` everywhere | the above, plus 4 colour cases |
-| `math.cbrt` (platform libm) instead of the V8 algorithm | 5 findings cases fail (see "ties" below) |
-| `x ** (1/3)` as cube root | 3 findings cases fail |
+| `math.cbrt` (platform libm) instead of the V8 algorithm | 5 findings cases failed before D8 (see "ties" below); **0** since |
+| `x ** (1/3)` as cube root | 3 findings cases failed before D8; **0** since |
 | `sum()` instead of a left-to-right loop, Python `%` instead of `fmod`, banker's rounding only in the colour conversions | **no vector fails** (see below) |
 
 ## Portability notes (JavaScript versus Python)
@@ -156,7 +156,7 @@ FreeBSD's `s_cbrt.c` (error < 0.667 ulp); glibc's `cbrt` is a different
 algorithm. Measured against Node 22 on 2,001 inputs in [0, 1]: the port's
 `js_cbrt` (the FreeBSD algorithm, ~30 lines, standard library `struct` for the
 bit work) is **bit-identical on all 2,001**; the platform `math.cbrt` on 904
-(45%), up to 3 ulp away. Because of the ties below this is not cosmetic. The port
+(45%), up to 3 ulp away. Before D8 (section 7) this was not cosmetic. The port
 uses its own implementation on every Python version, so scores do not depend on
 the interpreter version or platform libm for this function.
 
@@ -208,37 +208,33 @@ band already absorbs. A port to a language with a different libm (Rust, Swift,
 Kotlin) will see the same kind of noise and the same remedy applies: match
 non-boundary cases exactly, boundary cases on measurements.
 
-### 7. Finding for the spec: `mostDeviant` ties on 3-stop gradients
+### 7. `mostDeviant` ties on 3-stop gradients: fixed by D8
 
 `lightness/uneven-speed` is located at the segment whose velocity deviates most
-from the mean (first on ties). With exactly **two velocity segments** (every
-3-stop gradient, or 4 stops with a zero gap) the two deviations are *equal in exact
-arithmetic*: `|v0 - m|` and `|v1 - m|` with `m = (v0 + v1) / 2`. Which one is
-"larger" is therefore decided by the last bit of `v0`, `v1`, i.e. by the last bit of
-the OKLab distances, i.e. by `cbrt` and `pow`.
+from the mean. With exactly **two velocity segments** (every 3-stop gradient, or
+4 stops with a zero gap) the two deviations are *equal in exact arithmetic*:
+`|v0 - m|` and `|v1 - m|` with `m = (v0 + v1) / 2`. Before D8 the larger one was
+picked with an exact `>`, i.e. by the last bit of the OKLab distances, i.e. by
+`cbrt` and `pow`. In the vectors, 10 of the 93 cases with an `uneven-speed`
+finding were in this situation (`abrupt jump 5%`, `abrupt jump 10%`,
+`abrupt jump 11%`, `random #29 (n=4)`, `#84`, `#112`, `#118 (shuffled)`, `#170`,
+`#172`, `#180`); replacing V8's cube root with the platform's moved the location in
+5 of them. The TypeScript engine had the same defect across **Node versions**
+(Node 22 versus Node 24), there most visibly in the hue-arc location of same-hue
+gradients.
 
-In the vectors, **10 of the 93 cases that have an `uneven-speed` finding** are in
-this situation (relative gap between the two deviations: 4 exactly 0, 6 of about
-1e-16 to 3.4e-16): `abrupt jump 5%`, `abrupt jump 10%`, `abrupt jump 11%`,
-`random #29 (n=4)`, `#84`, `#112`, `#118 (shuffled)`, `#170`, `#172`, `#180`.
-None is flagged `boundary`, yet their `stops` / `segment` (but not the score)
-depend on sub-ulp noise: replacing V8's cube root with the platform's flips the
-location in 5 of them (the mismatches listed in the table above). The score and
-the finding code are unaffected, because the penalty does not depend on which
-segment is named.
-
-This is a **portability finding, not a defect of the port**. Proposals (the v1
-vectors were not touched):
-
-1. add a boundary annotation for *location* ties: mark a case `boundary` (or a new
-   `locationTie: true`) when the relative gap between the largest and second
-   largest deviation is below 1e-9, and have ports compare `stops` / `segment` of
-   that finding only on non-tie cases;
-2. in model v2, define the tie rule explicitly (for two segments: the segment with the
-   larger velocity), so the result is a function of the measurement and not of its
-   rounding. `rhythm/uneven-gaps` has the same shape but is safe: gaps are
-   differences of positions, computed with correctly rounded `+ - * /` only, which
-   every IEEE-754 language reproduces bit for bit.
+**Fixed by D8** (`docs/DETERMINISM.md`): every selection that names a stop,
+segment or candidate now treats values within `EPS = 1e-9` (relative above 1) as
+ties and takes the lowest index; the hue arc treats hues within EPS as equal (start
+= lowest index of its group, end = highest index). The port implements the same
+rule in `_tolerance.py` (`approx_eq`, `arg_best`, `hue_arc_ends`), used by
+`engine.score_gradient`, `engine.refine_gradient` and `formats.nearest_color_name`.
+4 of the 10 vector cases changed location (to the first segment; the other 6
+already named it, `spec/vectors/CHANGES-v1.md`, D8). With the platform `math.cbrt`
+or `x ** (1/3)` as the cube root, the port now matches all vectors
+(`tests/test_tolerance.py` checks the first). `rhythm/uneven-gaps` uses the same
+rule; its gaps are differences of positions, computed with correctly rounded
+`+ - * /` only, so it was never engine-dependent.
 
 ### 8. Other observations
 

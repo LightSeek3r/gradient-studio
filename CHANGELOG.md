@@ -6,6 +6,30 @@ All notable changes to Gradient Studio are listed here. The format follows
 
 ## [Unreleased]
 
+### Fixed (engine: same answer on every Node version, defect D8)
+
+- The v1 engine is now deterministic across V8 versions (Node 22 and 24) and the Python port.
+  Wherever a floating-point comparison chose WHICH stop, segment or candidate to report or edit
+  (the most deviant velocity or gap, the ends of the hue arc, the most and least saturated stop, the
+  worst midpoint, refine's 180° fallback, the cheapest fix, a half-way position target, the nearest
+  colour name, baked-sample apportionment), values that are equal in exact arithmetic used to be
+  ordered by the last bit of `Math.pow` / `cbrt` / `atan2`. One shared mechanism,
+  `packages/core/src/tolerance.ts` (values within `1e-9` are ties, the lowest index wins), fixes all of
+  them. Example: `#00a600 0%, #00ff00 50%, #006900 100%` (three greens of one hue) got a
+  `hue/narrow-arc` fix on stop 3 on Node 22 and on stop 1 on Node 24; it is now stop 3 everywhere.
+  Scores, codes, messages and measurements are unchanged.
+- v1 vectors: 4 of 316 `v1-findings.json` cases changed (`lightness/uneven-speed` on 3-stop gradients
+  now names the first segment); every other case is byte-identical, and `npm run vectors:diff`
+  classifies the 4 as D8 by an input predicate (`spec/vectors/CHANGES-v1.md`).
+- `bakeStops` gives equal-length segments' extra samples to the earlier segment, as documented (one
+  export golden changed); the stylelint `--fix` for a `min-score` of 99 on the same-hue example edits
+  the last stop instead of the first (both reach 100).
+- The Python port implements the same tie rule and still matches every vector; it now also matches
+  them with the platform `math.cbrt`. The frozen reference copies used by the performance
+  differential tests were changed in lockstep.
+- CI runs the `verify` job on Node 22 and Node 24 (`fail-fast: false`). See `docs/DETERMINISM.md` for
+  the precise guarantee, the audit of every such comparison and how to run Node 24 locally.
+
 ### Added (Python port, `ports/python`)
 
 - `opal42-gradient` (working name, **not published**; no PyPI name has been reserved): a pure-Python

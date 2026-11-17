@@ -1,0 +1,3594 @@
+{
+ "green m-l-d": {
+  "score": 78,
+  "findings": [
+   {
+    "code": "lightness/reversal",
+    "stops": [
+     1
+    ]
+   },
+   {
+    "code": "hue/narrow-arc",
+    "stops": [
+     0,
+     2
+    ]
+   },
+   {
+    "code": "chroma/saturation-range",
+    "stops": [
+     1,
+     2
+    ]
+   }
+  ],
+  "fixes": [
+   {
+    "code": "lightness/reversal",
+    "gain": 17,
+    "label": "Make stop 2 darker",
+    "edits": [
+     {
+      "id": 2,
+      "color": "#009000",
+      "position": 50
+     }
+    ]
+   },
+   {
+    "code": "hue/narrow-arc",
+    "gain": 5,
+    "label": "Shift the hue of stop 3",
+    "edits": [
+     {
+      "id": 3,
+      "color": "#4b5f00",
+      "position": 100
+     }
+    ]
+   },
+   {
+    "code": "chroma/saturation-range",
+    "gain": 5,
+    "label": "Lower the saturation of stop 2",
+    "edits": [
+     {
+      "id": 2,
+      "color": "#43fc3d",
+      "position": 50
+     }
+    ]
+   }
+  ],
+  "refine": {
+   "refined": false,
+   "after": 78,
+   "stops": [
+    [
+     1,
+     "#00a600",
+     0
+    ],
+    [
+     2,
+     "#00ff00",
+     50
+    ],
+    [
+     3,
+     "#006900",
+     100
+    ]
+   ]
+  }
+ },
+ "green d-m-l": {
+  "score": 90,
+  "findings": [
+   {
+    "code": "hue/narrow-arc",
+    "stops": [
+     0,
+     2
+    ]
+   },
+   {
+    "code": "chroma/saturation-range",
+    "stops": [
+     0,
+     2
+    ]
+   }
+  ],
+  "fixes": [
+   {
+    "code": "hue/narrow-arc",
+    "gain": 5,
+    "label": "Shift the hue of stop 1",
+    "edits": [
+     {
+      "id": 1,
+      "color": "#4b5f00",
+      "position": 0
+     }
+    ]
+   },
+   {
+    "code": "chroma/saturation-range",
+    "gain": 5,
+    "label": "Lower the saturation of stop 3",
+    "edits": [
+     {
+      "id": 3,
+      "color": "#43fc3d",
+      "position": 100
+     }
+    ]
+   }
+  ],
+  "refine": {
+   "refined": true,
+   "after": 95,
+   "stops": [
+    [
+     1,
+     "#006f00",
+     0
+    ],
+    [
+     2,
+     "#00b400",
+     50
+    ],
+    [
+     3,
+     "#6df666",
+     100
+    ]
+   ]
+  }
+ },
+ "green l-d-m uneven": {
+  "score": 70,
+  "findings": [
+   {
+    "code": "lightness/reversal",
+    "stops": [
+     1
+    ]
+   },
+   {
+    "code": "lightness/uneven-speed",
+    "stops": [
+     0,
+     1
+    ],
+    "segment": [
+     0,
+     30
+    ]
+   },
+   {
+    "code": "hue/narrow-arc",
+    "stops": [
+     0,
+     2
+    ]
+   },
+   {
+    "code": "chroma/saturation-range",
+    "stops": [
+     0,
+     1
+    ]
+   },
+   {
+    "code": "rhythm/uneven-gaps",
+    "stops": [
+     0,
+     1
+    ],
+    "segment": [
+     0,
+     30
+    ]
+   }
+  ],
+  "fixes": [
+   {
+    "code": "lightness/reversal",
+    "gain": 12,
+    "label": "Make stop 2 lighter",
+    "edits": [
+     {
+      "id": 2,
+      "color": "#62b95c",
+      "position": 30
+     }
+    ]
+   },
+   {
+    "code": "lightness/uneven-speed",
+    "gain": 8,
+    "label": "Move stop 2 to 45%",
+    "edits": [
+     {
+      "id": 2,
+      "color": "#006900",
+      "position": 45
+     }
+    ]
+   },
+   {
+    "code": "hue/narrow-arc",
+    "gain": 5,
+    "label": "Shift the hue of stop 3",
+    "edits": [
+     {
+      "id": 3,
+      "color": "#799600",
+      "position": 100
+     }
+    ]
+   },
+   {
+    "code": "chroma/saturation-range",
+    "gain": 5,
+    "label": "Lower the saturation of stop 1",
+    "edits": [
+     {
+      "id": 1,
+      "color": "#43fc3d",
+      "position": 0
+     }
+    ]
+   },
+   {
+    "code": "rhythm/uneven-gaps",
+    "gain": 4,
+    "label": "Move stop 2 to 40%",
+    "edits": [
+     {
+      "id": 2,
+      "color": "#006900",
+      "position": 40
+     }
+    ]
+   }
+  ],
+  "refine": {
+   "refined": true,
+   "after": 91,
+   "stops": [
+    [
+     1,
+     "#6df666",
+     0
+    ],
+    [
+     2,
+     "#00b700",
+     50
+    ],
+    [
+     3,
+     "#00a700",
+     100
+    ]
+   ]
+  }
+ },
+ "green palindrome 3": {
+  "score": 78,
+  "findings": [
+   {
+    "code": "lightness/reversal",
+    "stops": [
+     1
+    ]
+   },
+   {
+    "code": "hue/narrow-arc",
+    "stops": [
+     0,
+     2
+    ]
+   },
+   {
+    "code": "chroma/saturation-range",
+    "stops": [
+     0,
+     1
+    ]
+   }
+  ],
+  "fixes": [
+   {
+    "code": "hue/narrow-arc",
+    "gain": 5,
+    "label": "Shift the hue of stop 1",
+    "edits": [
+     {
+      "id": 1,
+      "color": "#4b5f00",
+      "position": 0
+     }
+    ]
+   },
+   {
+    "code": "chroma/saturation-range",
+    "gain": 5,
+    "label": "Lower the saturation of stop 2",
+    "edits": [
+     {
+      "id": 2,
+      "color": "#43fc3d",
+      "position": 50
+     }
+    ]
+   }
+  ],
+  "refine": {
+   "refined": true,
+   "after": 83,
+   "stops": [
+    [
+     1,
+     "#006d00",
+     0
+    ],
+    [
+     2,
+     "#009a00",
+     50
+    ],
+    [
+     3,
+     "#006d00",
+     100
+    ]
+   ]
+  }
+ },
+ "green palindrome 5": {
+  "score": 78,
+  "findings": [
+   {
+    "code": "lightness/reversal",
+    "stops": [
+     2
+    ]
+   },
+   {
+    "code": "hue/narrow-arc",
+    "stops": [
+     0,
+     4
+    ]
+   },
+   {
+    "code": "chroma/saturation-range",
+    "stops": [
+     0,
+     2
+    ]
+   }
+  ],
+  "fixes": [
+   {
+    "code": "lightness/reversal",
+    "gain": 5,
+    "label": "Make stop 3 darker",
+    "edits": [
+     {
+      "id": 3,
+      "color": "#00a600",
+      "position": 50
+     }
+    ]
+   },
+   {
+    "code": "hue/narrow-arc",
+    "gain": 5,
+    "label": "Shift the hue of stop 1",
+    "edits": [
+     {
+      "id": 1,
+      "color": "#4b5f00",
+      "position": 0
+     }
+    ]
+   },
+   {
+    "code": "chroma/saturation-range",
+    "gain": 5,
+    "label": "Lower the saturation of stop 3",
+    "edits": [
+     {
+      "id": 3,
+      "color": "#43fc3d",
+      "position": 50
+     }
+    ]
+   }
+  ],
+  "refine": {
+   "refined": true,
+   "after": 83,
+   "stops": [
+    [
+     1,
+     "#006e00",
+     0
+    ],
+    [
+     2,
+     "#008200",
+     25
+    ],
+    [
+     3,
+     "#009a00",
+     50
+    ],
+    [
+     4,
+     "#008200",
+     75
+    ],
+    [
+     5,
+     "#006e00",
+     100
+    ]
+   ]
+  }
+ },
+ "green two-hue": {
+  "score": 63,
+  "findings": [
+   {
+    "code": "lightness/reversal",
+    "stops": [
+     1
+    ]
+   },
+   {
+    "code": "hue/narrow-arc",
+    "stops": [
+     0,
+     1
+    ]
+   },
+   {
+    "code": "chroma/saturation-range",
+    "stops": [
+     0,
+     2
+    ]
+   },
+   {
+    "code": "chroma/dead-zone",
+    "stops": [
+     2
+    ]
+   }
+  ],
+  "fixes": [
+   {
+    "code": "lightness/reversal",
+    "gain": 12,
+    "label": "Make stop 2 lighter",
+    "edits": [
+     {
+      "id": 2,
+      "color": "#5db357",
+      "position": 40
+     }
+    ]
+   },
+   {
+    "code": "hue/narrow-arc",
+    "gain": 5,
+    "label": "Shift the hue of stop 2",
+    "edits": [
+     {
+      "id": 2,
+      "color": "#4b5f00",
+      "position": 40
+     }
+    ]
+   }
+  ],
+  "refine": {
+   "refined": true,
+   "after": 71,
+   "stops": [
+    [
+     1,
+     "#33a32e",
+     0
+    ],
+    [
+     2,
+     "#05c204",
+     50
+    ],
+    [
+     3,
+     "#ffffff",
+     100
+    ]
+   ]
+  }
+ },
+ "red m-l-d": {
+  "score": 78,
+  "findings": [
+   {
+    "code": "lightness/reversal",
+    "stops": [
+     1
+    ]
+   },
+   {
+    "code": "hue/narrow-arc",
+    "stops": [
+     0,
+     2
+    ]
+   },
+   {
+    "code": "chroma/saturation-range",
+    "stops": [
+     1,
+     2
+    ]
+   }
+  ],
+  "fixes": [
+   {
+    "code": "lightness/reversal",
+    "gain": 17,
+    "label": "Make stop 2 darker",
+    "edits": [
+     {
+      "id": 2,
+      "color": "#870000",
+      "position": 50
+     }
+    ]
+   },
+   {
+    "code": "hue/narrow-arc",
+    "gain": 5,
+    "label": "Shift the hue of stop 3",
+    "edits": [
+     {
+      "id": 3,
+      "color": "#660026",
+      "position": 100
+     }
+    ]
+   },
+   {
+    "code": "chroma/saturation-range",
+    "gain": 5,
+    "label": "Lower the saturation of stop 2",
+    "edits": [
+     {
+      "id": 2,
+      "color": "#fb1b12",
+      "position": 50
+     }
+    ]
+   }
+  ],
+  "refine": {
+   "refined": true,
+   "after": 79,
+   "stops": [
+    [
+     1,
+     "#a80000",
+     0
+    ],
+    [
+     2,
+     "#be0000",
+     50
+    ],
+    [
+     3,
+     "#7b0000",
+     100
+    ]
+   ]
+  }
+ },
+ "red d-m-l": {
+  "score": 90,
+  "findings": [
+   {
+    "code": "hue/narrow-arc",
+    "stops": [
+     0,
+     2
+    ]
+   },
+   {
+    "code": "chroma/saturation-range",
+    "stops": [
+     0,
+     2
+    ]
+   }
+  ],
+  "fixes": [
+   {
+    "code": "hue/narrow-arc",
+    "gain": 5,
+    "label": "Shift the hue of stop 1",
+    "edits": [
+     {
+      "id": 1,
+      "color": "#660026",
+      "position": 0
+     }
+    ]
+   },
+   {
+    "code": "chroma/saturation-range",
+    "gain": 5,
+    "label": "Lower the saturation of stop 3",
+    "edits": [
+     {
+      "id": 3,
+      "color": "#fb1b12",
+      "position": 100
+     }
+    ]
+   }
+  ],
+  "refine": {
+   "refined": true,
+   "after": 95,
+   "stops": [
+    [
+     1,
+     "#7b0000",
+     0
+    ],
+    [
+     2,
+     "#c10000",
+     50
+    ],
+    [
+     3,
+     "#e64c3c",
+     100
+    ]
+   ]
+  }
+ },
+ "red l-d-m uneven": {
+  "score": 70,
+  "findings": [
+   {
+    "code": "lightness/reversal",
+    "stops": [
+     1
+    ]
+   },
+   {
+    "code": "lightness/uneven-speed",
+    "stops": [
+     0,
+     1
+    ],
+    "segment": [
+     0,
+     30
+    ]
+   },
+   {
+    "code": "hue/narrow-arc",
+    "stops": [
+     0,
+     2
+    ]
+   },
+   {
+    "code": "chroma/saturation-range",
+    "stops": [
+     0,
+     1
+    ]
+   },
+   {
+    "code": "rhythm/uneven-gaps",
+    "stops": [
+     0,
+     1
+    ],
+    "segment": [
+     0,
+     30
+    ]
+   }
+  ],
+  "fixes": [
+   {
+    "code": "lightness/reversal",
+    "gain": 12,
+    "label": "Make stop 2 lighter",
+    "edits": [
+     {
+      "id": 2,
+      "color": "#9a372d",
+      "position": 30
+     }
+    ]
+   },
+   {
+    "code": "lightness/uneven-speed",
+    "gain": 8,
+    "label": "Move stop 2 to 45%",
+    "edits": [
+     {
+      "id": 2,
+      "color": "#690000",
+      "position": 45
+     }
+    ]
+   },
+   {
+    "code": "hue/narrow-arc",
+    "gain": 5,
+    "label": "Shift the hue of stop 3",
+    "edits": [
+     {
+      "id": 3,
+      "color": "#a20041",
+      "position": 100
+     }
+    ]
+   },
+   {
+    "code": "chroma/saturation-range",
+    "gain": 5,
+    "label": "Lower the saturation of stop 1",
+    "edits": [
+     {
+      "id": 1,
+      "color": "#fb1b12",
+      "position": 0
+     }
+    ]
+   },
+   {
+    "code": "rhythm/uneven-gaps",
+    "gain": 4,
+    "label": "Move stop 2 to 40%",
+    "edits": [
+     {
+      "id": 2,
+      "color": "#690000",
+      "position": 40
+     }
+    ]
+   }
+  ],
+  "refine": {
+   "refined": true,
+   "after": 95,
+   "stops": [
+    [
+     1,
+     "#e64c3c",
+     0
+    ],
+    [
+     2,
+     "#c40000",
+     50
+    ],
+    [
+     3,
+     "#a80000",
+     100
+    ]
+   ]
+  }
+ },
+ "red palindrome 3": {
+  "score": 78,
+  "findings": [
+   {
+    "code": "lightness/reversal",
+    "stops": [
+     1
+    ]
+   },
+   {
+    "code": "hue/narrow-arc",
+    "stops": [
+     0,
+     2
+    ]
+   },
+   {
+    "code": "chroma/saturation-range",
+    "stops": [
+     0,
+     1
+    ]
+   }
+  ],
+  "fixes": [
+   {
+    "code": "hue/narrow-arc",
+    "gain": 5,
+    "label": "Shift the hue of stop 1",
+    "edits": [
+     {
+      "id": 1,
+      "color": "#660026",
+      "position": 0
+     }
+    ]
+   },
+   {
+    "code": "chroma/saturation-range",
+    "gain": 5,
+    "label": "Lower the saturation of stop 2",
+    "edits": [
+     {
+      "id": 2,
+      "color": "#fb1b12",
+      "position": 50
+     }
+    ]
+   }
+  ],
+  "refine": {
+   "refined": true,
+   "after": 83,
+   "stops": [
+    [
+     1,
+     "#760000",
+     0
+    ],
+    [
+     2,
+     "#a60000",
+     50
+    ],
+    [
+     3,
+     "#760000",
+     100
+    ]
+   ]
+  }
+ },
+ "red palindrome 5": {
+  "score": 78,
+  "findings": [
+   {
+    "code": "lightness/reversal",
+    "stops": [
+     2
+    ]
+   },
+   {
+    "code": "hue/narrow-arc",
+    "stops": [
+     0,
+     4
+    ]
+   },
+   {
+    "code": "chroma/saturation-range",
+    "stops": [
+     0,
+     2
+    ]
+   }
+  ],
+  "fixes": [
+   {
+    "code": "lightness/reversal",
+    "gain": 5,
+    "label": "Make stop 3 darker",
+    "edits": [
+     {
+      "id": 3,
+      "color": "#a60000",
+      "position": 50
+     }
+    ]
+   },
+   {
+    "code": "hue/narrow-arc",
+    "gain": 5,
+    "label": "Shift the hue of stop 1",
+    "edits": [
+     {
+      "id": 1,
+      "color": "#660026",
+      "position": 0
+     }
+    ]
+   },
+   {
+    "code": "chroma/saturation-range",
+    "gain": 5,
+    "label": "Lower the saturation of stop 3",
+    "edits": [
+     {
+      "id": 3,
+      "color": "#fb1b12",
+      "position": 50
+     }
+    ]
+   }
+  ],
+  "refine": {
+   "refined": true,
+   "after": 83,
+   "stops": [
+    [
+     1,
+     "#770000",
+     0
+    ],
+    [
+     2,
+     "#900000",
+     25
+    ],
+    [
+     3,
+     "#a80000",
+     50
+    ],
+    [
+     4,
+     "#900000",
+     75
+    ],
+    [
+     5,
+     "#770000",
+     100
+    ]
+   ]
+  }
+ },
+ "red two-hue": {
+  "score": 66,
+  "findings": [
+   {
+    "code": "lightness/reversal",
+    "stops": [
+     1
+    ]
+   },
+   {
+    "code": "lightness/uneven-speed",
+    "stops": [
+     0,
+     1
+    ],
+    "segment": [
+     0,
+     40
+    ]
+   },
+   {
+    "code": "hue/narrow-arc",
+    "stops": [
+     0,
+     1
+    ]
+   },
+   {
+    "code": "chroma/saturation-range",
+    "stops": [
+     0,
+     2
+    ]
+   },
+   {
+    "code": "chroma/dead-zone",
+    "stops": [
+     2
+    ]
+   }
+  ],
+  "fixes": [
+   {
+    "code": "lightness/reversal",
+    "gain": 12,
+    "label": "Make stop 2 lighter",
+    "edits": [
+     {
+      "id": 2,
+      "color": "#9a372d",
+      "position": 40
+     }
+    ]
+   },
+   {
+    "code": "lightness/uneven-speed",
+    "gain": 4,
+    "label": "Make stop 1 lighter",
+    "edits": [
+     {
+      "id": 1,
+      "color": "#b1170f",
+      "position": 0
+     }
+    ]
+   },
+   {
+    "code": "hue/narrow-arc",
+    "gain": 5,
+    "label": "Shift the hue of stop 2",
+    "edits": [
+     {
+      "id": 2,
+      "color": "#660026",
+      "position": 40
+     }
+    ]
+   }
+  ],
+  "refine": {
+   "refined": true,
+   "after": 75,
+   "stops": [
+    [
+     1,
+     "#9d2118",
+     0
+    ],
+    [
+     2,
+     "#e43a2d",
+     50
+    ],
+    [
+     3,
+     "#ffffff",
+     100
+    ]
+   ]
+  }
+ },
+ "blue m-l-d": {
+  "score": 78,
+  "findings": [
+   {
+    "code": "lightness/reversal",
+    "stops": [
+     1
+    ]
+   },
+   {
+    "code": "hue/narrow-arc",
+    "stops": [
+     0,
+     2
+    ]
+   },
+   {
+    "code": "chroma/saturation-range",
+    "stops": [
+     1,
+     2
+    ]
+   }
+  ],
+  "fixes": [
+   {
+    "code": "lightness/reversal",
+    "gain": 17,
+    "label": "Make stop 2 darker",
+    "edits": [
+     {
+      "id": 2,
+      "color": "#001a94",
+      "position": 50
+     }
+    ]
+   },
+   {
+    "code": "hue/narrow-arc",
+    "gain": 5,
+    "label": "Shift the hue of stop 3",
+    "edits": [
+     {
+      "id": 3,
+      "color": "#1e005b",
+      "position": 100
+     }
+    ]
+   },
+   {
+    "code": "chroma/saturation-range",
+    "gain": 5,
+    "label": "Lower the saturation of stop 2",
+    "edits": [
+     {
+      "id": 2,
+      "color": "#0030e6",
+      "position": 50
+     }
+    ]
+   }
+  ],
+  "refine": {
+   "refined": true,
+   "after": 83,
+   "stops": [
+    [
+     1,
+     "#0100aa",
+     0
+    ],
+    [
+     2,
+     "#1500cf",
+     50
+    ],
+    [
+     3,
+     "#0f008a",
+     100
+    ]
+   ]
+  }
+ },
+ "blue d-m-l": {
+  "score": 90,
+  "findings": [
+   {
+    "code": "hue/narrow-arc",
+    "stops": [
+     0,
+     2
+    ]
+   },
+   {
+    "code": "chroma/saturation-range",
+    "stops": [
+     0,
+     2
+    ]
+   }
+  ],
+  "fixes": [
+   {
+    "code": "hue/narrow-arc",
+    "gain": 5,
+    "label": "Shift the hue of stop 1",
+    "edits": [
+     {
+      "id": 1,
+      "color": "#1e005b",
+      "position": 0
+     }
+    ]
+   },
+   {
+    "code": "chroma/saturation-range",
+    "gain": 5,
+    "label": "Lower the saturation of stop 3",
+    "edits": [
+     {
+      "id": 3,
+      "color": "#0030e6",
+      "position": 100
+     }
+    ]
+   }
+  ],
+  "refine": {
+   "refined": true,
+   "after": 95,
+   "stops": [
+    [
+     1,
+     "#0f008a",
+     0
+    ],
+    [
+     2,
+     "#1400d1",
+     50
+    ],
+    [
+     3,
+     "#0a3dd5",
+     100
+    ]
+   ]
+  }
+ },
+ "blue l-d-m uneven": {
+  "score": 70,
+  "findings": [
+   {
+    "code": "lightness/reversal",
+    "stops": [
+     1
+    ]
+   },
+   {
+    "code": "lightness/uneven-speed",
+    "stops": [
+     0,
+     1
+    ],
+    "segment": [
+     0,
+     30
+    ]
+   },
+   {
+    "code": "hue/narrow-arc",
+    "stops": [
+     0,
+     2
+    ]
+   },
+   {
+    "code": "chroma/saturation-range",
+    "stops": [
+     0,
+     1
+    ]
+   },
+   {
+    "code": "rhythm/uneven-gaps",
+    "stops": [
+     0,
+     1
+    ],
+    "segment": [
+     0,
+     30
+    ]
+   }
+  ],
+  "fixes": [
+   {
+    "code": "lightness/reversal",
+    "gain": 12,
+    "label": "Make stop 2 lighter",
+    "edits": [
+     {
+      "id": 2,
+      "color": "#0f3494",
+      "position": 30
+     }
+    ]
+   },
+   {
+    "code": "lightness/uneven-speed",
+    "gain": 9,
+    "label": "Make stop 1 darker",
+    "edits": [
+     {
+      "id": 1,
+      "color": "#001ea6",
+      "position": 0
+     }
+    ]
+   },
+   {
+    "code": "hue/narrow-arc",
+    "gain": 5,
+    "label": "Shift the hue of stop 3",
+    "edits": [
+     {
+      "id": 3,
+      "color": "#340091",
+      "position": 100
+     }
+    ]
+   },
+   {
+    "code": "chroma/saturation-range",
+    "gain": 5,
+    "label": "Lower the saturation of stop 1",
+    "edits": [
+     {
+      "id": 1,
+      "color": "#0030e6",
+      "position": 0
+     }
+    ]
+   },
+   {
+    "code": "rhythm/uneven-gaps",
+    "gain": 4,
+    "label": "Move stop 2 to 40%",
+    "edits": [
+     {
+      "id": 2,
+      "color": "#000069",
+      "position": 40
+     }
+    ]
+   }
+  ],
+  "refine": {
+   "refined": true,
+   "after": 95,
+   "stops": [
+    [
+     1,
+     "#0a3dd5",
+     0
+    ],
+    [
+     2,
+     "#1300d3",
+     50
+    ],
+    [
+     3,
+     "#0100aa",
+     100
+    ]
+   ]
+  }
+ },
+ "blue palindrome 3": {
+  "score": 78,
+  "findings": [
+   {
+    "code": "lightness/reversal",
+    "stops": [
+     1
+    ]
+   },
+   {
+    "code": "hue/narrow-arc",
+    "stops": [
+     0,
+     2
+    ]
+   },
+   {
+    "code": "chroma/saturation-range",
+    "stops": [
+     0,
+     1
+    ]
+   }
+  ],
+  "fixes": [
+   {
+    "code": "hue/narrow-arc",
+    "gain": 5,
+    "label": "Shift the hue of stop 1",
+    "edits": [
+     {
+      "id": 1,
+      "color": "#1e005b",
+      "position": 0
+     }
+    ]
+   },
+   {
+    "code": "chroma/saturation-range",
+    "gain": 5,
+    "label": "Lower the saturation of stop 2",
+    "edits": [
+     {
+      "id": 2,
+      "color": "#0030e6",
+      "position": 50
+     }
+    ]
+   }
+  ],
+  "refine": {
+   "refined": true,
+   "after": 83,
+   "stops": [
+    [
+     1,
+     "#080080",
+     0
+    ],
+    [
+     2,
+     "#1200b6",
+     50
+    ],
+    [
+     3,
+     "#080080",
+     100
+    ]
+   ]
+  }
+ },
+ "blue palindrome 5": {
+  "score": 78,
+  "findings": [
+   {
+    "code": "lightness/reversal",
+    "stops": [
+     2
+    ]
+   },
+   {
+    "code": "hue/narrow-arc",
+    "stops": [
+     0,
+     4
+    ]
+   },
+   {
+    "code": "chroma/saturation-range",
+    "stops": [
+     0,
+     2
+    ]
+   }
+  ],
+  "fixes": [
+   {
+    "code": "hue/narrow-arc",
+    "gain": 5,
+    "label": "Shift the hue of stop 1",
+    "edits": [
+     {
+      "id": 1,
+      "color": "#1e005b",
+      "position": 0
+     }
+    ]
+   },
+   {
+    "code": "chroma/saturation-range",
+    "gain": 5,
+    "label": "Lower the saturation of stop 3",
+    "edits": [
+     {
+      "id": 3,
+      "color": "#0030e6",
+      "position": 50
+     }
+    ]
+   }
+  ],
+  "refine": {
+   "refined": true,
+   "after": 83,
+   "stops": [
+    [
+     1,
+     "#0a0083",
+     0
+    ],
+    [
+     2,
+     "#1400a3",
+     25
+    ],
+    [
+     3,
+     "#1400b9",
+     50
+    ],
+    [
+     4,
+     "#1400a3",
+     75
+    ],
+    [
+     5,
+     "#0a0083",
+     100
+    ]
+   ]
+  }
+ },
+ "blue two-hue": {
+  "score": 59,
+  "findings": [
+   {
+    "code": "lightness/reversal",
+    "stops": [
+     1
+    ]
+   },
+   {
+    "code": "lightness/uneven-speed",
+    "stops": [
+     0,
+     1
+    ],
+    "segment": [
+     0,
+     40
+    ]
+   },
+   {
+    "code": "hue/narrow-arc",
+    "stops": [
+     0,
+     1
+    ]
+   },
+   {
+    "code": "chroma/saturation-range",
+    "stops": [
+     0,
+     2
+    ]
+   },
+   {
+    "code": "chroma/dead-zone",
+    "stops": [
+     2
+    ]
+   }
+  ],
+  "fixes": [
+   {
+    "code": "lightness/reversal",
+    "gain": 12,
+    "label": "Make stop 2 lighter",
+    "edits": [
+     {
+      "id": 2,
+      "color": "#133899",
+      "position": 40
+     }
+    ]
+   },
+   {
+    "code": "lightness/uneven-speed",
+    "gain": 4,
+    "label": "Lower the saturation of stop 2",
+    "edits": [
+     {
+      "id": 2,
+      "color": "#091b44",
+      "position": 40
+     }
+    ]
+   },
+   {
+    "code": "hue/narrow-arc",
+    "gain": 5,
+    "label": "Shift the hue of stop 2",
+    "edits": [
+     {
+      "id": 2,
+      "color": "#1e005b",
+      "position": 40
+     }
+    ]
+   }
+  ],
+  "refine": {
+   "refined": true,
+   "after": 75,
+   "stops": [
+    [
+     1,
+     "#001b96",
+     0
+    ],
+    [
+     2,
+     "#1a56fd",
+     50
+    ],
+    [
+     3,
+     "#ffffff",
+     100
+    ]
+   ]
+  }
+ },
+ "yellow m-l-d": {
+  "score": 83,
+  "findings": [
+   {
+    "code": "lightness/reversal",
+    "stops": [
+     1
+    ]
+   },
+   {
+    "code": "hue/narrow-arc",
+    "stops": [
+     0,
+     2
+    ]
+   }
+  ],
+  "fixes": [
+   {
+    "code": "lightness/reversal",
+    "gain": 12,
+    "label": "Make stop 2 darker",
+    "edits": [
+     {
+      "id": 2,
+      "color": "#878700",
+      "position": 50
+     }
+    ]
+   },
+   {
+    "code": "hue/narrow-arc",
+    "gain": 5,
+    "label": "Shift the hue of stop 3",
+    "edits": [
+     {
+      "id": 3,
+      "color": "#7b6100",
+      "position": 100
+     }
+    ]
+   }
+  ],
+  "refine": {
+   "refined": false,
+   "after": 83,
+   "stops": [
+    [
+     1,
+     "#a6a600",
+     0
+    ],
+    [
+     2,
+     "#ffff00",
+     50
+    ],
+    [
+     3,
+     "#696900",
+     100
+    ]
+   ]
+  }
+ },
+ "yellow d-m-l": {
+  "score": 95,
+  "findings": [
+   {
+    "code": "hue/narrow-arc",
+    "stops": [
+     0,
+     2
+    ]
+   }
+  ],
+  "fixes": [
+   {
+    "code": "hue/narrow-arc",
+    "gain": 5,
+    "label": "Shift the hue of stop 1",
+    "edits": [
+     {
+      "id": 1,
+      "color": "#7b6100",
+      "position": 0
+     }
+    ]
+   }
+  ],
+  "refine": {
+   "refined": true,
+   "after": 95,
+   "stops": [
+    [
+     1,
+     "#6c6900",
+     0
+    ],
+    [
+     2,
+     "#b1ae00",
+     50
+    ],
+    [
+     3,
+     "#fcfd75",
+     100
+    ]
+   ]
+  }
+ },
+ "yellow l-d-m uneven": {
+  "score": 75,
+  "findings": [
+   {
+    "code": "lightness/reversal",
+    "stops": [
+     1
+    ]
+   },
+   {
+    "code": "lightness/uneven-speed",
+    "stops": [
+     0,
+     1
+    ],
+    "segment": [
+     0,
+     30
+    ]
+   },
+   {
+    "code": "hue/narrow-arc",
+    "stops": [
+     0,
+     2
+    ]
+   },
+   {
+    "code": "rhythm/uneven-gaps",
+    "stops": [
+     0,
+     1
+    ],
+    "segment": [
+     0,
+     30
+    ]
+   }
+  ],
+  "fixes": [
+   {
+    "code": "lightness/reversal",
+    "gain": 12,
+    "label": "Make stop 2 lighter",
+    "edits": [
+     {
+      "id": 2,
+      "color": "#c0c16b",
+      "position": 30
+     }
+    ]
+   },
+   {
+    "code": "lightness/uneven-speed",
+    "gain": 8,
+    "label": "Move stop 2 to 45%",
+    "edits": [
+     {
+      "id": 2,
+      "color": "#696900",
+      "position": 45
+     }
+    ]
+   },
+   {
+    "code": "hue/narrow-arc",
+    "gain": 5,
+    "label": "Shift the hue of stop 3",
+    "edits": [
+     {
+      "id": 3,
+      "color": "#c29900",
+      "position": 100
+     }
+    ]
+   },
+   {
+    "code": "rhythm/uneven-gaps",
+    "gain": 4,
+    "label": "Move stop 2 to 40%",
+    "edits": [
+     {
+      "id": 2,
+      "color": "#696900",
+      "position": 40
+     }
+    ]
+   }
+  ],
+  "refine": {
+   "refined": true,
+   "after": 85,
+   "stops": [
+    [
+     1,
+     "#fcfd75",
+     0
+    ],
+    [
+     2,
+     "#b4b200",
+     50
+    ],
+    [
+     3,
+     "#a6a600",
+     100
+    ]
+   ]
+  }
+ },
+ "yellow palindrome 3": {
+  "score": 83,
+  "findings": [
+   {
+    "code": "lightness/reversal",
+    "stops": [
+     1
+    ]
+   },
+   {
+    "code": "hue/narrow-arc",
+    "stops": [
+     0,
+     2
+    ]
+   }
+  ],
+  "fixes": [
+   {
+    "code": "hue/narrow-arc",
+    "gain": 5,
+    "label": "Shift the hue of stop 1",
+    "edits": [
+     {
+      "id": 1,
+      "color": "#7b6100",
+      "position": 0
+     }
+    ]
+   }
+  ],
+  "refine": {
+   "refined": true,
+   "after": 83,
+   "stops": [
+    [
+     1,
+     "#6b6900",
+     0
+    ],
+    [
+     2,
+     "#969400",
+     50
+    ],
+    [
+     3,
+     "#6b6900",
+     100
+    ]
+   ]
+  }
+ },
+ "yellow palindrome 5": {
+  "score": 83,
+  "findings": [
+   {
+    "code": "lightness/reversal",
+    "stops": [
+     2
+    ]
+   },
+   {
+    "code": "hue/narrow-arc",
+    "stops": [
+     0,
+     4
+    ]
+   }
+  ],
+  "fixes": [
+   {
+    "code": "hue/narrow-arc",
+    "gain": 5,
+    "label": "Shift the hue of stop 1",
+    "edits": [
+     {
+      "id": 1,
+      "color": "#7b6100",
+      "position": 0
+     }
+    ]
+   }
+  ],
+  "refine": {
+   "refined": true,
+   "after": 83,
+   "stops": [
+    [
+     1,
+     "#6b6900",
+     0
+    ],
+    [
+     2,
+     "#7e7b00",
+     25
+    ],
+    [
+     3,
+     "#979400",
+     50
+    ],
+    [
+     4,
+     "#7e7b00",
+     75
+    ],
+    [
+     5,
+     "#6b6900",
+     100
+    ]
+   ]
+  }
+ },
+ "yellow two-hue": {
+  "score": 70,
+  "findings": [
+   {
+    "code": "lightness/reversal",
+    "stops": [
+     1
+    ]
+   },
+   {
+    "code": "hue/narrow-arc",
+    "stops": [
+     0,
+     1
+    ]
+   },
+   {
+    "code": "chroma/saturation-range",
+    "stops": [
+     0,
+     2
+    ]
+   },
+   {
+    "code": "chroma/dead-zone",
+    "stops": [
+     2
+    ]
+   }
+  ],
+  "fixes": [
+   {
+    "code": "lightness/reversal",
+    "gain": 12,
+    "label": "Make stop 2 lighter",
+    "edits": [
+     {
+      "id": 2,
+      "color": "#c3c56f",
+      "position": 40
+     }
+    ]
+   },
+   {
+    "code": "hue/narrow-arc",
+    "gain": 5,
+    "label": "Shift the hue of stop 2",
+    "edits": [
+     {
+      "id": 2,
+      "color": "#7b6100",
+      "position": 40
+     }
+    ]
+   },
+   {
+    "code": "chroma/saturation-range",
+    "gain": 5,
+    "label": "Lower the saturation of stop 1",
+    "edits": [
+     {
+      "id": 1,
+      "color": "#a4a54a",
+      "position": 0
+     }
+    ]
+   }
+  ],
+  "refine": {
+   "refined": true,
+   "after": 78,
+   "stops": [
+    [
+     1,
+     "#a5a536",
+     0
+    ],
+    [
+     2,
+     "#b5b500",
+     50
+    ],
+    [
+     3,
+     "#ffffff",
+     100
+    ]
+   ]
+  }
+ },
+ "magenta m-l-d": {
+  "score": 78,
+  "findings": [
+   {
+    "code": "lightness/reversal",
+    "stops": [
+     1
+    ]
+   },
+   {
+    "code": "hue/narrow-arc",
+    "stops": [
+     0,
+     2
+    ]
+   },
+   {
+    "code": "chroma/saturation-range",
+    "stops": [
+     1,
+     2
+    ]
+   }
+  ],
+  "fixes": [
+   {
+    "code": "lightness/reversal",
+    "gain": 17,
+    "label": "Make stop 2 darker",
+    "edits": [
+     {
+      "id": 2,
+      "color": "#870087",
+      "position": 50
+     }
+    ]
+   },
+   {
+    "code": "hue/narrow-arc",
+    "gain": 5,
+    "label": "Shift the hue of stop 3",
+    "edits": [
+     {
+      "id": 3,
+      "color": "#72004c",
+      "position": 100
+     }
+    ]
+   },
+   {
+    "code": "chroma/saturation-range",
+    "gain": 5,
+    "label": "Lower the saturation of stop 2",
+    "edits": [
+     {
+      "id": 2,
+      "color": "#f53df4",
+      "position": 50
+     }
+    ]
+   }
+  ],
+  "refine": {
+   "refined": true,
+   "after": 79,
+   "stops": [
+    [
+     1,
+     "#a800a8",
+     0
+    ],
+    [
+     2,
+     "#bb00bd",
+     50
+    ],
+    [
+     3,
+     "#78007b",
+     100
+    ]
+   ]
+  }
+ },
+ "magenta d-m-l": {
+  "score": 90,
+  "findings": [
+   {
+    "code": "hue/narrow-arc",
+    "stops": [
+     0,
+     2
+    ]
+   },
+   {
+    "code": "chroma/saturation-range",
+    "stops": [
+     0,
+     2
+    ]
+   }
+  ],
+  "fixes": [
+   {
+    "code": "hue/narrow-arc",
+    "gain": 5,
+    "label": "Shift the hue of stop 1",
+    "edits": [
+     {
+      "id": 1,
+      "color": "#72004c",
+      "position": 0
+     }
+    ]
+   },
+   {
+    "code": "chroma/saturation-range",
+    "gain": 5,
+    "label": "Lower the saturation of stop 3",
+    "edits": [
+     {
+      "id": 3,
+      "color": "#f53df4",
+      "position": 100
+     }
+    ]
+   }
+  ],
+  "refine": {
+   "refined": true,
+   "after": 95,
+   "stops": [
+    [
+     1,
+     "#78007b",
+     0
+    ],
+    [
+     2,
+     "#be00c1",
+     50
+    ],
+    [
+     3,
+     "#ea57e8",
+     100
+    ]
+   ]
+  }
+ },
+ "magenta l-d-m uneven": {
+  "score": 70,
+  "findings": [
+   {
+    "code": "lightness/reversal",
+    "stops": [
+     1
+    ]
+   },
+   {
+    "code": "lightness/uneven-speed",
+    "stops": [
+     0,
+     1
+    ],
+    "segment": [
+     0,
+     30
+    ]
+   },
+   {
+    "code": "hue/narrow-arc",
+    "stops": [
+     0,
+     2
+    ]
+   },
+   {
+    "code": "chroma/saturation-range",
+    "stops": [
+     0,
+     1
+    ]
+   },
+   {
+    "code": "rhythm/uneven-gaps",
+    "stops": [
+     0,
+     1
+    ],
+    "segment": [
+     0,
+     30
+    ]
+   }
+  ],
+  "fixes": [
+   {
+    "code": "lightness/reversal",
+    "gain": 12,
+    "label": "Make stop 2 lighter",
+    "edits": [
+     {
+      "id": 2,
+      "color": "#a94aa6",
+      "position": 30
+     }
+    ]
+   },
+   {
+    "code": "lightness/uneven-speed",
+    "gain": 8,
+    "label": "Move stop 2 to 45%",
+    "edits": [
+     {
+      "id": 2,
+      "color": "#690069",
+      "position": 45
+     }
+    ]
+   },
+   {
+    "code": "hue/narrow-arc",
+    "gain": 5,
+    "label": "Shift the hue of stop 3",
+    "edits": [
+     {
+      "id": 3,
+      "color": "#8c23c8",
+      "position": 100
+     }
+    ]
+   },
+   {
+    "code": "chroma/saturation-range",
+    "gain": 5,
+    "label": "Lower the saturation of stop 1",
+    "edits": [
+     {
+      "id": 1,
+      "color": "#f53df4",
+      "position": 0
+     }
+    ]
+   },
+   {
+    "code": "rhythm/uneven-gaps",
+    "gain": 4,
+    "label": "Move stop 2 to 40%",
+    "edits": [
+     {
+      "id": 2,
+      "color": "#690069",
+      "position": 40
+     }
+    ]
+   }
+  ],
+  "refine": {
+   "refined": true,
+   "after": 95,
+   "stops": [
+    [
+     1,
+     "#ea57e8",
+     0
+    ],
+    [
+     2,
+     "#c100c3",
+     50
+    ],
+    [
+     3,
+     "#a800a8",
+     100
+    ]
+   ]
+  }
+ },
+ "magenta palindrome 3": {
+  "score": 78,
+  "findings": [
+   {
+    "code": "lightness/reversal",
+    "stops": [
+     1
+    ]
+   },
+   {
+    "code": "hue/narrow-arc",
+    "stops": [
+     0,
+     2
+    ]
+   },
+   {
+    "code": "chroma/saturation-range",
+    "stops": [
+     0,
+     1
+    ]
+   }
+  ],
+  "fixes": [
+   {
+    "code": "hue/narrow-arc",
+    "gain": 5,
+    "label": "Shift the hue of stop 1",
+    "edits": [
+     {
+      "id": 1,
+      "color": "#72004c",
+      "position": 0
+     }
+    ]
+   },
+   {
+    "code": "chroma/saturation-range",
+    "gain": 5,
+    "label": "Lower the saturation of stop 2",
+    "edits": [
+     {
+      "id": 2,
+      "color": "#f53df4",
+      "position": 50
+     }
+    ]
+   }
+  ],
+  "refine": {
+   "refined": true,
+   "after": 83,
+   "stops": [
+    [
+     1,
+     "#740075",
+     0
+    ],
+    [
+     2,
+     "#a300a5",
+     50
+    ],
+    [
+     3,
+     "#740075",
+     100
+    ]
+   ]
+  }
+ },
+ "magenta palindrome 5": {
+  "score": 78,
+  "findings": [
+   {
+    "code": "lightness/reversal",
+    "stops": [
+     2
+    ]
+   },
+   {
+    "code": "hue/narrow-arc",
+    "stops": [
+     0,
+     4
+    ]
+   },
+   {
+    "code": "chroma/saturation-range",
+    "stops": [
+     0,
+     2
+    ]
+   }
+  ],
+  "fixes": [
+   {
+    "code": "lightness/reversal",
+    "gain": 5,
+    "label": "Make stop 3 darker",
+    "edits": [
+     {
+      "id": 3,
+      "color": "#a600a6",
+      "position": 50
+     }
+    ]
+   },
+   {
+    "code": "hue/narrow-arc",
+    "gain": 5,
+    "label": "Shift the hue of stop 1",
+    "edits": [
+     {
+      "id": 1,
+      "color": "#72004c",
+      "position": 0
+     }
+    ]
+   },
+   {
+    "code": "chroma/saturation-range",
+    "gain": 5,
+    "label": "Lower the saturation of stop 3",
+    "edits": [
+     {
+      "id": 3,
+      "color": "#f53df4",
+      "position": 50
+     }
+    ]
+   }
+  ],
+  "refine": {
+   "refined": true,
+   "after": 83,
+   "stops": [
+    [
+     1,
+     "#750077",
+     0
+    ],
+    [
+     2,
+     "#8d0090",
+     25
+    ],
+    [
+     3,
+     "#a500a7",
+     50
+    ],
+    [
+     4,
+     "#8d0090",
+     75
+    ],
+    [
+     5,
+     "#750077",
+     100
+    ]
+   ]
+  }
+ },
+ "magenta two-hue": {
+  "score": 63,
+  "findings": [
+   {
+    "code": "lightness/reversal",
+    "stops": [
+     1
+    ]
+   },
+   {
+    "code": "hue/narrow-arc",
+    "stops": [
+     0,
+     1
+    ]
+   },
+   {
+    "code": "chroma/saturation-range",
+    "stops": [
+     0,
+     2
+    ]
+   },
+   {
+    "code": "chroma/dead-zone",
+    "stops": [
+     2
+    ]
+   }
+  ],
+  "fixes": [
+   {
+    "code": "lightness/reversal",
+    "gain": 12,
+    "label": "Make stop 2 lighter",
+    "edits": [
+     {
+      "id": 2,
+      "color": "#b95ab6",
+      "position": 40
+     }
+    ]
+   },
+   {
+    "code": "hue/narrow-arc",
+    "gain": 5,
+    "label": "Shift the hue of stop 2",
+    "edits": [
+     {
+      "id": 2,
+      "color": "#72004c",
+      "position": 40
+     }
+    ]
+   }
+  ],
+  "refine": {
+   "refined": true,
+   "after": 71,
+   "stops": [
+    [
+     1,
+     "#9e279d",
+     0
+    ],
+    [
+     2,
+     "#d932d8",
+     50
+    ],
+    [
+     3,
+     "#ffffff",
+     100
+    ]
+   ]
+  }
+ },
+ "cyan m-l-d": {
+  "score": 83,
+  "findings": [
+   {
+    "code": "lightness/reversal",
+    "stops": [
+     1
+    ]
+   },
+   {
+    "code": "hue/narrow-arc",
+    "stops": [
+     0,
+     2
+    ]
+   }
+  ],
+  "fixes": [
+   {
+    "code": "lightness/reversal",
+    "gain": 12,
+    "label": "Make stop 2 darker",
+    "edits": [
+     {
+      "id": 2,
+      "color": "#009595",
+      "position": 50
+     }
+    ]
+   },
+   {
+    "code": "hue/narrow-arc",
+    "gain": 5,
+    "label": "Shift the hue of stop 3",
+    "edits": [
+     {
+      "id": 3,
+      "color": "#0a6677",
+      "position": 100
+     }
+    ]
+   }
+  ],
+  "refine": {
+   "refined": false,
+   "after": 83,
+   "stops": [
+    [
+     1,
+     "#00a6a6",
+     0
+    ],
+    [
+     2,
+     "#00ffff",
+     50
+    ],
+    [
+     3,
+     "#006969",
+     100
+    ]
+   ]
+  }
+ },
+ "cyan d-m-l": {
+  "score": 95,
+  "findings": [
+   {
+    "code": "hue/narrow-arc",
+    "stops": [
+     0,
+     2
+    ]
+   }
+  ],
+  "fixes": [
+   {
+    "code": "hue/narrow-arc",
+    "gain": 5,
+    "label": "Shift the hue of stop 1",
+    "edits": [
+     {
+      "id": 1,
+      "color": "#0a6677",
+      "position": 0
+     }
+    ]
+   }
+  ],
+  "refine": {
+   "refined": true,
+   "after": 95,
+   "stops": [
+    [
+     1,
+     "#006e6f",
+     0
+    ],
+    [
+     2,
+     "#00b3b4",
+     50
+    ],
+    [
+     3,
+     "#75f8f7",
+     100
+    ]
+   ]
+  }
+ },
+ "cyan l-d-m uneven": {
+  "score": 75,
+  "findings": [
+   {
+    "code": "lightness/reversal",
+    "stops": [
+     1
+    ]
+   },
+   {
+    "code": "lightness/uneven-speed",
+    "stops": [
+     0,
+     1
+    ],
+    "segment": [
+     0,
+     30
+    ]
+   },
+   {
+    "code": "hue/narrow-arc",
+    "stops": [
+     0,
+     2
+    ]
+   },
+   {
+    "code": "rhythm/uneven-gaps",
+    "stops": [
+     0,
+     1
+    ],
+    "segment": [
+     0,
+     30
+    ]
+   }
+  ],
+  "fixes": [
+   {
+    "code": "lightness/reversal",
+    "gain": 12,
+    "label": "Make stop 2 lighter",
+    "edits": [
+     {
+      "id": 2,
+      "color": "#69bbbb",
+      "position": 30
+     }
+    ]
+   },
+   {
+    "code": "lightness/uneven-speed",
+    "gain": 8,
+    "label": "Move stop 2 to 45%",
+    "edits": [
+     {
+      "id": 2,
+      "color": "#006969",
+      "position": 45
+     }
+    ]
+   },
+   {
+    "code": "hue/narrow-arc",
+    "gain": 5,
+    "label": "Shift the hue of stop 3",
+    "edits": [
+     {
+      "id": 3,
+      "color": "#2da78d",
+      "position": 100
+     }
+    ]
+   },
+   {
+    "code": "rhythm/uneven-gaps",
+    "gain": 4,
+    "label": "Move stop 2 to 40%",
+    "edits": [
+     {
+      "id": 2,
+      "color": "#006969",
+      "position": 40
+     }
+    ]
+   }
+  ],
+  "refine": {
+   "refined": true,
+   "after": 91,
+   "stops": [
+    [
+     1,
+     "#75f8f7",
+     0
+    ],
+    [
+     2,
+     "#00b6b7",
+     50
+    ],
+    [
+     3,
+     "#00a7a7",
+     100
+    ]
+   ]
+  }
+ },
+ "cyan palindrome 3": {
+  "score": 83,
+  "findings": [
+   {
+    "code": "lightness/reversal",
+    "stops": [
+     1
+    ]
+   },
+   {
+    "code": "hue/narrow-arc",
+    "stops": [
+     0,
+     2
+    ]
+   }
+  ],
+  "fixes": [
+   {
+    "code": "hue/narrow-arc",
+    "gain": 5,
+    "label": "Shift the hue of stop 1",
+    "edits": [
+     {
+      "id": 1,
+      "color": "#0a6677",
+      "position": 0
+     }
+    ]
+   }
+  ],
+  "refine": {
+   "refined": true,
+   "after": 83,
+   "stops": [
+    [
+     1,
+     "#006d6d",
+     0
+    ],
+    [
+     2,
+     "#00999a",
+     50
+    ],
+    [
+     3,
+     "#006d6d",
+     100
+    ]
+   ]
+  }
+ },
+ "cyan palindrome 5": {
+  "score": 83,
+  "findings": [
+   {
+    "code": "lightness/reversal",
+    "stops": [
+     2
+    ]
+   },
+   {
+    "code": "hue/narrow-arc",
+    "stops": [
+     0,
+     4
+    ]
+   }
+  ],
+  "fixes": [
+   {
+    "code": "hue/narrow-arc",
+    "gain": 5,
+    "label": "Shift the hue of stop 1",
+    "edits": [
+     {
+      "id": 1,
+      "color": "#0a6677",
+      "position": 0
+     }
+    ]
+   }
+  ],
+  "refine": {
+   "refined": true,
+   "after": 83,
+   "stops": [
+    [
+     1,
+     "#006d6e",
+     0
+    ],
+    [
+     2,
+     "#008182",
+     25
+    ],
+    [
+     3,
+     "#00999a",
+     50
+    ],
+    [
+     4,
+     "#008182",
+     75
+    ],
+    [
+     5,
+     "#006d6e",
+     100
+    ]
+   ]
+  }
+ },
+ "cyan two-hue": {
+  "score": 75,
+  "findings": [
+   {
+    "code": "lightness/reversal",
+    "stops": [
+     1
+    ]
+   },
+   {
+    "code": "hue/narrow-arc",
+    "stops": [
+     0,
+     1
+    ]
+   },
+   {
+    "code": "chroma/dead-zone",
+    "stops": [
+     2
+    ]
+   }
+  ],
+  "fixes": [
+   {
+    "code": "lightness/reversal",
+    "gain": 12,
+    "label": "Make stop 2 lighter",
+    "edits": [
+     {
+      "id": 2,
+      "color": "#73c5c4",
+      "position": 40
+     }
+    ]
+   },
+   {
+    "code": "hue/narrow-arc",
+    "gain": 5,
+    "label": "Shift the hue of stop 2",
+    "edits": [
+     {
+      "id": 2,
+      "color": "#0a6677",
+      "position": 40
+     }
+    ]
+   }
+  ],
+  "refine": {
+   "refined": true,
+   "after": 78,
+   "stops": [
+    [
+     1,
+     "#37a3a3",
+     0
+    ],
+    [
+     2,
+     "#00bdbd",
+     50
+    ],
+    [
+     3,
+     "#ffffff",
+     100
+    ]
+   ]
+  }
+ },
+ "green+red": {
+  "score": 69,
+  "findings": [
+   {
+    "code": "lightness/perceived-reversal",
+    "stops": [
+     1
+    ]
+   },
+   {
+    "code": "hue/direction-reversal",
+    "stops": [
+     1,
+     2
+    ]
+   },
+   {
+    "code": "chroma/saturation-range",
+    "stops": [
+     1,
+     3
+    ]
+   },
+   {
+    "code": "chroma/muddy-midpoint",
+    "stops": [
+     0,
+     1
+    ],
+    "segment": [
+     0,
+     33
+    ]
+   }
+  ],
+  "fixes": [
+   {
+    "code": "lightness/perceived-reversal",
+    "gain": 11,
+    "label": "Make stop 2 darker",
+    "edits": [
+     {
+      "id": 2,
+      "color": "#f30000",
+      "position": 33
+     }
+    ]
+   },
+   {
+    "code": "hue/direction-reversal",
+    "gain": 10,
+    "label": "Shift the hue of stop 3",
+    "edits": [
+     {
+      "id": 3,
+      "color": "#99251b",
+      "position": 66
+     }
+    ]
+   },
+   {
+    "code": "chroma/saturation-range",
+    "gain": 5,
+    "label": "Lower the saturation of stop 2",
+    "edits": [
+     {
+      "id": 2,
+      "color": "#fb1b12",
+      "position": 33
+     }
+    ]
+   }
+  ],
+  "refine": {
+   "refined": true,
+   "after": 85,
+   "stops": [
+    [
+     1,
+     "#6c9b00",
+     0
+    ],
+    [
+     2,
+     "#d91900",
+     33
+    ],
+    [
+     3,
+     "#306100",
+     67
+    ],
+    [
+     4,
+     "#770000",
+     100
+    ]
+   ]
+  }
+ },
+ "blue+yellow": {
+  "score": 43,
+  "findings": [
+   {
+    "code": "lightness/reversal",
+    "stops": [
+     1,
+     2
+    ]
+   },
+   {
+    "code": "hue/wide-arc",
+    "stops": [
+     1,
+     2
+    ]
+   },
+   {
+    "code": "hue/direction-reversal",
+    "stops": [
+     1,
+     2
+    ]
+   },
+   {
+    "code": "chroma/saturation-range",
+    "stops": [
+     0,
+     1
+    ]
+   },
+   {
+    "code": "chroma/muddy-midpoint",
+    "stops": [
+     1,
+     2
+    ],
+    "segment": [
+     33,
+     66
+    ]
+   }
+  ],
+  "fixes": [
+   {
+    "code": "lightness/reversal",
+    "gain": 24,
+    "label": "Adjust the lightness of stops 2 and 3",
+    "edits": [
+     {
+      "id": 2,
+      "color": "#939300",
+      "position": 33
+     },
+     {
+      "id": 3,
+      "color": "#5c8bf3",
+      "position": 66
+     }
+    ]
+   },
+   {
+    "code": "hue/direction-reversal",
+    "gain": 15,
+    "label": "Shift the hue of stop 2",
+    "edits": [
+     {
+      "id": 2,
+      "color": "#649efd",
+      "position": 33
+     }
+    ]
+   },
+   {
+    "code": "chroma/saturation-range",
+    "gain": 5,
+    "label": "Lower the saturation of stop 1",
+    "edits": [
+     {
+      "id": 1,
+      "color": "#0030e6",
+      "position": 0
+     }
+    ]
+   }
+  ],
+  "refine": {
+   "refined": true,
+   "after": 79,
+   "stops": [
+    [
+     1,
+     "#0063ae",
+     0
+    ],
+    [
+     2,
+     "#00b400",
+     33
+    ],
+    [
+     3,
+     "#009cff",
+     67
+    ],
+    [
+     4,
+     "#85ff9c",
+     100
+    ]
+   ]
+  }
+ },
+ "3-stop warm": {
+  "score": 100,
+  "findings": [],
+  "fixes": [],
+  "refine": {
+   "refined": false,
+   "after": 100,
+   "stops": [
+    [
+     1,
+     "#ff512f",
+     0
+    ],
+    [
+     2,
+     "#dd2476",
+     50
+    ],
+    [
+     3,
+     "#4a00e0",
+     100
+    ]
+   ]
+  }
+ },
+ "3-stop abrupt": {
+  "score": 44,
+  "findings": [
+   {
+    "code": "lightness/reversal",
+    "stops": [
+     1
+    ]
+   },
+   {
+    "code": "lightness/uneven-speed",
+    "stops": [
+     0,
+     1
+    ],
+    "segment": [
+     0,
+     11
+    ]
+   },
+   {
+    "code": "hue/wide-arc",
+    "stops": [
+     0,
+     1
+    ]
+   },
+   {
+    "code": "chroma/muddy-midpoint",
+    "stops": [
+     1,
+     2
+    ],
+    "segment": [
+     11,
+     100
+    ]
+   },
+   {
+    "code": "rhythm/uneven-gaps",
+    "stops": [
+     0,
+     1
+    ],
+    "segment": [
+     0,
+     11
+    ]
+   }
+  ],
+  "fixes": [
+   {
+    "code": "lightness/reversal",
+    "gain": 17,
+    "label": "Make stop 2 lighter",
+    "edits": [
+     {
+      "id": 2,
+      "color": "#5488ff",
+      "position": 11
+     }
+    ]
+   },
+   {
+    "code": "lightness/uneven-speed",
+    "gain": 10,
+    "label": "Move stop 2 to 26%",
+    "edits": [
+     {
+      "id": 2,
+      "color": "#0000ff",
+      "position": 26
+     }
+    ]
+   },
+   {
+    "code": "hue/wide-arc",
+    "gain": 25,
+    "label": "Shift the hue of stop 2",
+    "edits": [
+     {
+      "id": 2,
+      "color": "#565b00",
+      "position": 11
+     }
+    ]
+   },
+   {
+    "code": "chroma/muddy-midpoint",
+    "gain": 17,
+    "label": "Make stop 2 lighter",
+    "edits": [
+     {
+      "id": 2,
+      "color": "#85adff",
+      "position": 11
+     }
+    ]
+   },
+   {
+    "code": "rhythm/uneven-gaps",
+    "gain": 14,
+    "label": "Move stop 2 to 41%",
+    "edits": [
+     {
+      "id": 2,
+      "color": "#0000ff",
+      "position": 41
+     }
+    ]
+   }
+  ],
+  "refine": {
+   "refined": true,
+   "after": 85,
+   "stops": [
+    [
+     1,
+     "#f24500",
+     0
+    ],
+    [
+     2,
+     "#00c300",
+     50
+    ],
+    [
+     3,
+     "#f2d700",
+     100
+    ]
+   ]
+  }
+ },
+ "3-stop greys": {
+  "score": 92,
+  "findings": [
+   {
+    "code": "lightness/uneven-speed",
+    "stops": [
+     0,
+     1
+    ],
+    "segment": [
+     0,
+     30
+    ]
+   },
+   {
+    "code": "rhythm/uneven-gaps",
+    "stops": [
+     0,
+     1
+    ],
+    "segment": [
+     0,
+     30
+    ]
+   }
+  ],
+  "fixes": [
+   {
+    "code": "lightness/uneven-speed",
+    "gain": 4,
+    "label": "Move stop 2 to 35%",
+    "edits": [
+     {
+      "id": 2,
+      "color": "#808080",
+      "position": 35
+     }
+    ]
+   },
+   {
+    "code": "rhythm/uneven-gaps",
+    "gain": 8,
+    "label": "Move stop 2 to 40%",
+    "edits": [
+     {
+      "id": 2,
+      "color": "#808080",
+      "position": 40
+     }
+    ]
+   }
+  ],
+  "refine": {
+   "refined": true,
+   "after": 100,
+   "stops": [
+    [
+     1,
+     "#000000",
+     0
+    ],
+    [
+     2,
+     "#6c6c6c",
+     50
+    ],
+    [
+     3,
+     "#ffffff",
+     100
+    ]
+   ]
+  }
+ },
+ "palindrome rainbow": {
+  "score": 30,
+  "findings": [
+   {
+    "code": "lightness/reversal",
+    "stops": [
+     1,
+     2,
+     3
+    ]
+   },
+   {
+    "code": "hue/wide-arc",
+    "stops": [
+     0,
+     2
+    ]
+   },
+   {
+    "code": "hue/direction-reversal",
+    "stops": [
+     2
+    ]
+   },
+   {
+    "code": "chroma/muddy-midpoint",
+    "stops": [
+     1,
+     2
+    ],
+    "segment": [
+     25,
+     50
+    ]
+   }
+  ],
+  "fixes": [
+   {
+    "code": "hue/wide-arc",
+    "gain": 20,
+    "label": "Shift the hue of stop 3",
+    "edits": [
+     {
+      "id": 3,
+      "color": "#a4001b",
+      "position": 50
+     }
+    ]
+   }
+  ],
+  "refine": {
+   "refined": true,
+   "after": 60,
+   "stops": [
+    [
+     1,
+     "#ef4900",
+     0
+    ],
+    [
+     2,
+     "#c09f00",
+     25
+    ],
+    [
+     3,
+     "#00a600",
+     50
+    ],
+    [
+     4,
+     "#c09f00",
+     75
+    ],
+    [
+     5,
+     "#ef4900",
+     100
+    ]
+   ]
+  }
+ },
+ "palindrome muddy": {
+  "score": 60,
+  "findings": [
+   {
+    "code": "lightness/reversal",
+    "stops": [
+     1
+    ]
+   },
+   {
+    "code": "hue/wide-arc",
+    "stops": [
+     1,
+     2
+    ]
+   },
+   {
+    "code": "hue/direction-reversal",
+    "stops": [
+     1
+    ]
+   },
+   {
+    "code": "chroma/muddy-midpoint",
+    "stops": [
+     0,
+     1
+    ],
+    "segment": [
+     0,
+     50
+    ]
+   }
+  ],
+  "fixes": [
+   {
+    "code": "hue/wide-arc",
+    "gain": 13,
+    "label": "Shift the hue of stop 2",
+    "edits": [
+     {
+      "id": 2,
+      "color": "#ff6657",
+      "position": 50
+     }
+    ]
+   },
+   {
+    "code": "hue/direction-reversal",
+    "gain": 23,
+    "label": "Shift the hue of stop 2",
+    "edits": [
+     {
+      "id": 2,
+      "color": "#00c100",
+      "position": 50
+     }
+    ]
+   },
+   {
+    "code": "chroma/muddy-midpoint",
+    "gain": 13,
+    "label": "Shift the hue of stop 2",
+    "edits": [
+     {
+      "id": 2,
+      "color": "#ed7c00",
+      "position": 50
+     }
+    ]
+   }
+  ],
+  "refine": {
+   "refined": true,
+   "after": 73,
+   "stops": [
+    [
+     1,
+     "#3efe00",
+     0
+    ],
+    [
+     2,
+     "#ff3500",
+     50
+    ],
+    [
+     3,
+     "#3efe00",
+     100
+    ]
+   ]
+  }
+ }
+}

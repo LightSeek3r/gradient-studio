@@ -1,5 +1,10 @@
 // FROZEN COPY of the original (pre-optimisation) implementation at 0584db9, kept ONLY as the
 // slow reference for the differential tests (tests/perf-equivalence.test.ts). Do not edit. It shares only constants, types, document helpers and gamutFitOklch with src/.
+// ONE SANCTIONED EDIT (defect D8, docs/DETERMINISM.md): the tie-break of every selection that
+// chooses a stop / segment / candidate by a float comparison was changed IN LOCKSTEP with src/,
+// using the shared helpers of src/tolerance.ts (approxEq, argBest, roundHalfUp). Every such edit is
+// marked "D8 (lockstep)". Without it the differential tests would compare the optimised code
+// against a reference with a different (engine-noise-dependent) tie rule. Nothing else changed.
 // ── Gradient Engine ────────────────────────────────────────────────────────────
 // Pure functions for gradient color math, quality scoring, and suggestion.
 // Zero dependencies — no React, no DOM, no side effects.
@@ -13,6 +18,7 @@ import {
   type Severity,
   type Tier,
 } from "../../src/scoring-model-v1";
+import { approxEq, argBest } from "../../src/tolerance";
 
 export { V1_MODEL };
 export type { Dimension as FindingDimension, ScoreMeasurements, Severity };
@@ -272,13 +278,40 @@ function interiorExtrema(values: number[]): number[] {
   return out;
 }
 
-/** Index of the value deviating most from `mean` (first on ties). */
+/** Index of the value deviating most from `mean`; ties within EPS to the lowest index. D8 (lockstep). */
 function mostDeviant(values: number[], mean: number): number {
-  let best = 0;
-  for (let i = 1; i < values.length; i++) {
-    if (Math.abs(values[i] - mean) > Math.abs(values[best] - mean)) best = i;
+  return argBest(values.map((v) => Math.abs(v - mean)), "max");
+}
+
+/**
+ * D8 (lockstep): the stops named by the hue-arc findings. `byHue` is sorted by
+ * hue (ties by index). Same rule as src/gradient-engine.ts `hueArcEnds`: hues
+ * within EPS form a group (also across 0°/360°); the start is the lowest index
+ * of its group, the end the highest index of its group; tied largest gaps go
+ * to the lowest start index; a single group names its lowest and highest index.
+ */
+function arcEndsWithTies(byHue: { h: number; i: number }[]): number[] {
+  const groups: { h: number; i: number }[][] = [];
+  for (let k = 0; k < byHue.length; k++) {
+    if (k > 0 && approxEq(byHue[k].h, byHue[k - 1].h)) groups[groups.length - 1].push(byHue[k]);
+    else groups.push([byHue[k]]);
   }
-  return best;
+  if (groups.length > 1 && approxEq(groups[0][0].h + 360, groups[groups.length - 1][groups[groups.length - 1].length - 1].h)) {
+    groups[0] = [...groups[groups.length - 1], ...groups[0]];
+    groups.pop();
+  }
+  const ids = (g: { i: number }[]) => g.map((x) => x.i);
+  if (groups.length === 1) return [Math.min(...ids(groups[0])), Math.max(...ids(groups[0]))];
+  const gaps = groups.map((g, c) => {
+    const d = groups[(c + 1) % groups.length][0].h - g[g.length - 1].h;
+    return d < 0 ? d + 360 : d;
+  });
+  const largest = Math.max(...gaps);
+  const options = gaps
+    .map((gap, c) => ({ gap, start: Math.min(...ids(groups[(c + 1) % groups.length])), end: Math.max(...ids(groups[c])) }))
+    .filter((o) => approxEq(o.gap, largest))
+    .sort((a, b) => a.start - b.start);
+  return [options[0].start, options[0].end];
 }
 
 const UNSCORABLE_DETAILS = (): ScoreDetails => ({ lightness: 0, hue: 0, chroma: 0, spacing: 0 });
@@ -438,16 +471,12 @@ export function scoreGradient(ticks: GradientTick[]): GradientScore {
     const last = byHue.length - 1;
     let maxGap = byHue[0].h + 360 - byHue[last].h;
     // The arc runs from the hue after the largest gap round to the hue before it.
-    let arcEnds = [byHue[0].i, byHue[last].i];
     for (let k = 1; k < byHue.length; k++) {
       const gap = byHue[k].h - byHue[k - 1].h;
-      if (gap > maxGap) {
-        maxGap = gap;
-        arcEnds = [byHue[k].i, byHue[k - 1].i];
-      }
+      if (gap > maxGap) maxGap = gap;
     }
     enclosingArc = 360 - maxGap;
-    const where = { stops: arcEnds };
+    const where = { stops: arcEndsWithTies(byHue) }; // D8 (lockstep)
 
     if (enclosingArc > MH.arc.clashAbove) {
       hueScore -= add(MH.arc.wideCode, "hue", MH.arc.clash, where);
@@ -503,7 +532,7 @@ export function scoreGradient(ticks: GradientTick[]): GradientScore {
   let chromaScore: number = M.weights.chroma;
 
   // 3a. Stop-level chroma consistency
-  const rangeWhere = { stops: [chromas.indexOf(maxC), chromas.indexOf(minC)] };
+  const rangeWhere = { stops: [argBest(chromas, "max"), argBest(chromas, "min")] }; // D8 (lockstep)
   if (chromaRange > MC.range.spikeAbove) {
     chromaScore -= add(MC.range.code, "chroma", MC.range.spike, rangeWhere);
   } else if (chromaRange > MC.range.unevenAbove) {
@@ -533,6 +562,7 @@ export function scoreGradient(ticks: GradientTick[]): GradientScore {
   //     produce a muddy grey/brown between two vivid stops.
   let worstDip = 0;
   let worstDipAt = -1;
+  const dipOf: number[] = []; // D8 (lockstep)
   const segmentEndpointChroma: number[] = [];
   for (let i = 0; i < n - 1; i++) {
     const rgb1 = rgbs[i];
@@ -545,14 +575,14 @@ export function scoreGradient(ticks: GradientTick[]): GradientScore {
     const midLch = oklabToLch(rgbToOklab(midRgb));
     const avgEndpointChroma = (lchs[i].C + lchs[i + 1].C) / 2;
     segmentEndpointChroma.push(avgEndpointChroma);
+    dipOf.push(NaN);
     if (avgEndpointChroma > MC.midpoint.endpointChromaAbove) {
       const dip = 1 - midLch.C / avgEndpointChroma;
-      if (dip > worstDip) {
-        worstDip = dip;
-        worstDipAt = i;
-      }
+      dipOf[i] = dip;
+      if (dip > worstDip) worstDip = dip;
     }
   }
+  if (worstDip > 0) worstDipAt = argBest(dipOf, "max"); // D8 (lockstep)
   if (worstDip > MC.midpoint.muddyAbove) {
     chromaScore -= add(MC.midpoint.code, "chroma", MC.midpoint.muddy, seg(worstDipAt));
   } else if (worstDip > MC.midpoint.slightAbove) {
@@ -748,7 +778,7 @@ export function refineGradient(ticks: GradientTick[]): RefineResult {
     if (Math.sqrt(meanX * meanX + meanY * meanY) < R.degenerateResultantBelow) {
       const h1 = chromatic[0].h;
       const d = ((chromatic[chromatic.length - 1].h - h1) % 360 + 360) % 360;
-      meanHue = ((d <= 180 ? h1 + d / 2 : h1 - (360 - d) / 2) + 360) % 360;
+      meanHue = ((d <= 180 || approxEq(d, 180) ? h1 + d / 2 : h1 - (360 - d) / 2) + 360) % 360; // D8 (lockstep)
     } else {
       meanHue = (toDeg(Math.atan2(meanY, meanX)) + 360) % 360;
     }

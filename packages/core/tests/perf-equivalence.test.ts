@@ -1,7 +1,9 @@
 // The performance work (prepared scoring data, per-search memoisation, finding
 // persistence pruning) must not change a single output. This file proves it by
 // differential testing against FROZEN COPIES of the original implementation
-// (tests/reference/*-v1-ref.ts, taken from commit 0584db9, never edited):
+// (tests/reference/*-v1-ref.ts, taken from commit 0584db9; the only edit since is
+// the D8 tie-break, applied to src/ and to the references IN LOCKSTEP and marked
+// "D8 (lockstep)" there, so the comparison is still like for like):
 //
 //   - scoreGradient / refineGradient / score / refine / proposeFixes return
 //     results that are bit-identical (numbers compared with Object.is, object
