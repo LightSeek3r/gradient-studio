@@ -1,8 +1,48 @@
 // Public surface of @opal42/gradient (working name). Re-exports everything the
-// three modules export. Names exported by more than one module (V1_MODEL,
+// three modules export (the engine's by name, see below). Names exported by more than one module (V1_MODEL,
 // ScoreMeasurements: gradient-engine re-exports them from scoring-model-v1)
 // resolve to the same binding, so there is no clash.
-export * from "./gradient-engine";
+// The engine's public names are listed one by one (not `export *`) so that the
+// internals the fix search shares with the scorer (PreparedScore, ScoreMemo,
+// ...) stay out of the public API.
+export {
+  srgbToLinear,
+  linearToSrgb,
+  hexToRgb,
+  rgbToHex,
+  rgbToOklab,
+  oklabToLinearRgb,
+  oklabToRgb,
+  hexToOklch,
+  oklchToHex,
+  oklabToLch,
+  lchToOklab,
+  isValidStopColor,
+  unscorableReason,
+  scoreGradient,
+  refineGradient,
+  suggestGradient,
+  buildGradientCSS,
+  MAX_DIRECTIONS,
+  buildMultiGradientStyle,
+  spreadDirectionAngles,
+  interpolateGradient,
+  colorAtPosition,
+} from "./gradient-engine";
+export type {
+  RGB,
+  OklabColor,
+  LchColor,
+  GradientTick,
+  ScoreDetails,
+  Finding,
+  GradientScore,
+  RefineResult,
+  GradientDirection,
+  GradientBlendMode,
+  GradientStyle,
+  FindingDimension,
+} from "./gradient-engine";
 export * from "./color-formats";
 export * from "./scoring-model-v1";
 

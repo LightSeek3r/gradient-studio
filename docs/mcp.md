@@ -155,6 +155,10 @@ a lot (about 0.02 `colorShift` is barely visible, above about 0.1 is a clearly
 different colour); the tool reports, the caller decides. The tool edits nothing:
 it returns text.
 
+Cost: about 1 ms for a 3-stop gradient, 3 ms for 8, 5 ms for 16 and 9 ms for 32 stops
+(Node 22), and about 0.27 s for the maximum input of 32 gradients x 32 stops (it was
+7 s before the fix search was made cheaper; `docs/worker.md`, "Fix search cost").
+
 ```json
 { "name": "refine_gradient",
   "arguments": { "stops": [{ "color": "#ff0000" }, { "color": "#00ff00" }, { "color": "#0000ff" }], "angle": 90 } }

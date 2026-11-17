@@ -94,6 +94,7 @@ const cases: BenchCase[] = [
   { name: `WORKER    score_gradient  ${MAX_STOPS_PER_REQUEST / 32} x 32 stops (guard maximum, ${MAX_STOPS_PER_REQUEST})`, run: viaFetch("score_gradient", { css: cssAtCap }) },
   { name: "WORKER    score_gradient  1 x 32 stops", run: viaFetch("score_gradient", { css: css1 }) },
   { name: "WORKER    refine_gradient 3 stops (Free-plan setting), REFINE_MAX_STOPS=3", run: viaFetch("refine_gradient", { css: gradientCss(3) }, { REFINE_MAX_STOPS: "3" }) },
+  { name: "WORKER    refine_gradient 8 stops (Free-plan setting), REFINE_MAX_STOPS=8", run: viaFetch("refine_gradient", { css: gradientCss(8) }, { REFINE_MAX_STOPS: "8" }) },
   { name: "WORKER    refine_gradient 16 stops (default maximum)", run: viaFetch("refine_gradient", { css: gradientCss(16) }), runs: 40 },
   { name: `WORKER    render_preview  ${MAX_STOPS_PER_REQUEST / 32} gradients x 32 stops (css, guard maximum)`, run: viaFetch("render_preview", { css: cssAtCap }) },
   { name: "WORKER    render_preview  32 stops, oklch, 2048 x 2048", run: viaFetch("render_preview", { stops: stops32, interpolation: "oklch", width: 2048, height: 2048 }) },

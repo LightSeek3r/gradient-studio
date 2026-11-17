@@ -156,3 +156,14 @@ Measured gzip sizes and budgets (measurement plus about 10%):
 | `./export` `{ toTailwind }` | 3.88 kB | 4.3 kB |
 | `./export` `{ toDtcg }` (pulls baking) | 6.02 kB | 6.6 kB |
 | `./export` `{ cssAngleToLine }` | 198 B | 220 B |
+
+## Size note after the performance work (2026-11-17)
+
+The proposeFixes speed-up (prepared scoring data, a per-search colour memo, the finding-persistence
+pruning in `src/api/fix-persistence.ts`; `docs/worker.md`, "Fix search cost") added code to the engine and
+to `proposeFixes`. Re-measured gzip sizes: whole core 24.73 kB (budget 25.3 kB, was 23.0 kB), `{ score }`
+6.10 kB (budget 6.2 kB), `parseGradient` alone 9.93 kB (budget 10.8 kB), `{ parseGradient, scoreParsed,
+refine }` 15.38 kB (budget 16.4 kB). All budgets were left as they are: every entry is still inside its
+budget, so no re-baseline was needed. `{ score }` has only 0.1 kB left; the next change to the scorer will
+have to re-baseline it or trim code. The engine's internals (`PreparedScore`, `ScoreMemo`) are not part of
+the public API: `src/index.ts` now lists the engine's exports by name instead of `export *`.

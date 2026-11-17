@@ -22,21 +22,30 @@
 
 import { gamutFitOklch } from "../color-formats";
 import {
+  colorData,
+  createScoreMemo,
   hexToRgb,
+  isValidStopColor,
   lchToOklab,
   oklabToLch,
   oklabToRgb,
   refineGradient,
   rgbToHex,
   rgbToOklab,
-  scoreGradient,
+  patchPrepared,
+  prepareSorted,
+  scorePrepared,
   unscorableReason,
+  type PreparedScore,
+  type ScoreMemo,
   type Finding,
+  type GradientScore,
   type GradientTick,
   type LchColor,
 } from "../gradient-engine";
 import { V1_MODEL } from "../scoring-model-v1";
 import { isDocumentLike, resolveStops } from "./document";
+import { persistFacts, persists } from "./fix-persistence";
 import { score } from "./score";
 import type { GradientDocument, ScoreResult, Stop } from "./types";
 
@@ -63,12 +72,12 @@ export interface Fix<T = GradientDocument> {
   changedStops: number[];
 }
 
-interface Edit {
+export interface Edit {
   color?: string;
   position?: number;
 }
 
-interface Candidate {
+export interface Candidate {
   kind: FixKind;
   edits: Map<number, Edit>;
 }
@@ -94,6 +103,7 @@ interface RawFix {
 
 const RANK = { info: 0, warning: 1, error: 2 } as const;
 const R = V1_MODEL.refine;
+const D = V1_MODEL.domain;
 const FRACTIONS = [0.25, 0.5, 0.75, 1];
 const L_STEPS = [0.03, 0.06, 0.1, 0.15, 0.2, 0.3];
 const HUE_STEPS = [10, 20, 30, 45, 60, 90, 120, 150];
@@ -407,12 +417,12 @@ function applyEdits(sorted: readonly GradientTick[], edits: Map<number, Edit>): 
   return next;
 }
 
-function cost(w: Working, edits: Map<number, Edit>): number {
+function cost(w: Working, edits: Map<number, Edit>, memo: ScoreMemo): number {
   let total = 0;
   for (const [i, e] of edits) {
     if (e.color !== undefined) {
       const a = lchToOklab(w.lch[i]);
-      const b = rgbToOklab(hexToRgb(e.color));
+      const b = colorData(e.color, memo).lab;
       total += Math.sqrt((a.L - b.L) ** 2 + (a.a - b.a) ** 2 + (a.b - b.b) ** 2);
     }
     if (e.position !== undefined) total += Math.abs(e.position - w.pos[i]) / 100;
@@ -450,15 +460,68 @@ function describe(kind: FixKind, w: Working, edits: Map<number, Edit>): string {
   }
 }
 
+/** Test hooks (see tests/perf-equivalence.test.ts); never set in production. */
+export interface SearchHooks {
+  /** A (finding code, candidate) pair skipped without scoring, with the candidate's prepared data. */
+  pruned?: (code: string, candidate: Candidate, prepared: PreparedScore) => void;
+  /** A candidate that was re-scored (once per distinct set of edits). */
+  scored?: (candidate: Candidate, prepared: PreparedScore, after: GradientScore) => void;
+}
+
+/** A candidate that satisfies every finding-independent rule, with its re-score. */
+interface Evaluated {
+  after: GradientScore;
+  cost: number;
+}
+
 /** The engine-level search. `sorted` must be scorable and in position order. */
-function search(sorted: GradientTick[], lockPositions: boolean): RawFix[] {
-  const before = scoreGradient(sorted);
-  if (before.status !== "ok" || before.findings.length === 0) return [];
+function search(sorted: GradientTick[], lockPositions: boolean, hooks?: SearchHooks): RawFix[] {
+  // `sorted` is scorable and in position order. Scoring `base` also fills in
+  // the per-segment values the candidates (which differ from it in a few
+  // stops) will reuse.
+  const memo = createScoreMemo();
+  const base = prepareSorted(sorted, memo);
+  const before = scorePrepared(base);
+  if (before.findings.length === 0) return [];
+  const facts = persistFacts(base);
   const w = working(sorted, lockPositions);
   const r = refineGradient(sorted);
   const refined = r.refined && r.stops.length === w.n && r.stops.every((t, i) => t.id === sorted[i].id) ? r.stops : null;
   const severityBefore = new Map(before.findings.map((f) => [f.code, RANK[f.severity]]));
   const fixes: RawFix[] = [];
+  // Everything below that does not depend on WHICH finding a candidate is for
+  // is computed once per distinct set of edits (see `evaluate`), and colour
+  // conversions are shared by every re-score.
+  const evaluated = new Map<string, Evaluated | null>();
+
+  /**
+   * The finding-independent part of judging a candidate: is it legal, and
+   * does it raise the score? `null` when it fails. The result is a pure
+   * function of the edits, so findings that generate the same edit share it.
+   */
+  const evaluate = (c: Candidate): Evaluated | null => {
+    // Stay inside the v1 domain (an edit outside it would make the re-score unscorable); achromatic
+    // stops stay achromatic; locked stops stay put.
+    for (const [i, e] of c.edits) {
+      if (e.color !== undefined && !isValidStopColor(e.color)) return null;
+      if (e.position !== undefined && !(e.position >= D.minPosition && e.position <= D.maxPosition)) return null;
+      if (e.color !== undefined && w.achromatic[i] && colorData(e.color, memo).lch.C > R.achromaticAtMost) return null;
+      if (e.position !== undefined && w.locked[i]) return null;
+    }
+    const next = applyEdits(sorted, c.edits);
+    if (!next) return null;
+    // A moved stop must not form a new hard stop with a neighbour.
+    for (const [i, e] of c.edits) {
+      if (e.position === undefined) continue;
+      if (i > 0 && next[i].position - next[i - 1].position <= R.hardStopGap) return null;
+      if (i < w.n - 1 && next[i + 1].position - next[i].position <= R.hardStopGap) return null;
+    }
+    const prepared = patchPrepared(base, c.edits, memo);
+    const after = scorePrepared(prepared);
+    hooks?.scored?.(c, prepared, after);
+    if (after.status !== "ok" || !(after.score > before.score)) return null;
+    return { after, cost: cost(w, c.edits, memo) };
+  };
 
   for (const finding of before.findings) {
     const A = allowedStops(finding, w);
@@ -471,24 +534,19 @@ function search(sorted: GradientTick[], lockPositions: boolean): RawFix[] {
       const key = [...c.edits].map(([i, e]) => `${i}:${e.color ?? ""}:${e.position ?? ""}`).join("|");
       if (seen.has(key)) continue;
       seen.add(key);
-      // Achromatic stops stay achromatic.
+      // This edit cannot remove the finding (see fix-persistence.ts): it would be rejected below.
+      if (persists(finding.code, c.edits, facts)) {
+        hooks?.pruned?.(finding.code, c, patchPrepared(base, c.edits, memo));
+        continue;
+      }
+      let ev = evaluated.get(key);
+      if (ev === undefined) {
+        ev = evaluate(c);
+        evaluated.set(key, ev);
+      }
+      if (ev === null) continue;
+      const after = ev.after;
       let ok = true;
-      for (const [i, e] of c.edits) {
-        if (e.color !== undefined && w.achromatic[i] && toLch(e.color).C > R.achromaticAtMost) ok = false;
-        if (e.position !== undefined && w.locked[i]) ok = false;
-      }
-      if (!ok) continue;
-      const next = applyEdits(sorted, c.edits);
-      if (!next) continue;
-      // A moved stop must not form a new hard stop with a neighbour.
-      for (const [i, e] of c.edits) {
-        if (e.position === undefined) continue;
-        if (i > 0 && next[i].position - next[i - 1].position <= R.hardStopGap) ok = false;
-        if (i < w.n - 1 && next[i + 1].position - next[i].position <= R.hardStopGap) ok = false;
-      }
-      if (!ok) continue;
-      const after = scoreGradient(next);
-      if (after.status !== "ok" || !(after.score > before.score)) continue;
       for (const g of after.findings) {
         if (g.code === finding.code) ok = false;
         const was = severityBefore.get(g.code);
@@ -497,7 +555,7 @@ function search(sorted: GradientTick[], lockPositions: boolean): RawFix[] {
       if (!ok) continue;
       const gain = after.score - before.score;
       if (gain > bestGain) bestGain = gain;
-      best.push({ c, gain, cost: cost(w, c.edits) });
+      best.push({ c, gain, cost: ev.cost });
     }
     if (best.length === 0) continue;
     // The cheapest edit that recovers this finding's points (or, when none
@@ -516,6 +574,9 @@ function search(sorted: GradientTick[], lockPositions: boolean): RawFix[] {
   }
   return fixes;
 }
+
+/** @internal For tests/perf-equivalence.test.ts only: the engine-level search, with hooks. */
+export const searchForTests = search;
 
 const toPercent = (position: number): number => Math.round(position * 1e12) / 1e10;
 

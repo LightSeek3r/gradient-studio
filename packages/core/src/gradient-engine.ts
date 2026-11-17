@@ -279,6 +279,168 @@ function mostDeviant(values: number[], mean: number): number {
   return best;
 }
 
+/** @internal What the scorer derives from one `#rrggbb` string. Treated as immutable. */
+export interface ColorData {
+  rgb: RGB;
+  lab: OklabColor;
+  lch: LchColor;
+}
+
+/**
+ * @internal Per-call memo for the scorer's pure colour conversions. A caller
+ * that scores many near-identical gradients (the fix search) creates one, so
+ * each distinct colour is converted once. It holds nothing but results of
+ * pure functions: it never changes a score, it only skips recomputing it.
+ * There is no module-level state.
+ */
+export interface ScoreMemo {
+  colors: Map<string, ColorData>;
+}
+
+/** @internal See `ScoreMemo`. */
+export function createScoreMemo(): ScoreMemo {
+  return { colors: new Map() };
+}
+
+/** @internal RGB, OKLAB and OKLCH of a `#rrggbb` string, memoised in `memo`. */
+export function colorData(hex: string, memo?: ScoreMemo): ColorData {
+  let d = memo?.colors.get(hex);
+  if (d === undefined) {
+    const rgb = hexToRgb(hex);
+    const lab = rgbToOklab(rgb);
+    d = { rgb, lab, lch: oklabToLch(lab) };
+    memo?.colors.set(hex, d);
+  }
+  return d;
+}
+
+/**
+ * @internal Everything the v1 rules read, per position-sorted stop and per
+ * segment between neighbours (no colour strings). `scoreGradient` builds one
+ * from its input; the fix search builds one for the unedited gradient and
+ * derives a candidate's by `patchPrepared`, which recomputes only the entries
+ * the edit can change, with the same functions, so the numbers are bit-identical
+ * to a from-scratch build.
+ */
+export interface PreparedScore {
+  positions: number[];
+  rgbs: RGB[];
+  oklabs: OklabColor[];
+  lchs: LchColor[];
+  /** Per segment i (stops i and i+1): position gap, OKLAB distance, largest RGB channel step. */
+  segmentGaps: number[];
+  segmentDeltaE: number[];
+  segmentRgbSteps: number[];
+  /** OKLAB chroma of the sRGB midpoint of each segment; NaN until the scorer needs it. */
+  segmentMidpointChroma: number[];
+  /** 0..n-1, shared between prepared copies: never mutate. */
+  all: number[];
+  /** Stop indices ordered by hue, then by index (a strict total order, so the order is unique). */
+  hueOrder: number[];
+}
+
+/** Put `order` (a permutation of stop indices) in (hue, index) order. Insertion sort: cheap when it is nearly sorted already. */
+function sortByHue(order: number[], lchs: LchColor[]): void {
+  for (let k = 1; k < order.length; k++) {
+    const idx = order[k];
+    const h = lchs[idx].h;
+    let j = k - 1;
+    while (j >= 0 && (lchs[order[j]].h > h || (lchs[order[j]].h === h && order[j] > idx))) {
+      order[j + 1] = order[j];
+      j--;
+    }
+    order[j + 1] = idx;
+  }
+}
+
+function fillSegment(p: PreparedScore, i: number): void {
+  const c1 = p.rgbs[i];
+  const c2 = p.rgbs[i + 1];
+  p.segmentGaps[i] = p.positions[i + 1] - p.positions[i];
+  p.segmentDeltaE[i] = oklabDeltaE(p.oklabs[i], p.oklabs[i + 1]);
+  p.segmentRgbSteps[i] = Math.max(Math.abs(c1.r - c2.r), Math.abs(c1.g - c2.g), Math.abs(c1.b - c2.b));
+  p.segmentMidpointChroma[i] = NaN;
+}
+
+/** @internal `sorted` must be in the v1 domain and in position order. */
+export function prepareSorted(sorted: readonly GradientTick[], memo?: ScoreMemo): PreparedScore {
+  const n = sorted.length;
+  const p: PreparedScore = {
+    positions: new Array<number>(n),
+    rgbs: new Array<RGB>(n),
+    oklabs: new Array<OklabColor>(n),
+    lchs: new Array<LchColor>(n),
+    segmentGaps: new Array<number>(n - 1),
+    segmentDeltaE: new Array<number>(n - 1),
+    segmentRgbSteps: new Array<number>(n - 1),
+    segmentMidpointChroma: new Array<number>(n - 1),
+    all: Array.from({ length: n }, (_, i) => i),
+    hueOrder: [],
+  };
+  for (let i = 0; i < n; i++) {
+    const d = colorData(sorted[i].color, memo);
+    p.positions[i] = sorted[i].position;
+    p.rgbs[i] = d.rgb;
+    p.oklabs[i] = d.lab;
+    p.lchs[i] = d.lch;
+  }
+  for (let i = 0; i < n - 1; i++) fillSegment(p, i);
+  p.hueOrder = p.all.slice().sort((a, b) => p.lchs[a].h - p.lchs[b].h || a - b);
+  return p;
+}
+
+/**
+ * @internal `base` with some stops given a new colour and/or position. Stop
+ * order is the caller's business: the result is only meaningful when the
+ * edited stops stay in position order. Colours must be valid `#rrggbb`.
+ */
+export function patchPrepared(
+  base: PreparedScore,
+  edits: Iterable<[number, { color?: string; position?: number }]>,
+  memo?: ScoreMemo,
+): PreparedScore {
+  const p: PreparedScore = {
+    positions: base.positions.slice(),
+    rgbs: base.rgbs.slice(),
+    oklabs: base.oklabs.slice(),
+    lchs: base.lchs.slice(),
+    segmentGaps: base.segmentGaps.slice(),
+    segmentDeltaE: base.segmentDeltaE.slice(),
+    segmentRgbSteps: base.segmentRgbSteps.slice(),
+    segmentMidpointChroma: base.segmentMidpointChroma.slice(),
+    all: base.all,
+    hueOrder: base.hueOrder.slice(),
+  };
+  const last = base.positions.length - 1;
+  let sorted = false;
+  for (const [i, e] of edits) {
+    if (e.color !== undefined) {
+      const d = colorData(e.color, memo);
+      p.rgbs[i] = d.rgb;
+      p.oklabs[i] = d.lab;
+      p.lchs[i] = d.lch;
+    }
+    if (e.position !== undefined) p.positions[i] = e.position;
+  }
+  for (const [i, e] of edits) {
+    if (i > 0) fillSegment(p, i - 1);
+    if (i < last) fillSegment(p, i);
+    if (e.color !== undefined) sorted = true;
+  }
+  if (sorted) sortByHue(p.hueOrder, p.lchs);
+  return p;
+}
+
+/** OKLAB chroma of the sRGB midpoint of two stops (rounded per channel); same arithmetic as `oklabToLch(...).C`. */
+function midpointChroma(a: RGB, b: RGB): number {
+  const { a: x, b: y } = rgbToOklab({
+    r: Math.round((a.r + b.r) / 2),
+    g: Math.round((a.g + b.g) / 2),
+    b: Math.round((a.b + b.b) / 2),
+  });
+  return Math.sqrt(x * x + y * y);
+}
+
 const UNSCORABLE_DETAILS = (): ScoreDetails => ({ lightness: 0, hue: 0, chroma: 0, spacing: 0 });
 
 /**
@@ -294,15 +456,26 @@ export function scoreGradient(ticks: GradientTick[]): GradientScore {
   if (reason !== null) {
     return { status: "unscorable", reason, score: 0, issues: [], details: UNSCORABLE_DETAILS(), findings: [] };
   }
+  let sorted = ticks;
+  for (let i = 1; i < ticks.length; i++) {
+    if (ticks[i].position < ticks[i - 1].position) {
+      sorted = sortByPosition(ticks);
+      break;
+    }
+  }
+  return scorePrepared(prepareSorted(sorted));
+}
 
+/**
+ * @internal The v1 rules over prepared per-stop and per-segment data. May fill
+ * `p.segmentMidpointChroma` in place, and hands `p`'s segment arrays to the
+ * result's measurements: use a `PreparedScore` for one call (or scoring it
+ * again is fine, it is the same data).
+ */
+export function scorePrepared(p: PreparedScore): GradientScore {
   const M = V1_MODEL;
-  const sorted = sortByPosition(ticks);
-  const n = sorted.length;
-  const positions = sorted.map((t) => t.position);
-  const oklabs = sorted.map((t) => rgbToOklab(hexToRgb(t.color)));
-  const lchs = oklabs.map((lab) => oklabToLch(lab));
-  const rgbs = sorted.map((t) => hexToRgb(t.color));
-  const all = sorted.map((_, i) => i);
+  const { positions, oklabs, lchs, rgbs, all, segmentGaps, segmentDeltaE, segmentRgbSteps } = p;
+  const n = positions.length;
   const seg = (i: number): Pick<Finding, "stops" | "segment"> => ({
     stops: [i, i + 1],
     segment: [positions[i], positions[i + 1]],
@@ -317,20 +490,18 @@ export function scoreGradient(ticks: GradientTick[]): GradientScore {
   ): number => {
     // Key order matters for the vectors: code, severity, dimension, pointsLost, stops, segment, message.
     const f = { code, severity: tier.severity, dimension, pointsLost: tier.penalty } as Finding;
-    if (where.stops) f.stops = [...new Set(where.stops)].sort((a, b) => a - b);
+    if (where.stops) {
+      // Strictly ascending already (the usual case) is its own sorted set.
+      const st = where.stops;
+      let ascending = true;
+      for (let k = 1; k < st.length; k++) if (st[k] <= st[k - 1]) ascending = false;
+      f.stops = ascending ? st.slice() : [...new Set(st)].sort((a, b) => a - b);
+    }
     if (where.segment) f.segment = [where.segment[0], where.segment[1]];
     f.message = tier.message;
     findings.push(f);
     return tier.penalty;
   };
-
-  // Per-segment quantities (position-neighbours).
-  const segmentGaps: number[] = [];
-  const segmentDeltaE: number[] = [];
-  for (let i = 0; i < n - 1; i++) {
-    segmentGaps.push(positions[i + 1] - positions[i]);
-    segmentDeltaE.push(oklabDeltaE(oklabs[i], oklabs[i + 1]));
-  }
 
   // ── 1. Lightness flow ──────────────────────────────────────────────────
   //    - Monotonicity: penalise reversals (interior local extrema)
@@ -432,16 +603,17 @@ export function scoreGradient(ticks: GradientTick[]): GradientScore {
   let hueScore: number = M.weights.hue;
   let enclosingArc: number | null = null;
   if (chromatic.length >= 2) {
-    const byHue = chromatic.map((i) => ({ h: lchs[i].h, i })).sort((a, b) => a.h - b.h);
+    // The chromatic stops by hue (ties by index): a subsequence of the prepared order.
+    const byHue = p.hueOrder.filter((i) => lchs[i].C > MH.chromaticAbove);
     const last = byHue.length - 1;
-    let maxGap = byHue[0].h + 360 - byHue[last].h;
+    let maxGap = lchs[byHue[0]].h + 360 - lchs[byHue[last]].h;
     // The arc runs from the hue after the largest gap round to the hue before it.
-    let arcEnds = [byHue[0].i, byHue[last].i];
+    let arcEnds = [byHue[0], byHue[last]];
     for (let k = 1; k < byHue.length; k++) {
-      const gap = byHue[k].h - byHue[k - 1].h;
+      const gap = lchs[byHue[k]].h - lchs[byHue[k - 1]].h;
       if (gap > maxGap) {
         maxGap = gap;
-        arcEnds = [byHue[k].i, byHue[k - 1].i];
+        arcEnds = [byHue[k], byHue[k - 1]];
       }
     }
     enclosingArc = 360 - maxGap;
@@ -533,18 +705,12 @@ export function scoreGradient(ticks: GradientTick[]): GradientScore {
   let worstDipAt = -1;
   const segmentEndpointChroma: number[] = [];
   for (let i = 0; i < n - 1; i++) {
-    const rgb1 = rgbs[i];
-    const rgb2 = rgbs[i + 1];
-    const midRgb: RGB = {
-      r: Math.round((rgb1.r + rgb2.r) / 2),
-      g: Math.round((rgb1.g + rgb2.g) / 2),
-      b: Math.round((rgb1.b + rgb2.b) / 2),
-    };
-    const midLch = oklabToLch(rgbToOklab(midRgb));
     const avgEndpointChroma = (lchs[i].C + lchs[i + 1].C) / 2;
     segmentEndpointChroma.push(avgEndpointChroma);
     if (avgEndpointChroma > MC.midpoint.endpointChromaAbove) {
-      const dip = 1 - midLch.C / avgEndpointChroma;
+      let midC = p.segmentMidpointChroma[i];
+      if (Number.isNaN(midC)) midC = p.segmentMidpointChroma[i] = midpointChroma(rgbs[i], rgbs[i + 1]);
+      const dip = 1 - midC / avgEndpointChroma;
       if (dip > worstDip) {
         worstDip = dip;
         worstDipAt = i;
@@ -559,12 +725,6 @@ export function scoreGradient(ticks: GradientTick[]): GradientScore {
 
   // 3d. Banding risk — max(|ΔR|, |ΔG|, |ΔB|) ≈ number of distinct output
   //     colors in a span; few levels over a long span show as bands.
-  const segmentRgbSteps: number[] = [];
-  for (let i = 0; i < n - 1; i++) {
-    const c1 = rgbs[i];
-    const c2 = rgbs[i + 1];
-    segmentRgbSteps.push(Math.max(Math.abs(c1.r - c2.r), Math.abs(c1.g - c2.g), Math.abs(c1.b - c2.b)));
-  }
   for (let i = 0; i < n - 1; i++) {
     const rgbSteps = segmentRgbSteps[i];
     const posSpan = segmentGaps[i];

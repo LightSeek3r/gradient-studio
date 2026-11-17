@@ -22,5 +22,5 @@ export const MAX_ALLOWED_ORIGINS = 16;
 /** score_gradient and render_preview: total stops across all gradients in one request (about 1.5-3 ms in Node). */
 export const MAX_STOPS_PER_REQUEST = 128;
 
-/** refine_gradient default when `REFINE_MAX_STOPS` is unset. Free-plan setting: 3 (see wrangler.jsonc). 0 disables the tool. */
+/** refine_gradient default when `REFINE_MAX_STOPS` is unset. Free-plan setting: 8 (see wrangler.jsonc). 0 disables the tool. */
 export const DEFAULT_REFINE_MAX_STOPS = 16;

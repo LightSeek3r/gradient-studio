@@ -93,7 +93,7 @@ wording transport-neutral, noted as a follow-up.
 |---|---|
 | Request body | 32 KiB (`MAX_BODY_BYTES`). Over it: 413, checked on `Content-Length` and again while streaming, so an oversized stream is cancelled at the cap. Bytes, not characters. |
 | Tool input caps | the handlers' own: `css` 20,000 chars, 32 gradients, 2-32 stops, preview 16-2048 px |
-| CPU guard | at most **128 stops in total** per `score_gradient`/`render_preview` request; at most `REFINE_MAX_STOPS` (default 16, **3 in `wrangler.jsonc`**, 0 disables) for `refine_gradient`. Over it: a tool result with `isError`, before any scoring runs. See "CPU". |
+| CPU guard | at most **128 stops in total** per `score_gradient`/`render_preview` request; at most `REFINE_MAX_STOPS` (default 16, **8 in `wrangler.jsonc`**, 0 disables) for `refine_gradient`. Over it: a tool result with `isError`, before any scoring runs. See "CPU". |
 | Wall-clock timeout | 8 s per request (504 JSON-RPC error). A guard against hung streams, not a CPU limit. |
 | JSON-RPC id / method | at most 128 characters |
 | Methods | `POST /mcp` only; `OPTIONS` only for allow-listed origins |
@@ -115,17 +115,18 @@ shared cloud VM; times in ms. Workers Free plan limit: **10 ms CPU per request**
 |---|---:|---:|---:|
 | handlers: `score_gradient`, 1 gradient, 32 stops | 0.2 | 0.1 | 0.2 |
 | handlers: `score_gradient`, 16.5 KB css, 32 gradients x 32 stops (handler maximum) | 40 | 5.7 | **9.4** |
-| handlers: `refine_gradient`, 3 stops | 15 | 4.4 | 7.2 |
-| handlers: `refine_gradient`, 8 stops | 42 | 26 | 38 |
-| handlers: `refine_gradient`, 16 stops | 85 | 65 | 85 |
-| handlers: `refine_gradient`, 32 stops | 260 | 274 | 357 |
-| handlers: `refine_gradient`, 32 gradients x 32 stops (handler maximum) | 7,260 | **7,060** | 7,400 |
+| handlers: `refine_gradient`, 3 stops | 8.8 | 1.3 | 2.2 |
+| handlers: `refine_gradient`, 8 stops | 3.8 | 3.0 | 4.7 |
+| handlers: `refine_gradient`, 16 stops | 6.2 | 5.1 | 7.3 |
+| handlers: `refine_gradient`, 32 stops | 10 | 9.2 | 11.6 |
+| handlers: `refine_gradient`, 32 gradients x 32 stops (handler maximum) | 357 | **267** | 271 |
 | handlers: `render_preview`, 32 stops, oklch, 2048 x 2048 | 2.1 | 0.15 | 0.2 |
 | handlers: `complement` | 0.8 | 0.01 | 0.01 |
 | handlers: 20 KB hostile nested / junk css | 15 / 0.5 | 1.5 / 0.4 | 2.5 / 0.6 |
 | **Worker** (whole request path incl. SDK): `score_gradient` at the guard maximum, 128 stops | 3.8 | 1.8 | 3.3 |
-| Worker: `refine_gradient`, 3 stops (`REFINE_MAX_STOPS=3`) | 6.3 | 3.7 | 5.5 |
-| Worker: `refine_gradient`, 16 stops (the code default) | 52 | 52 | 70 |
+| Worker: `refine_gradient`, 3 stops (`REFINE_MAX_STOPS=3`) | 2.4 | 1.8 | 3.2 |
+| Worker: `refine_gradient`, 8 stops (`REFINE_MAX_STOPS=8`, the `wrangler.jsonc` setting) | 3.8 | 3.1 | 4.8 |
+| Worker: `refine_gradient`, 16 stops (the code default) | 5.0 | 5.1 | 7.3 |
 | Worker: `render_preview`, 32 stops / css at the guard maximum | 0.7-1.0 | 0.6-0.8 | 0.9-1.1 |
 | Worker: `complement` (SDK and routing overhead only) | 0.4 | 0.3 | 0.5 |
 | Worker: a refused over-budget request | 0.4-0.5 | 0.2-0.45 | 0.4-0.7 |
@@ -139,22 +140,52 @@ scheduling) and are not shown; this is wall time, not isolated CPU time.
   handlers' absolute maximum for scoring (32 x 32 stops, p95 9.4 ms) is near the
   10 ms Free-plan limit, so the Worker caps the **total stops per request at
   128** (about 2-3 ms).
-- **`refine_gradient` is the problem.** Its cost grows with stop count, from a
-  few ms for 3 stops to about 270 ms for 32 and **7 seconds** for the handlers'
-  maximum input (the handlers' caps were written for a local process, not for a
-  metered CPU budget). On the **Free plan only about 3 stops fit under 10 ms**
-  (and even that leaves little margin, since workerd cold isolates run slower
-  than a warm Node). The shipped `wrangler.jsonc` therefore sets
-  `REFINE_MAX_STOPS` to `"3"`. On **Workers Paid** raise it (the code default is
-  16, about 50-70 ms) or set `0` to turn `refine_gradient` off on a deployment
-  that must stay on Free. A follow-up in the core (cheaper refine search) would
-  help every surface.
+- **`refine_gradient` was the problem and is now cheap.** Before the core's
+  fix search was made exact-but-pruned (see "Fix search cost" below) it cost
+  4.4 ms for 3 stops, 26 ms for 8, 65 ms for 16, 274 ms for 32 and **7 seconds**
+  for the handlers' maximum input (32 x 32 stops); only about 3 stops fit under
+  the Free plan's 10 ms, so `wrangler.jsonc` set `REFINE_MAX_STOPS` to `"3"`.
+  Now it is 1.3 / 3.0 / 5.1 / 9.2 ms and **0.27 s** for the maximum input. The
+  shipped `wrangler.jsonc` therefore sets `REFINE_MAX_STOPS` to `"8"`: the
+  Worker's 8-stop request (p50 3.1 ms, p95 4.8 ms) now costs less than the old
+  3-stop one did (3.7 / 5.5 ms), which was the accepted setting. 16 stops (the
+  code default, p50 5.1 ms, p95 7.3 ms) leaves too little margin for a cold
+  workerd isolate on Free, so it stays a Workers Paid setting; set `0` to turn
+  `refine_gradient` off on a deployment that must stay on Free. Re-check after
+  the first deploy (next bullet).
 - Nothing here was measured inside workerd: **CPU time in the real runtime is
   unverified** (the sandbox gives no isolate CPU counter). Re-measure after the
   first deploy with the dashboard's CPU-time metrics before trusting the Free
   plan.
 - Cold start: module evaluation is small (the bundle is about 120 KiB gzipped
   minified; the startup limit is 1 s).
+
+### Fix search cost
+
+`proposeFixes` (inside `refine_gradient`) used to dominate: it re-scored every
+candidate edit for every finding (about 2,000 full scores for 32 random stops).
+`npm run bench:perf -w @opal42/gradient` (seeded random colours, even positions;
+median / p95 ms, Node 22 on a shared VM) measures the core directly:
+
+| `proposeFixes` | 3 stops | 8 | 16 | 32 |
+|---|---:|---:|---:|---:|
+| before | 2.5 / 4.9 | 24 / 36 | 69 / 90 | 259 / 279 |
+| after | 0.6 / 1.4 | 2.3 / 7.1 | 3.8 / 10 | 9.7 / 33 |
+| candidate re-scores, before / after | 122 / 69 | 512 / 54 | 1,025 / 45 | 2,003 / 38 |
+
+`scoreGradient` and `refineGradient` themselves were never the cost (0.10 and
+0.18 ms at 32 stops before, 0.03 and 0.10 after). What changed, with outputs
+byte-identical (the vectors, export goldens and a differential test against a
+frozen copy of the old code on thousands of inputs, `packages/core/tests/perf-equivalence.test.ts`):
+colour conversions are done once per colour, a candidate's score is derived from the
+unedited gradient's prepared data instead of from scratch, candidates are
+scored once however many findings generate them, and a candidate is not scored
+at all when it provably cannot remove the finding it was generated for
+(`packages/core/src/api/fix-persistence.ts` states the argument per rule; the
+test audits every skip against a real score). Not every gradient is as
+favourable as the benchmark's: a candidate that might remove a finding is still
+scored, and findings about the whole gradient (low contrast, uneven speed) are
+not pruned; across the test families the worst 32-stop median was about 10 ms.
 
 ## Bundle size
 
@@ -261,7 +292,7 @@ the privacy statement.
 ## Owner deploy checklist (NOT done: nothing below has been run)
 
 - [ ] Cloudflare account; decide Free vs Paid (see "CPU": Free means
-      `REFINE_MAX_STOPS=3` or `0`).
+      `REFINE_MAX_STOPS=8` (the shipped value) or lower, or `0`).
 - [ ] Choose a domain on a zone you control (for example `mcp.<your-domain>`).
       Add `routes: [{ "pattern": "mcp.<domain>", "custom_domain": true }]` to
       `wrangler.jsonc`; decide whether to keep or disable `workers_dev` /
