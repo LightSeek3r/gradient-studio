@@ -146,36 +146,59 @@ library's `message` strings stay English; the stable `code` of each finding is w
 translates. How to add a locale, the completeness checks and the French glossary:
 [`docs/i18n.md`](docs/i18n.md), [`docs/i18n-glossary.md`](docs/i18n-glossary.md).
 
+## Beyond the web app
+
+Gradient Studio has grown from an editor into a set of tools around one scoring engine
+(see [docs/STATUS.md](docs/STATUS.md) for what is built, what is verified and what still needs you):
+
+| Surface | Where | Docs |
+|---|---|---|
+| Engine library, CSS gradient parser, exports | `packages/core` | [spec/api.md](spec/api.md), [spec/parser.md](spec/parser.md), [docs/exports.md](docs/exports.md) |
+| CLI (`score`, `refine`, `parse`) | `packages/cli` | [docs/cli.md](docs/cli.md) |
+| Stylelint plugin, GitHub Action, pre-commit | `packages/stylelint-plugin`, `actions/score` | [docs/stylelint.md](docs/stylelint.md), [docs/github-action.md](docs/github-action.md), [docs/pre-commit.md](docs/pre-commit.md) |
+| MCP server and Agent Skill | `packages/mcp`, `skills/gradient-quality` | [docs/mcp.md](docs/mcp.md) |
+| Remote MCP Worker (not deployed) | `apps/worker` | [docs/worker.md](docs/worker.md) |
+| VS Code extension | `apps/vscode` | [docs/vscode.md](docs/vscode.md) |
+| Browser DevTools extension | `apps/extension` | [docs/extension.md](docs/extension.md) |
+| Figma plugin | `apps/figma` | [docs/figma.md](docs/figma.md) |
+| Web components | `packages/element` | [docs/element.md](docs/element.md) |
+| Style Dictionary transforms | `packages/style-dictionary` | [docs/style-dictionary.md](docs/style-dictionary.md) |
+| GradientBench | `packages/bench` | [docs/bench.md](docs/bench.md) |
+| Python port of scoring v1 | `ports/python` | [docs/python.md](docs/python.md) |
+
+Everything runs locally: no network, no accounts, no telemetry in any of them
+([PRIVACY.md](PRIVACY.md)). None of the packages or extensions is published yet.
+The score is a smoothness measure by this project's own definition; it has not been
+validated against human judgement ([docs/PLAN.md](docs/PLAN.md) §1).
+
 ## Project structure
 
-An npm-workspaces monorepo: a DOM-free engine package and the web app that uses it.
+An npm-workspaces monorepo. `packages/core` is DOM-free; everything else imports it.
 
 ```
 packages/core/           @opal42/gradient (working name, private): the engine, no DOM
-  src/gradient-engine.ts   OKLAB/OKLCH conversions, the quality scorer, the suggestion engine,
-                           and CSS composition (single angle and multi-direction)
-  src/color-formats.ts     hex/RGB/HSL/named-colour parsing and formatting, the 148 CSS colour
-                           names, gamut mapping and complementary colours
+  src/gradient-engine.ts   OKLAB/OKLCH conversions, the quality scorer, the refinement engine
+  src/color-formats.ts     colour parsing and formatting, the 148 CSS names, gamut mapping
   src/scoring-model-v1.ts  the frozen v1 scoring model (thresholds and weights)
-  src/index.ts             the public surface
+  src/tolerance.ts         the tie-breaking rule that keeps results identical across Node versions
+  src/api/, src/css/       the document API (score, refine, proposeFixes) and the gradient parser
   src/export.ts            the `./export` subpath: Tailwind, SCSS, SVG, native snippets, DTCG, Figma
+  src/experimental/        scoring v2 prototype, opt-in only
   tests/, scripts/         Vitest suite; vector generator and diff tool
+packages/cli/            opal42: the command line
+packages/stylelint-plugin/  Stylelint rules with opt-in autofix
+packages/mcp/            MCP server (stdio)
+packages/element/        <opal42-gradient-score> and <opal42-gradient-preview>
+packages/style-dictionary/  gradient score and refine transforms
+packages/bench/          GradientBench (offline harness)
 apps/web/                gradient-studio-web (private): the React app, built into /dist
-  src/clipboard.ts         clipboard read/write with a fallback; every call resolves, never throws
-  src/components/
-    StopCard.tsx           the per-stop editor (all formats, complement, swap)
-    DirectionsPanel.tsx    the compass, direction rows, presets and blend mode
-    fields.tsx             shared copy/paste buttons and format-aware inputs
-  src/i18n/                the hand-written EN/FR catalogues (en.ts, fr.ts), `t()`, provider, switcher
-  src/App.tsx              top-level state and layout
-  src/App.css, index.css   styles
-  public/                  favicon, app icons, web manifest and the Open Graph image
-  index.html               page shell, meta description, Open Graph and Twitter Card tags
-spec/                    scoring-v1.md and the characterisation vectors
+apps/vscode/, apps/extension/, apps/figma/, apps/worker/   the editor, browser, design-tool and Worker surfaces
+actions/score/           composite GitHub Action
+skills/                  the gradient-quality Agent Skill
+spec/                    scoring-v1.md, scoring-v2.md (research), parser.md, api.md, and the vectors
 ports/python/            opal42-gradient (working name, not published): a standard-library-only
                          Python port of scoring model v1, checked against spec/vectors/
-                         ([docs/python.md](docs/python.md))
-docs/                    the README screenshots, the plan and the social preview image
+docs/                    the plan, status, UX review, per-surface guides and screenshots
 ```
 
 ## Getting started
