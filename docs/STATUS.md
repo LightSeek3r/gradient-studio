@@ -26,6 +26,7 @@ Scoring v1 is frozen and defined by `spec/scoring-v1.md` and `spec/vectors/` (ev
 
 - Lint, typecheck, all test suites, builds, `npm audit` (0 vulnerabilities), size budgets, publint and attw: run for every merge, locally on Node 22 **and Node 24** (the CI matrix since the determinism fix).
 - Real browsers (Playwright/Chromium): the web app (axe 0 violations at 320/360/1440, offline mode, CSP headers), the web components, the browser extension (including one run inside real DevTools under xvfb).
+- **GitHub CI: all jobs green** on run 33 (commit `a8cd439`): `verify` on Node 22 and Node 24 with every step (build, publint, attw, size-limit, CLI/MCP/Worker/skill/Stylelint/VS Code/Figma checks, vectors unchanged), `python-port` on 3.12 and 3.13, `extension`, `dogfood-action`.
 - Cross-runtime determinism: found by CI (Node 24 produced different fix choices than Node 22 for near-equal values), fixed once with a shared tolerance rule, documented in `docs/DETERMINISM.md`.
 
 ## Not verified (labelled in each surface's docs)
@@ -35,7 +36,6 @@ Scoring v1 is frozen and defined by `spec/scoring-v1.md` and `spec/vectors/` (ev
 - The MCP server has not been tried in a real MCP client; the Worker's CPU time has not been measured inside workerd, so the Free-plan fit is unverified (`REFINE_MAX_STOPS` is 8).
 - Native export snippets (SwiftUI, Compose, Flutter, Godot, Android) and the DTCG gradient shape are unverified against devices and the normative spec text.
 - **The score itself has not been validated against human judgement** (the optional survey in the plan was skipped). It is a smoothness measure by this project's definition, and the UI, CLI, Skill and bench all say so. There is no default `min-score` threshold anywhere.
-- CI results beyond what GitHub reported at the time of writing.
 
 ## What needs you (nothing here can or should be done by an agent)
 
@@ -47,6 +47,8 @@ Scoring v1 is frozen and defined by `spec/scoring-v1.md` and `spec/vectors/` (ev
 6. **A second maintainer or recovery contact**, and sponsorship, per the plan.
 
 ## Known issues and open questions
+
+- **CI history, for honesty.** CI was red on `master` from the VS Code merge until the determinism fix (runs 19 to 31), and my local checks did not show it because they ran only on Node 22 and never reproduced the CI image. Causes found and fixed: the characterisation tests compared floating-point measurements bitwise (Node 22 and 24 differ in the last digits); a real tie-breaking defect in the engine (fix choices depended on float noise for near-equal values: see `docs/DETERMINISM.md`); and a Python job asking for a version the runner lacks. Because the `Test` step failed, the later steps had never run before run 33.
 
 - Fixes and refinement can change colours a lot (they remove a finding outright). Use `--dry-run`/preview first; the UI and editors show the change before applying.
 - v2 open questions for you (`docs/v2-experiments.md`): penalise mid-path gamut excursion? waive `longer`-hue rainbows? the muddy middle is partly double-counted.
