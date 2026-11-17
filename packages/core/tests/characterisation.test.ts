@@ -1,5 +1,6 @@
 // Replays every characterisation vector in spec/vectors/ against the current
-// engine with exact equality. The vectors freeze v1 (after the pre-freeze
+// engine: exact for scores, strings, codes and locations; a 1e-9 relative
+// tolerance for floating-point measurements (engines differ in the last digits). The vectors freeze v1 (after the pre-freeze
 // defect fixes, spec/vectors/CHANGES-v1.md), so any behavioural drift shows up
 // here. Regenerate with `npm run vectors` only as a reviewed, intentional act,
 // and account for every changed case with `npm run vectors:diff`.
@@ -21,6 +22,12 @@ import {
   type ScoreCase,
   type SuggestCase,
 } from "../scripts/vector-lib";
+import { firstDifference } from "./vector-compare";
+
+/** Exact for everything but non-integer floats (see ./vector-compare.ts). */
+function expectVector(actual: unknown, expected: unknown): void {
+  expect(firstDifference(actual, expected)).toBeNull();
+}
 
 interface VectorFile<T> {
   vectorVersion: number;
@@ -59,25 +66,25 @@ describe("characterisation vectors v1", () => {
 
   describe("scoreGradient findings and measurements", () => {
     it.each(findings.cases.map((c) => [c.name, c] as const))("%s", (_name, c) => {
-      expect(viaJson(evalFindings(c.name, c.stops))).toEqual(c);
+      expectVector(viaJson(evalFindings(c.name, c.stops)), c);
     });
   });
 
   describe("scoreGradient", () => {
     it.each(score.cases.map((c) => [c.name, c] as const))("%s", (_name, c) => {
-      expect(viaJson(evalScore(c.name, c.stops))).toEqual(c);
+      expectVector(viaJson(evalScore(c.name, c.stops)), c);
     });
   });
 
   describe("suggestGradient", () => {
     it.each(suggest.cases.map((c) => [c.name, c] as const))("%s", (_name, c) => {
-      expect(viaJson(evalSuggest(c.name, c.stops))).toEqual(c);
+      expectVector(viaJson(evalSuggest(c.name, c.stops)), c);
     });
   });
 
   describe("buildGradientCSS / buildMultiGradientStyle", () => {
     it.each(css.cases.map((c) => [c.name, c] as const))("%s", (_name, c) => {
-      expect(viaJson(evalCss(c.name, c.stops, c.angle, c.directions, c.blend))).toEqual(c);
+      expectVector(viaJson(evalCss(c.name, c.stops, c.angle, c.directions, c.blend)), c);
     });
 
     it("spreadDirectionAngles", () => {
@@ -94,7 +101,7 @@ describe("characterisation vectors v1", () => {
 
   describe("interpolateGradient / colorAtPosition", () => {
     it.each(interp.cases.map((c) => [c.name, c] as const))("%s", (_name, c) => {
-      expect(viaJson(evalInterpolate(c.name, c.stops))).toEqual(c);
+      expectVector(viaJson(evalInterpolate(c.name, c.stops)), c);
     });
   });
 
@@ -102,7 +109,7 @@ describe("characterisation vectors v1", () => {
     it.each(color.cases.map((c, i) => [`${i} ${c.kind} ${JSON.stringify(c.input)}`, c] as const))(
       "%s",
       (_name, c) => {
-        expect(viaJson(evalColor(c))).toEqual(c);
+        expectVector(viaJson(evalColor(c)), c);
       },
     );
   });

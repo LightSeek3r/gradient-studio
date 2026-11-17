@@ -143,7 +143,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python: ["3.10", "3.13"]
+        python: ["3.12", "3.13"]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -151,15 +151,19 @@ jobs:
         env:
           PYTHON_VERSION: ${{ matrix.python }}
         run: |
+          # Prefer the runner tool cache; the next step fails if the interpreter that ends up on
+          # PATH is not the version named by the matrix, so this can never silently test another one.
           dir=$(ls -d "${RUNNER_TOOL_CACHE:-/opt/hostedtoolcache}/Python/${PYTHON_VERSION}".*/x64 2>/dev/null | sort -V | tail -1)
-          if [ -z "$dir" ]; then
-            echo "Python ${PYTHON_VERSION} is not in the runner tool cache" >&2
-            exit 1
+          if [ -n "$dir" ]; then
+            echo "$dir/bin" >> "$GITHUB_PATH"
           fi
-          echo "$dir/bin" >> "$GITHUB_PATH"
 
-      - name: Python version
-        run: python3 --version
+      - name: Python version (must match the matrix)
+        env:
+          PYTHON_VERSION: ${{ matrix.python }}
+        run: |
+          python3 --version
+          python3 -c "import os, sys; got = '%d.%d' % sys.version_info[:2]; want = os.environ['PYTHON_VERSION']; sys.exit(0 if got == want else 'expected Python ' + want + ', got ' + got)"
 
       - name: Unit, property and conformance tests
         working-directory: ports/python

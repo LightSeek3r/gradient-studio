@@ -265,7 +265,7 @@ No installation and no network are required. The vectors are found by walking up
 from `tests/` to `spec/vectors/`; set `OPAL42_VECTORS_DIR` to use another
 directory. `pip install ./ports/python` (a minimal setuptools `pyproject.toml`; pip fetches
 setuptools for the isolated build, or use `--no-build-isolation` offline) installs
-the package without dependencies. CI runs the suite on Python 3.10 and 3.13 (`.github/workflows/ci.yml`,
+the package without dependencies. CI runs the suite on Python 3.12 and 3.13 (`.github/workflows/ci.yml`,
 job `python-port`).
 
 ## Maintaining the port
