@@ -179,3 +179,18 @@ in, so the package can ship one self-contained, minified file
 `<script type="module">` loads. `sideEffects` lists only the auto-defining files
 (`dist/define.js`, `dist/opal42-element.js`). The library entries (`.`, `./define`)
 bundle core too, so there is no peer or external to resolve.
+
+
+## Style Dictionary adapter
+
+`@opal42/style-dictionary` ([`style-dictionary.md`](style-dictionary.md)) follows the
+stylelint-plugin pattern: tsdown, ESM only, one entry, `private`, `@opal42/gradient` a
+dependency (external) and `style-dictionary` ^5 a peer dependency that is **never
+imported** (the user passes it to `register`), also a dev dependency for the tests. Own code is
+4.18 kB gzip (budget 4.6 kB, measured plus about 10%). The same three checks cover it
+(`lint:package`, `attw`, `size`).
+
+`style-dictionary` 5.8.0 pulls `@bundled-es-modules/glob`, which depends on `glob` 13 and
+`minimatch` 10, both flagged by `npm audit` (moderate). A root `overrides` entry
+(`"@bundled-es-modules/glob": { "glob": "^14.0.6" }`, which brings `minimatch` 11) keeps
+`npm audit` at 0. Style Dictionary's own tests are not run against glob 14; our builds are.

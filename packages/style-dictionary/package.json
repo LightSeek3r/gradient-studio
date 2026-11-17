@@ -1,0 +1,65 @@
+{
+  "name": "@opal42/style-dictionary",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Style Dictionary transforms and formats that attach the smoothness score of DTCG gradient tokens (OKLAB/OKLCH), with an opt-in refinement. Working name. No network, no telemetry.",
+  "keywords": [
+    "style-dictionary",
+    "design-tokens",
+    "dtcg",
+    "gradient",
+    "css-gradient",
+    "oklab",
+    "oklch"
+  ],
+  "license": "MIT",
+  "author": "LightSeek3r (https://github.com/LightSeek3r)",
+  "homepage": "https://github.com/LightSeek3r/gradient-studio/blob/master/docs/style-dictionary.md",
+  "bugs": {
+    "url": "https://github.com/LightSeek3r/gradient-studio/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LightSeek3r/gradient-studio.git",
+    "directory": "packages/style-dictionary"
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "dependencies": {
+    "@opal42/gradient": "^0.0.0"
+  },
+  "peerDependencies": {
+    "style-dictionary": "^5.0.0"
+  },
+  "devDependencies": {
+    "style-dictionary": "^5.8.0"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "lint:package": "publint --strict",
+    "attw": "attw --pack . --profile esm-only",
+    "size": "size-limit",
+    "prepack": "npm run build"
+  }
+}

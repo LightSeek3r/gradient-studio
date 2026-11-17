@@ -1,0 +1,234 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`opal42/report-json > summarises every gradient token (snapshot) 1`] = `
+"{
+  "tool": "@opal42/style-dictionary",
+  "scoringModel": "v1",
+  "note": "The score is a smoothness score by our definition (scoring model v1), not a quality verdict.",
+  "summary": {
+    "gradients": 9,
+    "scored": 7,
+    "unscorable": 1,
+    "skipped": 1
+  },
+  "tokens": [
+    {
+      "path": "gradient.broken",
+      "score": null,
+      "status": "skipped",
+      "findings": [],
+      "code": "no-gradient",
+      "reason": "the string contains no CSS gradient function"
+    },
+    {
+      "path": "gradient.legacy",
+      "score": 95,
+      "status": "scored",
+      "findings": [
+        {
+          "code": "chroma/saturation-range",
+          "severity": "info",
+          "pointsLost": 5,
+          "stops": [
+            0,
+            1
+          ]
+        }
+      ]
+    },
+    {
+      "path": "gradient.locked",
+      "score": 58,
+      "status": "scored",
+      "findings": [
+        {
+          "code": "lightness/reversal",
+          "severity": "error",
+          "pointsLost": 12,
+          "stops": [
+            1
+          ]
+        },
+        {
+          "code": "hue/wide-arc",
+          "severity": "error",
+          "pointsLost": 20,
+          "stops": [
+            0,
+            2
+          ]
+        },
+        {
+          "code": "chroma/muddy-midpoint",
+          "severity": "warning",
+          "pointsLost": 10,
+          "stops": [
+            1,
+            2
+          ]
+        }
+      ],
+      "locked": true
+    },
+    {
+      "path": "gradient.navy",
+      "score": 71,
+      "status": "scored",
+      "findings": [
+        {
+          "code": "lightness/reversal",
+          "severity": "error",
+          "pointsLost": 12,
+          "stops": [
+            1
+          ]
+        },
+        {
+          "code": "hue/narrow-arc",
+          "severity": "info",
+          "pointsLost": 5,
+          "stops": [
+            0,
+            2
+          ]
+        },
+        {
+          "code": "chroma/dead-zone",
+          "severity": "warning",
+          "pointsLost": 8,
+          "stops": [
+            1
+          ]
+        },
+        {
+          "code": "rhythm/uneven-gaps",
+          "severity": "info",
+          "pointsLost": 4,
+          "stops": [
+            0,
+            1
+          ]
+        }
+      ]
+    },
+    {
+      "path": "gradient.rainbow",
+      "score": 58,
+      "status": "scored",
+      "findings": [
+        {
+          "code": "lightness/reversal",
+          "severity": "error",
+          "pointsLost": 12,
+          "stops": [
+            1
+          ]
+        },
+        {
+          "code": "hue/wide-arc",
+          "severity": "error",
+          "pointsLost": 20,
+          "stops": [
+            0,
+            2
+          ]
+        },
+        {
+          "code": "chroma/muddy-midpoint",
+          "severity": "warning",
+          "pointsLost": 10,
+          "stops": [
+            1,
+            2
+          ]
+        }
+      ]
+    },
+    {
+      "path": "gradient.ref",
+      "score": 95,
+      "status": "scored",
+      "findings": [
+        {
+          "code": "chroma/saturation-range",
+          "severity": "info",
+          "pointsLost": 5,
+          "stops": [
+            0,
+            1
+          ]
+        }
+      ]
+    },
+    {
+      "path": "gradient.smooth",
+      "score": 95,
+      "status": "scored",
+      "findings": [
+        {
+          "code": "chroma/saturation-range",
+          "severity": "info",
+          "pointsLost": 5,
+          "stops": [
+            0,
+            1
+          ]
+        }
+      ]
+    },
+    {
+      "path": "gradient.stripes",
+      "score": 71,
+      "status": "scored",
+      "hardStops": true,
+      "findings": [
+        {
+          "code": "hue/wide-arc",
+          "severity": "warning",
+          "pointsLost": 8,
+          "stops": [
+            1,
+            2
+          ]
+        },
+        {
+          "code": "chroma/muddy-midpoint",
+          "severity": "info",
+          "pointsLost": 5,
+          "stops": [
+            1,
+            2
+          ]
+        },
+        {
+          "code": "chroma/banding",
+          "severity": "warning",
+          "pointsLost": 6,
+          "stops": [
+            0,
+            1
+          ]
+        },
+        {
+          "code": "rhythm/uneven-gaps",
+          "severity": "warning",
+          "pointsLost": 10,
+          "stops": [
+            1,
+            2
+          ]
+        }
+      ]
+    },
+    {
+      "path": "gradient.translucent",
+      "score": null,
+      "status": "unscorable",
+      "findings": [],
+      "code": "alpha",
+      "reason": "stop 0 is translucent (alpha 0.5); the v1 model only judges opaque stops"
+    }
+  ]
+}
+"
+`;

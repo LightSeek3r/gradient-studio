@@ -159,6 +159,18 @@ interpolation travel in a vendor `$extensions` entry. Check the spec before
 depending on it: the tests only check that the output is valid JSON of this
 shape, and mark it so.
 
+**What was checked later (Style Dictionary adapter, [`style-dictionary.md`](style-dictionary.md)).**
+Still not checked against the normative text, which was again unreachable. The
+array-of-`{ color, position }` value with 0-1 positions matches what Style
+Dictionary 5.8.0 (`expandObjectTokens`) and Terrazzo 2.10.0 (`valid-gradient`:
+both keys required, number 0-1) read, and the colour object (`colorSpace`,
+`components`, `alpha`, `hex`) is accepted by Style Dictionary's DTCG colour
+handling. `toDtcg` output, in both colour formats, was fed through a real Style
+Dictionary build and read back by `@opal42/style-dictionary` for four documents
+(`packages/style-dictionary/tests/dtcg-roundtrip.test.ts`): no disagreement was
+found. That shows the writer and those readers agree. The absence of an angle in
+the DTCG gradient (hence the vendor `$extensions` entry) is still from memory.
+
 ### Figma (`toFigmaPaint`, `fromFigmaPaint`, `angleToFigmaTransform`)
 
 `GRADIENT_LINEAR` paint: `gradientStops` with RGBA 0-1, `gradientTransform`, and

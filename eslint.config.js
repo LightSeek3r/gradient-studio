@@ -39,6 +39,7 @@ export default defineConfig([
       'packages/cli/src/**/*.ts',
       'packages/mcp/src/**/*.ts',
       'packages/stylelint-plugin/src/**/*.ts',
+      'packages/style-dictionary/src/**/*.ts',
       'apps/web/vite.config.ts',
       'apps/web/vitest.config.ts',
       'apps/web/tests/**/*.ts',
