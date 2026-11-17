@@ -1,0 +1,76 @@
+{
+  "name": "@opal42/element",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Custom elements that show the smoothness score of a CSS gradient (OKLAB/OKLCH): <opal42-gradient-score> and <opal42-gradient-preview>. Platform only, no framework, no network. Working name.",
+  "keywords": [
+    "web-component",
+    "custom-element",
+    "gradient",
+    "css-gradient",
+    "oklab",
+    "oklch"
+  ],
+  "license": "MIT",
+  "author": "LightSeek3r (https://github.com/LightSeek3r)",
+  "homepage": "https://github.com/LightSeek3r/gradient-studio/blob/master/docs/element.md",
+  "bugs": {
+    "url": "https://github.com/LightSeek3r/gradient-studio/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LightSeek3r/gradient-studio.git",
+    "directory": "packages/element"
+  },
+  "type": "module",
+  "sideEffects": [
+    "./dist/define.js",
+    "./dist/opal42-element.js"
+  ],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./define": {
+      "source": "./src/define.ts",
+      "types": "./dist/define.d.ts",
+      "default": "./dist/define.js"
+    },
+    "./standalone": {
+      "types": "./dist/define.d.ts",
+      "default": "./dist/opal42-element.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "devDependencies": {
+    "@opal42/gradient": "^0.0.0",
+    "@playwright/test": "^1.65.1",
+    "axe-core": "^4.14.0",
+    "jsdom": "^31.0.1",
+    "vitest-axe": "^0.1.0"
+  },
+  "scripts": {
+    "build": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\" && tsdown",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "browser": "node scripts/browser-check.mjs",
+    "lint:package": "publint --strict",
+    "attw": "attw --pack . --profile esm-only",
+    "size": "size-limit",
+    "prepack": "npm run build"
+  }
+}

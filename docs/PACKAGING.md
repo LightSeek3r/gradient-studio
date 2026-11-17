@@ -167,3 +167,15 @@ refine }` 15.38 kB (budget 16.4 kB). All budgets were left as they are: every en
 budget, so no re-baseline was needed. `{ score }` has only 0.1 kB left; the next change to the scorer will
 have to re-baseline it or trim code. The engine's internals (`PreparedScore`, `ScoreMemo`) are not part of
 the public API: `src/index.ts` now lists the engine's exports by name instead of `export *`.
+
+
+## Web components (phase 4)
+
+`@opal42/element` ([`element.md`](element.md)) follows the same pattern (tsdown,
+ESM only, `private`, publint, attw, size-limit) with one difference: it has **no
+runtime dependencies**. `@opal42/gradient` is a devDependency that is bundled
+in, so the package can ship one self-contained, minified file
+(`dist/opal42-element.js`, 27.25 kB gzip, budget 30 kB) that a plain
+`<script type="module">` loads. `sideEffects` lists only the auto-defining files
+(`dist/define.js`, `dist/opal42-element.js`). The library entries (`.`, `./define`)
+bundle core too, so there is no peer or external to resolve.

@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>opal42 gradient elements: demo</title>
+  <link rel="icon" href="data:,">
+  <style>
+    :root { color-scheme: light dark; }
+    body { font: 16px/1.5 system-ui, sans-serif; margin: 0 auto; max-width: 56rem; padding: 1rem 1rem 3rem; background: Canvas; color: CanvasText; }
+    h1 { font-size: 1.5rem; } h2 { font-size: 1.125rem; margin-top: 2rem; }
+    .grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr)); }
+    textarea { width: 100%; min-height: 6rem; font: 0.875rem ui-monospace, monospace; box-sizing: border-box; }
+    pre { overflow: auto; padding: 0.5rem; border: 1px solid GrayText; }
+    /* Host-page CSS does not leak into the shadow root; this rule changes nothing inside the elements. */
+    .swatch, .card, strong { color: red !important; display: none !important; }
+    .themed { --opal42-bg: #101820; --opal42-fg: #f2f2f2; --opal42-accent: #ffb703; --opal42-radius: 2px; }
+    opal42-gradient-preview { height: 3rem; }
+  </style>
+</head>
+<body>
+  <main>
+  <h1>opal42 gradient elements</h1>
+  <p>Smoothness scores by our definition (scoring model v1). Not a quality verdict. Everything runs in this page: no network.</p>
+
+  <h2>Score element</h2>
+  <div class="grid">
+    <opal42-gradient-score id="smooth" css="linear-gradient(90deg, #1e3a8a 0%, #3b82f6 50%, #bfdbfe 100%)"></opal42-gradient-score>
+    <opal42-gradient-score id="rough" show-fix css="linear-gradient(90deg, #ff0000 0%, #00ff00 20%, #0000ff 40%, #ffff00 60%, #ff00ff 80%, #00ffff 100%)"></opal42-gradient-score>
+    <opal42-gradient-score id="compact" compact css="linear-gradient(90deg,#ff0000,#0000ff)"></opal42-gradient-score>
+    <opal42-gradient-score id="skipped" css="radial-gradient(circle, #ff0000, #0000ff)"></opal42-gradient-score>
+    <opal42-gradient-score id="alpha" css="linear-gradient(90deg, rgb(255 0 0 / 0.5), #0000ff)"></opal42-gradient-score>
+    <opal42-gradient-score id="multi" index="1" label="Second gradient">
+      <script type="text/plain">
+        .a { background: linear-gradient(90deg, #111111, #eeeeee); }
+        .b { background: linear-gradient(120deg, #7c3aed 0%, #f97316 100%); }
+      </script>
+    </opal42-gradient-score>
+    <opal42-gradient-score id="empty"></opal42-gradient-score>
+    <opal42-gradient-score id="invalid" css="not a gradient"></opal42-gradient-score>
+    <opal42-gradient-score id="themed" class="themed" show-fix css="linear-gradient(90deg,#ff0000,#0000ff)"></opal42-gradient-score>
+  </div>
+
+  <h2>Preview element</h2>
+  <opal42-gradient-preview id="preview" css="linear-gradient(90deg in oklab, #0ea5e9, #f43f5e)"></opal42-gradient-preview>
+
+  <h2>Live editing</h2>
+  <p><label for="src">CSS (one or more gradients)</label></p>
+  <textarea id="src">linear-gradient(90deg, #ff0000, #0000ff)</textarea>
+  <opal42-gradient-score id="live" show-fix style="margin-top: 0.75rem"></opal42-gradient-score>
+  <pre id="log" tabindex="0" aria-label="Last event">events appear here</pre>
+
+  </main>
+
+  <script type="module">
+    // A single self-contained file, no bundler. The local path is relative to this page.
+    import "../dist/opal42-element.js";
+
+    const live = document.getElementById("live");
+    const src = document.getElementById("src");
+    const log = document.getElementById("log");
+    live.css = src.value;
+    src.addEventListener("input", () => { live.css = src.value; });
+    live.addEventListener("opal42-score", (e) => {
+      log.textContent = `opal42-score ${JSON.stringify({ score: e.detail.score, status: e.detail.status, findings: e.detail.findings.map((f) => f.code) })}`;
+    });
+    live.addEventListener("opal42-error", (e) => { log.textContent = `opal42-error ${e.detail.code}`; });
+    document.documentElement.dataset.ready = "1";
+  </script>
+</body>
+</html>
