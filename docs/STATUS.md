@@ -48,6 +48,8 @@ Scoring v1 is frozen and defined by `spec/scoring-v1.md` and `spec/vectors/` (ev
 
 ## Known issues and open questions
 
+- `npm audit` reports 28 high findings, all one advisory (GHSA-fc5q-39xc-vjpf, ReDoS in `picomatch` up to 4.0.7) that appeared after the last clean run. It affects development tooling only (`npm audit --omit=dev`: 0), and 4.0.7 is the latest release, so no patched version exists yet; the suggested `--force` fix is not a real fix. Re-check periodically.
+
 - **CI history, for honesty.** CI was red on `master` from the VS Code merge until the determinism fix (runs 19 to 31), and my local checks did not show it because they ran only on Node 22 and never reproduced the CI image. Causes found and fixed: the characterisation tests compared floating-point measurements bitwise (Node 22 and 24 differ in the last digits); a real tie-breaking defect in the engine (fix choices depended on float noise for near-equal values: see `docs/DETERMINISM.md`); and a Python job asking for a version the runner lacks. Because the `Test` step failed, the later steps had never run before run 33.
 
 - Fixes and refinement can change colours a lot (they remove a finding outright). Use `--dry-run`/preview first; the UI and editors show the change before applying.

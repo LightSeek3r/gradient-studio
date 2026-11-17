@@ -50,6 +50,13 @@ jobs:
       - name: Build packages (core, CLI, MCP)
         run: npm run build:packages
 
+      # Publication gate (docs/RELEASING.md): metadata, tarball contents and a clean-room
+      # install of the tier 1 and 2 tarballs. One Node version is enough; it needs the
+      # npm registry for third-party dependencies, so it runs on a single leg.
+      - name: Release check (pack + consumer smoke test)
+        if: matrix.node == 24
+        run: npm run release:check
+
       - name: publint
         run: npm run lint:package
 

@@ -1,0 +1,21 @@
+{
+  "$comment": "Single source of truth for npm names and publish tiers. Edit with `node scripts/rename-scope.mjs`, not by hand. {scope} and {cli} expand from the fields below.",
+  "scope": "@opal42",
+  "cliName": "opal42",
+  "maxUnpackedKB": 2048,
+  "tiers": {
+    "1": [
+      { "dir": "packages/core", "name": "{scope}/gradient" },
+      { "dir": "packages/cli", "name": "{cli}", "bin": ["{cli}"] }
+    ],
+    "2": [
+      { "dir": "packages/stylelint-plugin", "name": "{scope}/stylelint-plugin" },
+      { "dir": "packages/mcp", "name": "{scope}/mcp", "bin": ["{cli}-mcp"] }
+    ],
+    "3": [
+      { "dir": "packages/element", "name": "{scope}/element" },
+      { "dir": "packages/style-dictionary", "name": "{scope}/style-dictionary" },
+      { "dir": "packages/bench", "name": "{scope}/bench", "bin": ["{cli}-bench"] }
+    ]
+  }
+}

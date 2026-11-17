@@ -23,6 +23,7 @@
     "directory": "packages/cli"
   },
   "type": "module",
+  "sideEffects": false,
   "bin": {
     "opal42": "./dist/cli.js"
   },

@@ -24,6 +24,7 @@
     "directory": "packages/mcp"
   },
   "type": "module",
+  "sideEffects": false,
   "bin": {
     "opal42-mcp": "./dist/cli.js"
   },

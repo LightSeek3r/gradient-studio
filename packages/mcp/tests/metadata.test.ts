@@ -38,7 +38,7 @@ describe("package metadata", () => {
   });
 
   it("depends on the official SDK and the core only", () => {
-    expect(Object.keys(pkg.dependencies).sort()).toEqual(["@modelcontextprotocol/server", "@opal42/gradient"]);
+    expect(Object.keys(pkg.dependencies).sort()).toEqual(["@modelcontextprotocol/server", "@opal42/gradient"].sort());
   });
 
   it("documents each tool in docs/mcp.md", () => {

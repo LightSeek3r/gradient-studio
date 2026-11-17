@@ -1,10 +1,10 @@
 name: release
 
-# Manual only. Publishes @opal42/gradient and opal42 to npm with provenance via
-# npm trusted publishing (OIDC): there is no long-lived npm token anywhere.
-# Nothing is published until the owner has completed docs/RELEASING.md,
-# including removing `"private": true` from the two packages. Until then even a
-# run with dry_run=false fails at `npm publish`, by design.
+# Manual only. Publishes one tier of packages (release.config.json) to npm with
+# provenance via npm trusted publishing (OIDC): there is no long-lived npm token
+# anywhere. Nothing is published until the owner has completed docs/RELEASING.md,
+# including removing `"private": true` from the packages of that tier. Until then
+# even a run with dry_run=false fails at `npm publish`, by design.
 
 on:
   workflow_dispatch:
@@ -13,6 +13,11 @@ on:
         description: Build and verify everything, but do not publish
         type: boolean
         default: true
+      tier:
+        description: Which tier to publish (1 = core + CLI, 2 = stylelint plugin + MCP, 3 = the rest)
+        type: choice
+        options: ["1", "2", "3"]
+        default: "1"
 
 permissions:
   contents: read
@@ -63,13 +68,23 @@ jobs:
           npm run size
           node packages/cli/dist/cli.js score packages/cli/tests/fixtures
 
-      - name: Show what would be published
-        run: |
-          npm pack --dry-run -w @opal42/gradient
-          npm pack --dry-run -w opal42
+      - name: Release check (metadata, tarballs, clean-room install)
+        run: npm run release:check
 
-      - name: Publish (core first, then the CLI that depends on it)
-        if: ${{ !inputs.dry_run }}
+      - name: Show what would be published
+        env:
+          TIER: ${{ inputs.tier }}
         run: |
-          npm publish -w @opal42/gradient --provenance --access public
-          npm publish -w opal42 --provenance --access public
+          for pkg in $(node scripts/release-check.mjs --list "$TIER"); do
+            npm pack --dry-run -w "$pkg"
+          done
+
+      # The order inside a tier is the publish order (a package after what it depends on).
+      - name: Publish tier
+        if: ${{ !inputs.dry_run }}
+        env:
+          TIER: ${{ inputs.tier }}
+        run: |
+          for pkg in $(node scripts/release-check.mjs --list "$TIER"); do
+            npm publish -w "$pkg" --provenance --access public
+          done

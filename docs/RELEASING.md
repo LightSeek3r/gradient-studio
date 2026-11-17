@@ -1,79 +1,97 @@
 # Releasing
 
-Nothing in this repository publishes by itself. `@opal42/gradient` and `opal42`
-are `"private": true`; the release workflow is manual and defaults to a dry run.
-Everything below is the owner's checklist, in order. The names are working names
-([PLAN D1](PLAN.md)); do not skip the verification steps.
+Nothing in this repository publishes by itself. Every package is `"private": true`,
+and the `release` workflow is manual and defaults to a dry run. Names are working
+names ([PLAN D1](PLAN.md)); the scope `@opal42` is **unverified**. The single source
+of truth for names and tiers is [`release.config.json`](../release.config.json).
 
-## One-time, by the owner
+## Tiers and order
 
-1. **Hardware-key 2FA** on the npm and GitHub accounts (PLAN §7).
-2. **Verify the names.** `npm view @opal42/gradient` and `npm view opal42` must
-   both be 404 (unscoped names are not proof the scope is free). Run the
-   trademark search for "Opal" in software classes 9 and 42 (INPI/EUIPO/USPTO) and
-   check the `opal42` GitHub org/user. If the scope is not obtainable, switch to
-   the fallback `@lightseek3r/*` before anything else (rename in both
-   `package.json`, the CLI dependency, imports, docs).
-3. **Claim the npm scope**: create the `opal42` organization (or the fallback
-   scope) on npmjs.com. A scope must exist before its first publish. Decide the
-   JSR scope separately (PLAN D1(c); JSR is not part of this pipeline).
-4. **Publish once by hand or reserve?** Trusted publishing needs the package to
-   exist on npm before a trusted publisher can be attached. The first
-   `0.1.0` therefore needs either one manual `npm publish --access public` from
-   a machine with 2FA, or npm's "configure before first publish" flow if
-   available for your account. After that, only the workflow publishes.
-5. **Set the trusted publisher** for each package (npmjs.com, package Settings,
-   Trusted Publisher, GitHub Actions): organization/user `LightSeek3r`,
-   repository `gradient-studio`, workflow filename `release.yml`, and no
-   environment (the workflow declares none). Then, on each package, set
-   publishing access to "Require two-factor authentication and disallow tokens"
-   so no token can publish.
-6. **Remove `"private": true`** from `packages/core/package.json` and
-   `packages/cli/package.json` in a reviewed commit. Until you do, even
-   `dry_run: false` fails at `npm publish`, by design.
-7. **Check the metadata**: `repository`, `homepage`, `bugs`, `license`, `files`,
-   `engines`. Read `npm pack --dry-run -w <pkg>` once more.
-8. Make sure the repository slug in `release.yml` (`if: github.repository ==
-   'LightSeek3r/gradient-studio'`) is still right if the repo is renamed or
-   transferred.
+| Tier | Packages (publish order) | When |
+|---|---|---|
+| 1 | `@opal42/gradient`, then `opal42` (CLI) | first; everything else depends on core |
+| 2 | `@opal42/stylelint-plugin`, `@opal42/mcp` | after tier 1 is on npm |
+| 3 | `@opal42/element`, `@opal42/style-dictionary`, `@opal42/bench` | on demand |
 
-## Each release
+The apps (web, vscode, extension, figma, worker) are never published to npm.
+`npm run release:check` fails if a package depends on one published later.
 
-1. Merge the work. Every user-visible change has a changeset
-   (`npm run changeset`); the first one, `.changeset/first-release.md`, describes
-   0.1.0 of both packages as a `minor` bump from 0.0.0.
-2. Version: `npm run version-packages` (changesets updates both
-   `package.json` versions, writes `CHANGELOG.md` per package, and moves the
-   CLI's dependency range to the new core). Review and commit.
-   (`privatePackages.version` is on in `.changeset/config.json` so this works
-   while the packages are private.)
-3. Locally: `npm ci && npm run lint && npm run typecheck && npm test &&
-   npm run build && npm run build:packages && npm run lint:package &&
-   npm run attw && npm run size && npm run vectors:diff`.
-4. **Dry run** in GitHub: Actions, `release`, Run workflow, leave `dry_run`
-   ticked. It runs lint, tests, vectors, builds, publint, attw, size-limit, the
-   CLI smoke test and `npm pack --dry-run` for both packages, and publishes
-   nothing. Read the file lists.
-5. **Publish**: run the workflow again with `dry_run` unticked. It needs npm
-   >= 11.5.1 (the workflow upgrades and checks), `id-token: write` and the
-   trusted publisher from step 5; it publishes core first, then the CLI, with
-   `--provenance`. Check the provenance badge on both npm pages.
-6. Tag the commit (`v0.1.0`) and write the release notes from the changelogs.
-   Launch write-up and playground links are separate work (PLAN §6 Phase 1).
+## Owner checklist
+
+1. **Claim the scope, or rename.** Hardware-key 2FA on npm and GitHub first. Create
+   the npm org `opal42`. A 404 from `npm view @opal42/gradient` is *not* proof the
+   scope is free (all seven names were 404 when last read, from the build sandbox).
+   Run the trademark search for "Opal" (PLAN D1(b)). If the scope is not yours,
+   rename before anything else: see "If @opal42 is not available".
+2. **`npm run release:check`.** For every candidate it checks: name and scope against
+   `release.config.json`, version, license, repository (with `directory`), bugs,
+   homepage, keywords, engines, `files`, `exports`/`types`/`bin` targets inside the
+   tarball, `sideEffects`, `publishConfig`, README and LICENSE, dependency ranges (no
+   `workspace:`, `*`, `file:`; internal ranges satisfied; tier order), the `npm pack`
+   file list (no tests, sources, maps, `.env`, keys; token scan; size), and installs
+   the tier 1 and 2 tarballs in a clean temp project and runs core, the CLI, the
+   stylelint plugin and `opal42-mcp --version`. It needs the npm registry for
+   third-party dependencies. CI runs it on the Node 24 leg.
+3. **First manual publish of tier 1.** A trusted publisher can only be attached to a
+   package that already exists. Verified (npm 12.2.2 tarball, `npm-trust.md`, read
+   from the registry): "Package must exist", one configuration per package, 2FA
+   required, `npm trust` needs npm >= 11.15.0. Not verified here (needs your
+   account): whether the website offers any pre-publish flow, and whether
+   `publishConfig.provenance: true` makes a laptop publish fail (it needs CI OIDC;
+   if so add `--no-provenance`). Do: `npm run version-packages` (changesets set all
+   packages to 0.1.0 and rewrite internal ranges to `^0.1.0`; review, commit), `node
+   scripts/set-private.mjs tier:1 --false --write`, `npm run release:check --
+   --require-public`, then `npm publish -w @opal42/gradient --access public` and
+   `npm publish -w opal42 --access public` (2FA prompt). Any later tier whose
+   package is new needs the same one-off manual publish before step 4.
+4. **Trusted publisher, per package** (npmjs.com, package Settings, Trusted
+   Publisher, GitHub Actions; or `npm trust github <pkg> --file release.yml --repo
+   LightSeek3r/gradient-studio --allow-publish`): owner `LightSeek3r`, repository
+   `gradient-studio`, workflow `release.yml`, no environment. Then set publishing
+   access to "Require two-factor authentication and disallow tokens".
+5. **Flip `private`** in a reviewed commit: `node scripts/set-private.mjs tier:2
+   --false` (dry run, prints the edit), then again with `--write`. It accepts package
+   names or `tier:N`, refuses anything that is not a candidate, and `--true` undoes it.
+6. **Release workflow.** Actions, `release`, pick the `tier`, leave `dry_run` ticked
+   (lint, tests, vectors, builds, publint, attw, size, `release:check`, pack lists;
+   publishes nothing), read the file lists, then run it again unticked. It publishes
+   in tier order with `--provenance`; check the badge on each npm page.
+7. **Tag and release.** Tag the commit (`v0.1.0`) and write the notes from the
+   changelogs. Launch write-up and playground links are separate work (PLAN §6).
+
+Keep the slug in `release.yml` (`github.repository == 'LightSeek3r/gradient-studio'`)
+right if the repository is renamed or transferred.
+
+## If @opal42 is not available
+
+```sh
+git status                                   # must be clean (or pass --force)
+node scripts/rename-scope.mjs @opal42 @acme --dry-run
+node scripts/rename-scope.mjs @opal42 @acme --cli-name acme   # --cli-name also renames the CLI
+npm run lint && npm run typecheck && npm test && npm run build:packages && npm run release:check
+```
+
+It rewrites package names, dependency keys, imports, `-w @scope/x` commands,
+configs, workflows, docs, READMEs, changesets, CHANGELOGs and `release.config.json`,
+prints every file it changed, then runs `npm install` to relink the workspaces and
+regenerate the lockfile. A second run changes nothing. With `--cli-name` the CLI
+package, its bin, `<cli>-mcp` and `<cli>-bench` follow. Left alone on purpose: brand
+strings that are not registry names (the `opal42/` stylelint rule namespace,
+`<opal42-gradient-score>`, VS Code settings, CSS variables), the decision record
+`docs/PLAN.md` and `docs/plan-research/`, and the Cloudflare service name in
+`apps/worker/wrangler.jsonc`. The fallback scope in PLAN D1 is `@lightseek3r`.
+Tested on a scratch copy (`@opal42` to `@acme-test`, CLI `acme-test`): lint,
+typecheck, all tests, builds, size, attw, publint, `release:check`, `vectors:diff`.
 
 ## Rollback
 
-`npm deprecate` the bad version with a message and publish a patch. `npm
-unpublish` is restricted by npm policy after 72 hours or once something depends
-on the version; do not plan on it.
+`npm deprecate` the bad version with a message and publish a patch. `npm unpublish`
+is restricted after 72 hours or once something depends on the version.
 
 ## Why the workflow looks the way it does
 
-- `workflow_dispatch` only; `dry_run` defaults to true.
-- Least privilege: `contents: read` globally, `id-token: write` only on the one
-  job; no secrets are used.
-- Every action is pinned to the full commit SHA already used by `ci.yml`
-  (`actions/checkout`, `actions/setup-node`). It uses no third-party action
-  (the changesets action is deliberately not used: versioning is a local,
-  reviewed step).
+- `workflow_dispatch` only; `dry_run` defaults to true; one tier per run.
+- `contents: read` globally, `id-token: write` only on the one job; no secrets.
+- Actions are pinned to the full commit SHAs `ci.yml` uses; no third-party action
+  (versioning is a local, reviewed step, so the changesets action is not used).
 - Guarded by `github.repository`, so a fork's workflow does nothing.

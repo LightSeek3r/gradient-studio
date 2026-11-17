@@ -22,6 +22,7 @@
     "directory": "packages/bench"
   },
   "type": "module",
+  "sideEffects": false,
   "bin": {
     "opal42-bench": "./dist/cli.js"
   },
@@ -43,6 +44,10 @@
   ],
   "engines": {
     "node": ">=22"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   },
   "dependencies": {
     "@opal42/gradient": "^0.0.0"
