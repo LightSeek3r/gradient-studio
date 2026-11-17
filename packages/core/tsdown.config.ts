@@ -10,6 +10,7 @@ export default defineConfig({
     names: "src/names.ts",
     css: "src/css.ts",
     export: "src/export.ts",
+    experimental: "src/experimental/index.ts",
   },
   format: "esm",
   platform: "neutral",

@@ -89,5 +89,12 @@
   "import": "{ cssAngleToLine }",
   "gzip": true,
   "limit": "220 B"
+ },
+ {
+  "name": "./experimental (everything)",
+  "path": "dist/experimental.js",
+  "import": "*",
+  "gzip": true,
+  "limit": "9.9 kB"
  }
 ]
